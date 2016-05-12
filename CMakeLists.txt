@@ -1,0 +1,103 @@
+cmake_minimum_required( VERSION 2.8 )
+
+project( ITADataSources )
+
+list( APPEND CMAKE_MODULE_PATH "$ENV{VISTA_CMAKE_COMMON}" )
+include( VistaCommon )
+
+
+# dependencies
+vista_use_package( ITABase REQUIRED FIND_DEPENDENCIES )
+vista_use_package( ASIO QUIET )
+vista_use_package( Portaudio QUIET )
+
+if( NOT DEFINED ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
+	set( ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO ${VASIO_FOUND} CACHE BOOL "Build with ASIO support" )
+endif( NOT DEFINED ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
+
+if( NOT DEFINED ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
+	set( ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO ${VPORTAUDIO_FOUND} CACHE BOOL "Build with Portaudio support" )
+endif( NOT DEFINED ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
+
+
+# includes
+include_directories( "include" )
+
+
+# sources
+set( ITADataSourcesHeader
+	"include/ITABufferDataSink.h"
+	"include/ITABufferDataSource.h"
+	"include/ITADataSource.h"
+	"include/ITADataSourceRealization.h"
+	"include/ITADataSourcesDefinitions.h"
+	"include/ITADataSourceUtils.h"
+	"include/ITAFileDataSink.h"
+	"include/ITAFileDataSource.h"
+	"include/ITAPeakDetector.h"
+	"include/ITAStreamAmplifier.h"
+	#"include/ITAStreamFilter.h"
+	"include/ITAStreamFunctionGenerator.h"
+	"include/ITAStreamModalSynthesizer.h"
+	"include/ITAStreamMultiplier1N.h"
+	"include/ITAStreamPatchBay.h"
+	"include/ITAStreamProbe.h"
+	"include/ITAStreamProperties.h"
+	"include/ITAStreamPump.h"
+	"include/ITAStreamYJunction.h"
+	)
+
+set( ITADataSourcesSources
+	"src/ITABufferDataSink.cpp"
+	"src/ITABufferDataSource.cpp"
+	"src/ITADataSource.cpp"
+	"src/ITADataSourceRealization.cpp"
+	"src/ITADataSourceUtils.cpp"
+	"src/ITAFileDataSink.cpp"
+	"src/ITAFileDataSource.cpp"
+	"src/ITAPeakDetector.cpp"
+	"src/ITAStreamAmplifier.cpp"
+	#"src/ITAStreamFilter.cpp"
+	"src/ITAStreamFunctionGenerator.cpp"
+	"src/ITAStreamModalSynthesizer.cpp"
+	"src/ITAStreamMultiplier1N.cpp"
+	"src/ITAStreamPatchBay.cpp"
+	"src/ITAStreamProbe.cpp"
+	"src/ITAStreamProperties.cpp"
+	"src/ITAStreamPump.cpp"
+	"src/ITAStreamYJunction.cpp"
+	)
+
+if( VASIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
+	set( ITADataSourcesHeader "${ITADataSourcesHeader}" "include/ITAAsioInterface.h" )
+	set( ITADataSourcesSources "${ITADataSourcesSources}" "src/ITAAsioInterface.cpp" )
+	add_definitions( -DIEEE754_64FLOAT=1 )
+endif( VASIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
+if( VPORTAUDIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
+	set( ITADataSourcesHeader "${ITADataSourcesHeader}" "include/ITAPortaudioInterface.h" )
+	set( ITADataSourcesSources "${ITADataSourcesSources}" "src/ITAPortaudioInterface.cpp" )
+endif( VPORTAUDIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
+
+
+# compiler
+add_definitions( -DITA_BASE_DLL -DITA_DATA_SOURCES_DLL -DITA_DATA_SOURCES_EXPORT )
+
+
+# linker
+add_library( ITADataSources SHARED ${ITADataSourcesHeader} ${ITADataSourcesSources} )
+target_link_libraries( ITADataSources ${VISTA_USE_PACKAGE_LIBRARIES} )
+
+
+# config
+vista_configure_lib( ITADataSources )
+vista_install( ITADataSources )
+set( ITADATASOURCES_INCLUDE_OUTDIR "${CMAKE_CURRENT_SOURCE_DIR}/include" )
+vista_create_cmake_configs( ITADataSources )
+vista_create_default_info_file( ITADataSources )
+
+set_property( TARGET ITADataSources PROPERTY FOLDER "ITACoreLibs" )
+
+	
+# tests
+set( ITADATASOURCES_COMMON_BUILD TRUE )
+add_subdirectory( "${CMAKE_CURRENT_SOURCE_DIR}/tests" )
