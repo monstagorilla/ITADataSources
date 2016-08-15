@@ -98,6 +98,11 @@ vista_create_default_info_file( ITADataSources )
 set_property( TARGET ITADataSources PROPERTY FOLDER "ITACoreLibs" )
 
 	
+# apps
+set( ITADATASOURCES_COMMON_BUILD TRUE )
+add_subdirectory( "${CMAKE_CURRENT_SOURCE_DIR}/apps/ita_whad" )
+
+
 # tests
 set( ITADATASOURCES_COMMON_BUILD TRUE )
 add_subdirectory( "${CMAKE_CURRENT_SOURCE_DIR}/tests" )
