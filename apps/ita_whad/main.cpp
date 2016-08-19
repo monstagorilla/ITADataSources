@@ -26,12 +26,9 @@ int main( int argc, char* argv[] )
 #endif // ITA_WHAD_WITH_PORTAUDIO
 	cout << endl;
 
-	stringstream ss;
-
 #ifdef ITA_WHAD_WITH_ASIO
 
-	ss.clear();
-	ss << "[ASIO]" << endl << endl;
+	stringstream ssa;
 
 	ITAsioInitializeLibrary();
  
@@ -42,7 +39,7 @@ int main( int argc, char* argv[] )
 
 	for( long i = 0; i < lDrivers; i++ )
 	{
-		ss << "Driver identifier: " << ITAsioGetDriverName( i ) << endl;
+		ssa << "Driver identifier: " << ITAsioGetDriverName( i ) << endl;
 		try
 		{
 			ASIOError e = ITAsioInitializeDriver( i );
@@ -52,24 +49,24 @@ int main( int argc, char* argv[] )
 
 			long lMinSize, lMaxSize, lPrefSize, g;
 			ITAsioGetBufferSize( &lMinSize, &lMaxSize, &lPrefSize, &g );
-			ss << "Buffer sizes: " << lMinSize << " " << lMaxSize << " " << lPrefSize << " " << g << endl;
+			ssa << "Buffer sizes: " << lMinSize << " " << lMaxSize << " " << lPrefSize << " " << g << endl;
 
 			ASIOSampleRate fs;
 			ITAsioGetSampleRate( &fs );
-			ss << "Samplerate: " << fs << endl;
+			ssa << "Samplerate: " << fs << endl;
 
 			long in, out;
 			ITAsioGetChannels( &in, &out );
-			ss << "Input channels: " << in << endl;
-			ss << "Output channels: " << out << endl;
+			ssa << "Input channels: " << in << endl;
+			ssa << "Output channels: " << out << endl;
 
 		}
 		catch( const ITAException& e )
 		{
-			ss << "### ERROR: " << e << endl;
+			ssa << "### ERROR: " << e << endl;
 		}
 
-		ss << endl;
+		ssa << endl;
 	}
 
 	ITAsioFinalizeLibrary();
@@ -77,7 +74,7 @@ int main( int argc, char* argv[] )
 	// Export
 	string sFileNameASIO = "ita_whad_asio.txt";
 	FILE* file_asio = fopen( sFileNameASIO.c_str(), "w" );
-	fwrite( ss.str().c_str(), sizeof( char ), ss.str().length(), file_asio );
+	fwrite( ssa.str().c_str(), sizeof( char ), ssa.str().length(), file_asio );
 	fwrite( "\n", sizeof( char ), 1, file_asio );
 	fclose( file_asio );
 	cout << "Exported information to file '" << sFileNameASIO << "'" << endl << endl;
@@ -86,9 +83,8 @@ int main( int argc, char* argv[] )
 
 #ifdef ITA_WHAD_WITH_PORTAUDIO
 
-	ss.clear();
-	ss << "[Portaudio]" << endl << endl;
-
+	stringstream ssp;
+	
 	ITAPortaudioInterface oPortaudioFirst( 44100.0f, 512 );
 	oPortaudioFirst.Initialize();
 	int iNumDevices = oPortaudioFirst.GetNumDevices();
@@ -104,8 +100,10 @@ int main( int argc, char* argv[] )
 		oPortaudioFirst.GetDriverSampleRate( i, vdPreferredSampleRates[ i ] );
 	}
 
-	ss << "Default input device: " << oPortaudioFirst.GetDeviceName( oPortaudioFirst.GetDefaultInputDevice() ) << endl;
-	ss << "Default output device: " << oPortaudioFirst.GetDeviceName( oPortaudioFirst.GetDefaultOutputDevice() ) << endl;
+	ssp << "Default input device: " << oPortaudioFirst.GetDeviceName( oPortaudioFirst.GetDefaultInputDevice() ) << endl;
+	ssp << "Default output device: " << oPortaudioFirst.GetDeviceName( oPortaudioFirst.GetDefaultOutputDevice() ) << endl;
+
+	ssp << endl;
 
 	oPortaudioFirst.Finalize();
 		
@@ -121,26 +119,26 @@ int main( int argc, char* argv[] )
 			if( e != ITAPortaudioInterface::ITA_PA_NO_ERROR )
 				ITA_EXCEPT1( INVALID_PARAMETER, "Portaudio error: " + ITAPortaudioInterface::GetErrorCodeString( e ) );
 
-			ss << "Driver number: " << i + 1 << endl;
-			ss << "Driver identifier: " << oPA.GetDeviceName( i ) << endl;
+			ssp << "Driver number: " << i + 1 << endl;
+			ssp << "Driver identifier: " << oPA.GetDeviceName( i ) << endl;
 
 			e = oPA.Open();
 			if( e != ITAPortaudioInterface::ITA_PA_NO_ERROR )
 				ITA_EXCEPT1( INVALID_PARAMETER, "Portaudio error: " + ITAPortaudioInterface::GetErrorCodeString( e ) );
 
-			ss << "Latency: " << oPA.GetDeviceLatency( i ) << endl;
+			ssp << "Latency: " << oPA.GetDeviceLatency( i ) << endl;
 
 			double dSampleRate;
 			e = oPA.GetDriverSampleRate( i, dSampleRate );
 			if( e != ITAPortaudioInterface::ITA_PA_NO_ERROR )
 				ITA_EXCEPT1( INVALID_PARAMETER, "Portaudio error: " + ITAPortaudioInterface::GetErrorCodeString( e ) );
 
-			ss << "Sample rate: " << dSampleRate << endl;
+			ssp << "Sample rate: " << dSampleRate << endl;
 
 			int iIn, iOut;
 			oPA.GetNumChannels( i, iIn, iOut );
-			ss << "Input channels: " << iIn << endl;
-			ss << "Output channels: " << iOut << endl;
+			ssp << "Input channels: " << iIn << endl;
+			ssp << "Output channels: " << iOut << endl;
 
 			oPA.Close();
 			oPA.Finalize();
@@ -148,17 +146,17 @@ int main( int argc, char* argv[] )
 		}
 		catch( const ITAException& e )
 		{
-			ss << "### ERROR: " << e << endl;
+			ssp << "### ERROR: " << e << endl;
 		}
 
-		ss << endl;
+		ssp << endl;
 	}
 
 
 	// Export
 	string sFileNamePortaudio = "ita_whad_portaudio.txt";
 	FILE* file_pa = fopen( sFileNamePortaudio.c_str(), "w" );
-	fwrite( ss.str().c_str(), sizeof( char ), ss.str().length(), file_pa );
+	fwrite( ssp.str().c_str(), sizeof( char ), ssp.str().length(), file_pa );
 	fwrite( "\n", sizeof( char ), 1, file_pa );
 	fclose( file_pa );
 	cout << "Exported information to file '" << sFileNamePortaudio << "'" << endl << endl;
