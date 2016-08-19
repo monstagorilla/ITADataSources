@@ -40,7 +40,8 @@ class ITA_DATA_SOURCES_API ITAPortaudioInterface
 {
 public:
 	//! ITAPortaudio error code table
-	typedef enum ITA_PA_ERRORCODE {
+	typedef enum ITA_PA_ERRORCODE
+	{
 		//! Portaudio/ITAPortaudio no error
 		ITA_PA_NO_ERROR=0,
 
@@ -160,19 +161,20 @@ public:
 	};
 
 	//! Portaudio available host APIs
-	typedef enum ITA_PA_HOST_APIS {
-		ITA_PA_DIRECT_SOUND=1,		//!< Windows DirectSound
-		ITA_PA_MME=2,				//!< Windows MME
-		ITA_PA_ASIO=3,				//!< Windows Steinberg ASIO (recommended: use ITAsioInterface instead)
-		ITA_PA_SOUND_MANAGER=4,		//!< Macintosh Sound Manager
-		ITA_PA_CORE_AUDIO=5,		//!< MacOS CoreAudio
-		ITA_PA_OSS=7,				//!< Linux/Unix OSS
-		ITA_PA_ALSA=8,				//!< Linux/Unix ALSA
-		ITA_PA_AL=9,				//!< Silicon Graphics Irix using AL
-		ITA_PA_BE_OS=10,			//!< BeOS
-		ITA_PA_WDMKS=11,			//!< Windows Driver Model Kernel Streaming driver
-		ITA_PA_JACK=12,				//!< MacOS/Linux/Unix Jack Audio
-		ITA_PA_WASAPI=13,			//!< Windows Audio Session API
+	typedef enum ITA_PA_HOST_APIS
+	{
+		ITA_PA_DIRECT_SOUND = 1,	//!< Windows DirectSound
+		ITA_PA_MME = 2,				//!< Windows MME
+		ITA_PA_ASIO = 3,			//!< Windows Steinberg ASIO (recommended: use ITAsioInterface instead)
+		ITA_PA_SOUND_MANAGER = 4,	//!< Macintosh Sound Manager
+		ITA_PA_CORE_AUDIO = 5,		//!< MacOS CoreAudio
+		ITA_PA_OSS = 7,				//!< Linux/Unix OSS
+		ITA_PA_ALSA = 8,			//!< Linux/Unix ALSA
+		ITA_PA_AL = 9,				//!< Silicon Graphics Irix using AL
+		ITA_PA_BE_OS = 10,			//!< BeOS
+		ITA_PA_WDMKS = 11,			//!< Windows Driver Model Kernel Streaming driver
+		ITA_PA_JACK = 12,			//!< MacOS/Linux/Unix Jack Audio
+		ITA_PA_WASAPI = 13,			//!< Windows Audio Session API
 		ITA_PA_AUDIO_SCIENCE_HPI=14	//!< AudioScience Hardware Programming Interface
 	};
 
@@ -185,7 +187,7 @@ public:
 	  *
 	  * \see #Initialize #Initialize(const int iDriver)
 	  */
-	ITAPortaudioInterface(const double dSampleRate, const int iBufferSize);
+	ITAPortaudioInterface( double dSampleRate, int iBufferSize );
 
 	//! Destructor
 	~ITAPortaudioInterface();
@@ -201,25 +203,25 @@ public:
 	ITA_PA_ERRORCODE Initialize();
 
 	//! Initialize Portaudio using specified host/driver by id
-	ITA_PA_ERRORCODE Initialize(const int iDriverID);
+	ITA_PA_ERRORCODE Initialize( int iDriverID);
 
 	//! Initialize Portaudio using specified driver by name
-	ITA_PA_ERRORCODE Initialize(const std::string& sDriverName);
+	ITA_PA_ERRORCODE Initialize( const std::string& sDriverName );
 
 	//! Use Portaudio with specific input device
-	ITA_PA_ERRORCODE SetOutputDevice(const int iOutputDevice);
+	ITA_PA_ERRORCODE SetOutputDevice( int iOutputDevice);
 
 	//! Returns true if playback is enabled, false otherwise
 	bool IsPlaybackEnabled() const;
 
 	//! Set playback enabled/disabled
-	void SetPlaybackEnabled(const bool bEnabled);
+	void SetPlaybackEnabled( bool bEnabled);
 
 	//! Returns true if record is enabled, false otherwise
 	bool IsRecordEnabled() const;
 
 	//! Set record enabled/disabled
-	void SetRecordEnabled(const bool bEnabled);
+	void SetRecordEnabled( bool bEnabled);
 
 	//! Finalize Portaudio
 	/**
@@ -243,7 +245,7 @@ public:
 	int GetNumDevices() const;
 
 	//! Returns the name of the driver avaiable in Portaudio
-	std::string GetDeviceName(const int iDriverID) const;
+	std::string GetDeviceName( int iDriverID ) const;
 
 	static int GetPreferredBufferSize();
 
@@ -252,9 +254,9 @@ public:
 	  * \param iDriverID Identifier of driver
 	  * \return Latency in seconds, -1 if any error with the driver occurs
 	  */
-	float GetDeviceLatency(const int iDriverID) const;
+	float GetDeviceLatency( int iDriverID ) const;
 
-	ITA_PA_ERRORCODE GetDriverSampleRate(const int iDeviceID, double& dSampleRate) const;
+	ITA_PA_ERRORCODE GetDriverSampleRate( int iDeviceID, double& dSampleRate ) const;
 
 	//! Returns the name of the current devices in Portaudio
 	std::string GetInputDeviceName() const;
@@ -275,31 +277,31 @@ public:
 	int GetOutputDevice() const;
 
 	//! Returns the number of input and output channels
-	void GetNumChannels(const int iDeviceID, int& iNumInputChannels, int& iNumOutputChannels) const;
+	void GetNumChannels( const int iDeviceID, int& iNumInputChannels, int& iNumOutputChannels ) const;
 
 	//! Returns the number of input channels
 	/**
 	  * \return Number of input channels (>=0) or #ITA_PA_ERRORCODE (<0)
 	  */
-	int GetNumInputChannels(const int iDeviceID) const;
+	int GetNumInputChannels( const int iDeviceID ) const;
 
 	//! Returns the number of output channels
 	/**
 	  * \return Number of output channels (>=0) or #ITA_PA_ERRORCODE (<0)
 	  */
-	int GetNumOutputChannels(const int iDeviceID) const;
+	int GetNumOutputChannels( int iDeviceID ) const;
 
 	//! Returns the sample rate
 	double GetSampleRate() const;
 
 	//! Sets the sample rate
-	ITA_PA_ERRORCODE SetSampleRate(const double dSampleRate);
+	ITA_PA_ERRORCODE SetSampleRate( double dSampleRate );
 	
 	//! Set the playback data source
 	/**
 	  * \note Enables playback, see IsPlaybackEnabled() and SetPlaybackEnabled()
 	  */
-	ITA_PA_ERRORCODE SetPlaybackDatasource(ITADatasource* pidsDatasource);
+	ITA_PA_ERRORCODE SetPlaybackDatasource( ITADatasource* pidsDatasource );
 
 	//! Get the recording data source
 	/**
@@ -312,21 +314,23 @@ public:
 	ITADatasource* GetRecordDatasource();
 
 	//! Uses the Portaudio sleep function
-	void Sleep(const float fSeconds) const;
+	void Sleep( float fSeconds ) const;
 
 	//! Returns a human readable error code string
-	static std::string GetErrorCodeString(const ITA_PA_ERRORCODE err);
+	static std::string GetErrorCodeString( ITA_PA_ERRORCODE err );
 	
 
 	//! Internal user data class for information exchange with callback function
-	class ITAPortaudioUserData {
+	class ITAPortaudioUserData
+	{
 	public:
 		ITADatasource* pdsPlaybackDatasource; //!< ITADatasource playback datasource
 		ITADatasource* pdsRecordDatasource;   //!< ITADatasource record datasource
 		bool bPlayback;	//!< Playback enabled
 		bool bRecord;   //!< Record enabled
 
-		ITAPortaudioUserData() {
+		inline ITAPortaudioUserData()
+		{
 			pdsPlaybackDatasource = NULL;
 			pdsRecordDatasource = NULL;
 			bPlayback = false;
@@ -335,7 +339,7 @@ public:
 	};
 
 private:
-	//! Standard constructor
+	//! Standard constructor deactivated
 	ITAPortaudioInterface();
 	
 	std::string m_sConfigFile;	//!< Configuration file path
@@ -363,7 +367,6 @@ private:
 	*/
 
 	ITA_PA_ERRORCODE m_iError;	//!< Last ITAPortaudio error
-
 
 };
 
