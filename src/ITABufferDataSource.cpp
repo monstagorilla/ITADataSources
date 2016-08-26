@@ -295,7 +295,7 @@ void ITABufferDatasource::IncrementBlockPointer() {
 
 	// Ganz normale Verhaltensweise:
 	if ((unsigned int) m_iCursor < m_uiROIEnd) m_iCursor = m_iCursor + (int) m_uiBlocklength;
-	if( m_bLoopMode && ( (unsigned int( m_iCursor ) >= m_uiROIEnd ) ) )
+	if( m_bLoopMode && ( (unsigned int)( m_iCursor ) >= m_uiROIEnd ) )
 		m_iCursor = int( m_uiROIStart );
 
 	m_bGetBlockPointerTouched = false;
