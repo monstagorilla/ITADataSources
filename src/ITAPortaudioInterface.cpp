@@ -9,17 +9,18 @@
 #include <ITAStreamInfo.h>
 
 // Portaudio Callback Function
-static int PortaudioCallbackFunction(const void*, void*, unsigned long, const PaStreamCallbackTimeInfo*, PaStreamCallbackFlags, void*);
+static int PortaudioCallbackFunction( const void*, void*, unsigned long, const PaStreamCallbackTimeInfo*, PaStreamCallbackFlags, void* );
 
-class ITAPortaudioSource : public ITADatasourceRealization {
+class ITAPortaudioSource : public ITADatasourceRealization
+{
 public:
-	ITAPortaudioSource(int iChannels, double dSamplerate, int iBufferSize)
-		: ITADatasourceRealization((unsigned int) iChannels, dSamplerate, (unsigned int) iBufferSize, 16) {}
+	ITAPortaudioSource( int iChannels, double dSampleRate, int iBufferSize )
+		: ITADatasourceRealization( ( unsigned int ) iChannels, dSampleRate, ( unsigned int ) iBufferSize, 16 ) {};
 };
 
 
-ITAPortaudioInterface::ITAPortaudioInterface(const double dSampleRate, const int iBufferSize) :
-	m_vpPaStream(NULL)
+ITAPortaudioInterface::ITAPortaudioInterface( double dSampleRate, int iBufferSize ) 
+	: m_vpPaStream( NULL )
 {
 	m_dSampleRate = dSampleRate;
 	m_iBufferSize = iBufferSize; // Darf 0 sein
@@ -41,13 +42,17 @@ ITAPortaudioInterface::ITAPortaudioInterface(const double dSampleRate, const int
 	m_iError = ITA_PA_NO_ERROR;
 }
 
-ITAPortaudioInterface::~ITAPortaudioInterface() {
+ITAPortaudioInterface::~ITAPortaudioInterface()
+{
 }
-ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Initialize(const std::string& sDriverName) {
+
+ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Initialize( const std::string& sDriverName )
+{
 	return ITA_PA_INVALID_DEVICE;
 }
 
-ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Initialize(const int iDriverID) {
+ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Initialize( int iDriverID )
+{
 	if (m_bInitialized)
 		return ITA_PA_IS_INITIALIZED;
 
@@ -79,7 +84,8 @@ ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Initialize(const 
 	return ITA_PA_NO_ERROR;
 }
 
-ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Initialize() {
+ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Initialize()
+{
 	if (m_bInitialized)
 		return ITA_PA_IS_INITIALIZED;
 
@@ -108,11 +114,13 @@ ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Initialize() {
 	return ITA_PA_NO_ERROR;
 }
 
-bool ITAPortaudioInterface::IsPlaybackEnabled() const {
+bool ITAPortaudioInterface::IsPlaybackEnabled() const
+{
 	return m_bPlayback;
 }
 
-void ITAPortaudioInterface::SetPlaybackEnabled(const bool bEnabled) {
+void ITAPortaudioInterface::SetPlaybackEnabled( bool bEnabled )
+{
 	m_bPlayback = bEnabled;
 }
 
@@ -120,11 +128,13 @@ bool ITAPortaudioInterface::IsRecordEnabled() const {
 	return m_bRecord;
 }
 
-void ITAPortaudioInterface::SetRecordEnabled(const bool bEnabled) {
+void ITAPortaudioInterface::SetRecordEnabled( bool bEnabled )
+{
 	m_bRecord = bEnabled;
 }
 
-ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Finalize() {
+ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Finalize()
+{
 	if (!m_bInitialized)
 		return ITA_PA_NOT_INITIALIZED;
 
@@ -147,7 +157,8 @@ ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Finalize() {
 }
 
 
-ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Open() {
+ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Open()
+{
 	if (!m_bInitialized)
 		return ITA_PA_NOT_INITIALIZED;
 
@@ -201,17 +212,21 @@ ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Open() {
 
 	m_iError = (ITA_PA_ERRORCODE) Pa_OpenStream(&stream, pInParams, pOutParams, m_dSampleRate, m_iBufferSize, paNoFlag, PortaudioCallbackFunction, &m_oUserData);
 
-	if (m_iError == ITA_PA_NO_ERROR) {
+	if( m_iError == ITA_PA_NO_ERROR )
+	{
 		m_vpPaStream = (void*) stream;
 		m_bOpen = true;
-	} else {
+	} 
+	else
+	{
 		m_vpPaStream = NULL;
 	}
 
 	return m_iError;
 }
 
-ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Close() {
+ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Close()
+{
 	if (!m_bInitialized)
 		return ITA_PA_NOT_INITIALIZED;
 
@@ -229,7 +244,8 @@ ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Close() {
 	return m_iError;
 }
 
-ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Start() {
+ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Start()
+{
 	if (m_bStreaming)
 		return ITA_PA_IS_STARTED;
 
@@ -253,7 +269,8 @@ ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Start() {
     return m_iError;
 }
 
-ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Stop() {
+ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Stop()
+{
 	if (!m_bStreaming)
 		return ITA_PA_STREAM_IS_STOPPED;
 
@@ -277,7 +294,8 @@ int ITAPortaudioInterface::GetNumDevices() const {
 
 }
 
-int ITAPortaudioInterface::GetNumInputChannels(const int iDeviceID) const {
+int ITAPortaudioInterface::GetNumInputChannels( int iDeviceID ) const
+{
 	if (!m_bInitialized)
 		return ITA_PA_NOT_INITIALIZED;
 
@@ -287,7 +305,8 @@ int ITAPortaudioInterface::GetNumInputChannels(const int iDeviceID) const {
 	return info->maxInputChannels;
 }
 
-int ITAPortaudioInterface::GetNumOutputChannels(const int iDeviceID) const {
+int ITAPortaudioInterface::GetNumOutputChannels( int iDeviceID ) const
+{
 	if (!m_bInitialized)
 		return ITA_PA_NOT_INITIALIZED;
 
@@ -297,16 +316,19 @@ int ITAPortaudioInterface::GetNumOutputChannels(const int iDeviceID) const {
 	return info->maxOutputChannels;
 }
 
-double ITAPortaudioInterface::GetSampleRate() const {
+double ITAPortaudioInterface::GetSampleRate() const
+{
 	return m_dSampleRate;
 }
 
-void ITAPortaudioInterface::GetNumChannels(const int iDeviceID, int& iNumInputChannels, int& iNumOutputChannels) const {
+void ITAPortaudioInterface::GetNumChannels( int iDeviceID, int& iNumInputChannels, int& iNumOutputChannels ) const
+{
 	iNumInputChannels = GetNumInputChannels(iDeviceID);
 	iNumOutputChannels = GetNumOutputChannels(iDeviceID);
 }
 
-ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::GetDriverSampleRate(const int iDeviceID, double& dSampleRate) const {
+ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::GetDriverSampleRate( int iDeviceID, double& dSampleRate ) const
+{
 	if (!m_bInitialized)
 		return ITA_PA_NOT_INITIALIZED;
 
@@ -318,7 +340,8 @@ ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::GetDriverSampleRa
 	return ITA_PA_NO_ERROR;
 }
 
-std::string ITAPortaudioInterface::GetDeviceName(const int iDriverID) const {
+std::string ITAPortaudioInterface::GetDeviceName( int iDriverID ) const
+{
 	if (!m_bInitialized)
 		return "Portaudio not initialized";
 
@@ -331,7 +354,8 @@ std::string ITAPortaudioInterface::GetDeviceName(const int iDriverID) const {
 	return info->name;
 }
 
-float ITAPortaudioInterface::GetDeviceLatency(const int iDriverID) const {
+float ITAPortaudioInterface::GetDeviceLatency( int iDriverID ) const
+{
 	if (!m_bInitialized)
 		return -1;
 
@@ -344,7 +368,8 @@ float ITAPortaudioInterface::GetDeviceLatency(const int iDriverID) const {
 	return (float) info->defaultLowOutputLatency;
 }
 
-int ITAPortaudioInterface::GetDefaultInputDevice() const {
+int ITAPortaudioInterface::GetDefaultInputDevice() const
+{
 	int iDefaultInputDevice;
 	if (!m_bInitialized) {
 		Pa_Initialize();
@@ -357,7 +382,8 @@ int ITAPortaudioInterface::GetDefaultInputDevice() const {
 	return iDefaultInputDevice;
 }
 
-int ITAPortaudioInterface::GetDefaultOutputDevice() const {
+int ITAPortaudioInterface::GetDefaultOutputDevice() const
+{
 	int iDefaultOutputDevice;
 	if (!m_bInitialized) {
 		Pa_Initialize();
@@ -370,7 +396,8 @@ int ITAPortaudioInterface::GetDefaultOutputDevice() const {
 	return iDefaultOutputDevice;
 }
 
-ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::SetPlaybackDatasource(ITADatasource* pidsDatasource) {
+ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::SetPlaybackDatasource( ITADatasource* pidsDatasource )
+{
 	if (!m_bInitialized)
 		return ITA_PA_NOT_INITIALIZED;
 
@@ -390,7 +417,8 @@ ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::SetPlaybackDataso
 	return ITA_PA_NO_ERROR;
 }
 
-ITADatasource* ITAPortaudioInterface::GetRecordDatasource() {
+ITADatasource* ITAPortaudioInterface::GetRecordDatasource()
+{
 	if (!m_bInitialized)
 		return NULL;
 
@@ -405,13 +433,15 @@ ITADatasource* ITAPortaudioInterface::GetRecordDatasource() {
 	return m_oUserData.pdsRecordDatasource;
 }
 
-void ITAPortaudioInterface::Sleep(const float fSeconds) const {
+void ITAPortaudioInterface::Sleep( float fSeconds ) const
+{
 	Pa_Sleep((long) fSeconds*1000);
 
 	return;
 }
 
-std::string ITAPortaudioInterface::GetErrorCodeString(const ITA_PA_ERRORCODE err) {
+std::string ITAPortaudioInterface::GetErrorCodeString( ITA_PA_ERRORCODE err )
+{
 	if (err == ITA_PA_NOT_INITIALIZED)
 		return "Portaudio not initialized";
 	if (err == ITA_PA_INVALID_CHANNEL_COUNT)
