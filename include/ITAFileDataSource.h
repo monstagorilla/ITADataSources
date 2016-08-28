@@ -22,7 +22,7 @@
 
 #include <ITADataSourcesDefinitions.h>
           
-#include "ITABufferDatasource.h"
+#include "ITABufferDataSource.h"
               
 #include <string>		// Strings der Standard Template Library (STL)
 #include <vector>
