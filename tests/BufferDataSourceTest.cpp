@@ -1,6 +1,6 @@
 #include <ITAException.h>
-#include <ITABufferDatasource.h>
-#include <ITADatasourceUtils.h>
+#include <ITABufferDataiSource.h>
+#include <ITADataSourceUtils.h>
 #include <stdio.h>
 #include <vector>
 #include <iostream>

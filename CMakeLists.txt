@@ -84,6 +84,8 @@ endif( VPORTAUDIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
 # compiler
 if( WIN32 )
 	add_definitions( -DITA_BASE_DLL -DITA_DATA_SOURCES_DLL -DITA_DATA_SOURCES_EXPORT )
+else( WIN32 )
+	add_definitions( -std=c++11 )
 endif( WIN32)
 
 
@@ -103,8 +105,8 @@ set_property( TARGET ITADataSources PROPERTY FOLDER "ITACoreLibs" )
 
 	
 # apps
-set( ITADATASOURCES_COMMON_BUILD TRUE )
-add_subdirectory( "${CMAKE_CURRENT_SOURCE_DIR}/apps/ita_whad" )
+#set( ITADATASOURCES_COMMON_BUILD TRUE )
+#add_subdirectory( "${CMAKE_CURRENT_SOURCE_DIR}/apps/ita_whad" )
 
 
 # tests

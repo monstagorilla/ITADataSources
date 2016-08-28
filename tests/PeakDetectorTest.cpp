@@ -1,5 +1,5 @@
 #include <ITAException.h>
-#include <ITAFileDatasource.h>
+#include <ITAFileDataSource.h>
 #include <ITAPeakDetector.h>
 #include <ITAStringUtils.h>
 #include <iostream>
