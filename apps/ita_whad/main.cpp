@@ -1,9 +1,14 @@
-//#include <conio.h>
 #include <iostream>
 #include <stdio.h>
 #include <string>
 
+#ifdef ITA_WHAD_WITH_ASIO
 #include <ITAAsioInterface.h>
+#endif
+
+#ifdef ITA_WHAD_WITH_PORTAUDIO
+#include <ITAPortaudioInterface.h>
+#endif
 
 using namespace std;
 

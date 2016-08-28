@@ -1,7 +1,7 @@
 #include "ITAStreamYJunction.h"
 
 #include <ITAException.h>
-#include <ITAStreamPatchbay.h>
+#include <ITAStreamPatchBay.h>
 
 ITAStreamYJunction::ITAStreamYJunction(unsigned int uiOutputs, ITADatasource* pdsInput)
 : m_pImpl(NULL) {

@@ -31,7 +31,6 @@ set( ITADataSourcesHeader
 	"include/ITADataSource.h"
 	"include/ITADataSourceRealization.h"
 	"include/ITADataSourcesDefinitions.h"
-	"include/ITADataSourceUtils.h"
 	"include/ITAFileDataSink.h"
 	"include/ITAFileDataSource.h"
 	"include/ITAPeakDetector.h"
@@ -43,7 +42,6 @@ set( ITADataSourcesHeader
 	"include/ITAStreamPatchBay.h"
 	"include/ITAStreamProbe.h"
 	"include/ITAStreamProperties.h"
-	"include/ITAStreamPump.h"
 	"include/ITAStreamYJunction.h"
 	)
 
@@ -51,8 +49,7 @@ set( ITADataSourcesSources
 	"src/ITABufferDataSink.cpp"
 	"src/ITABufferDataSource.cpp"
 	"src/ITADataSource.cpp"
-	"src/ITADataSourceRealization.cpp"
-	"src/ITADataSourceUtils.cpp"
+	"src/ITADataSourceRealization.cpp"	
 	"src/ITAFileDataSink.cpp"
 	"src/ITAFileDataSource.cpp"
 	"src/ITAPeakDetector.cpp"
@@ -63,10 +60,15 @@ set( ITADataSourcesSources
 	"src/ITAStreamMultiplier1N.cpp"
 	"src/ITAStreamPatchBay.cpp"
 	"src/ITAStreamProbe.cpp"
-	"src/ITAStreamProperties.cpp"
-	"src/ITAStreamPump.cpp"
+	"src/ITAStreamProperties.cpp"	
 	"src/ITAStreamYJunction.cpp"
 	)
+
+# Filter windows-only components
+if( WIN32 )
+	list( APPEND ${ITADataSourcesHeader} "include/ITAStreamPump.cpp" "include/ITADataSourceUtils.cpp" )
+	list( APPEND ${ITADataSourcesSources} "src/ITAStreamPump.cpp" "src/ITADataSourceUtils.cpp" )
+endif( WIN32 )
 
 if( VASIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
 	set( ITADataSourcesHeader "${ITADataSourcesHeader}" "include/ITAAsioInterface.h" )
