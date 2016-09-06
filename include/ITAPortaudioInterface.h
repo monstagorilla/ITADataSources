@@ -183,9 +183,9 @@ public:
 	/**
 	  * Set up internal variables of ITAPortaudio. No exception will be
 	  * thrown here.
-	  * \note Next do initialization
+	  * @note Next do initialization
 	  *
-	  * \see #Initialize #Initialize(const int iDriver)
+	  * @see Initialize()
 	  */
 	ITAPortaudioInterface( double dSampleRate, int iBufferSize );
 
@@ -203,13 +203,13 @@ public:
 	ITA_PA_ERRORCODE Initialize();
 
 	//! Initialize Portaudio using specified host/driver by id
-	ITA_PA_ERRORCODE Initialize( int iDriverID);
+	ITA_PA_ERRORCODE Initialize( int iDriverID );
 
 	//! Initialize Portaudio using specified driver by name
 	ITA_PA_ERRORCODE Initialize( const std::string& sDriverName );
 
 	//! Use Portaudio with specific input device
-	ITA_PA_ERRORCODE SetOutputDevice( int iOutputDevice);
+	ITA_PA_ERRORCODE SetOutputDevice( int iOutputDevice );
 
 	//! Returns true if playback is enabled, false otherwise
 	bool IsPlaybackEnabled() const;
@@ -277,13 +277,13 @@ public:
 	int GetOutputDevice() const;
 
 	//! Returns the number of input and output channels
-	void GetNumChannels( const int iDeviceID, int& iNumInputChannels, int& iNumOutputChannels ) const;
+	void GetNumChannels( int iDeviceID, int& iNumInputChannels, int& iNumOutputChannels ) const;
 
 	//! Returns the number of input channels
 	/**
 	  * \return Number of input channels (>=0) or #ITA_PA_ERRORCODE (<0)
 	  */
-	int GetNumInputChannels( const int iDeviceID ) const;
+	int GetNumInputChannels( int iDeviceID ) const;
 
 	//! Returns the number of output channels
 	/**

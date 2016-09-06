@@ -66,18 +66,18 @@ set( ITADataSourcesSources
 
 # Filter windows-only components
 if( WIN32 )
-	list( APPEND ${ITADataSourcesHeader} "include/ITAStreamPump.cpp" "include/ITADataSourceUtils.cpp" )
-	list( APPEND ${ITADataSourcesSources} "src/ITAStreamPump.cpp" "src/ITADataSourceUtils.cpp" )
+	list( APPEND ITADataSourcesHeader "include/ITAStreamPump.h" "include/ITADataSourceUtils.h" )
+	list( APPEND ITADataSourcesSources "src/ITAStreamPump.cpp" "src/ITADataSourceUtils.cpp" )
 endif( WIN32 )
 
 if( VASIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
-	set( ITADataSourcesHeader "${ITADataSourcesHeader}" "include/ITAAsioInterface.h" )
-	set( ITADataSourcesSources "${ITADataSourcesSources}" "src/ITAAsioInterface.cpp" )
+	list( APPEND ITADataSourcesHeader "include/ITAAsioInterface.h" )
+	list( APPEND ITADataSourcesSources "src/ITAAsioInterface.cpp" )
 	add_definitions( -DIEEE754_64FLOAT=1 )
 endif( VASIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
 if( VPORTAUDIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
-	set( ITADataSourcesHeader "${ITADataSourcesHeader}" "include/ITAPortaudioInterface.h" )
-	set( ITADataSourcesSources "${ITADataSourcesSources}" "src/ITAPortaudioInterface.cpp" )
+	list( APPEND ITADataSourcesHeader "include/ITAPortaudioInterface.h" )
+	list( APPEND ITADataSourcesSources "src/ITAPortaudioInterface.cpp" )
 endif( VPORTAUDIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
 
 
