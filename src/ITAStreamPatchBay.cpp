@@ -1,6 +1,7 @@
 #include <ITAStreamPatchBay.h>
 
 #include <algorithm>
+#include <float.h>
 #include <iostream>
 
 #include <ITAFastMath.h>

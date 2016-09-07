@@ -1,6 +1,6 @@
 #include <ITAException.h>
-#include <ITABufferDatasource.h>
-#include <ITADatasourceUtils.h>
+#include <ITABufferDataSource.h>
+#include <ITADataSourceUtils.h>
 #include <stdio.h>
 #include <vector>
 #include <iostream>
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
 		printf("ROI-Length: %d\n", pSource->GetROILength());
 
 		// Kompletten Inhalt in eine Datei schreiben
-		WriteFromDatasourceToFile(pSource, "Complete.wav", pSource->GetCapacity());
+		WriteFromDatasourceToFile( pSource, "Complete.wav", pSource->GetCapacity() );
 
 		// Rückspulen testen
 		pSource->Rewind();

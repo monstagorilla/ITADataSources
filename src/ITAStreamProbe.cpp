@@ -1,7 +1,7 @@
 #include "ITAStreamProbe.h"
 
 #include <cassert>
-#include <ITABufferedAudiofileWriter.h>
+#include <ITABufferedAudioFileWriter.h>
 
 #ifndef WIN32
 #include <memory.h>

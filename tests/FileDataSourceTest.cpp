@@ -1,6 +1,6 @@
 #include <ITAException.h>
-#include <ITAFileDatasource.h>
-#include <ITADatasourceUtils.h>
+#include <ITAFileDataSource.h>
+#include <ITADataSourceUtils.h>
 #include <ITAStreamAmplifier.h>
 #include <stdio.h>
 #include <iostream>
