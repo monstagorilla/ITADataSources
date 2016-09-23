@@ -776,6 +776,9 @@ ITASIO_API ASIOError ITAsioInitializeDriver(const char* pszDriverName) {
 	size_t nNumInOutChannels = size_t( lNumInChannels + lNumOutChannels );
 	asioDriverInfo.channelInfos.resize( nNumInOutChannels );
 
+	if( nNumInOutChannels == 0 )
+		return ASE_InvalidParameter;
+
 	// Retrieve channel info
 	ASIOChannelInfo* pInfo = reinterpret_cast<ASIOChannelInfo*>(&asioDriverInfo.channelInfos.front());
 	if( ( aeResult = ASIOGetChannelInfo( pInfo ) ) != ASE_OK )
