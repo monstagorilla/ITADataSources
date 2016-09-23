@@ -1051,7 +1051,7 @@ ITASIO_API ASIOError ITAsioSetPlaybackDatasource(ITADatasource* pidsDatasource) 
 		if ((long) pidsDatasource->GetNumberOfChannels() != asioDriverInfo.outputBuffers)
 			ITA_EXCEPT1(MODAL_EXCEPTION, "Datasource has invalid number of channels");
 
-		if (ASIOSampleRate(pidsDatasource->GetSamplerate()) != asioDriverInfo.sampleRate)
+		if (ASIOSampleRate(pidsDatasource->GetSampleRate()) != asioDriverInfo.sampleRate)
 			ITA_EXCEPT1(MODAL_EXCEPTION, "Datasource has invalid samplerate");
 
 		if ((long) pidsDatasource->GetBlocklength() != lBuffersize)

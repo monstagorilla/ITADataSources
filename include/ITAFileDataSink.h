@@ -48,9 +48,9 @@ public:
 	 *
 	 * \note Bei Fehlern werden ITAExceptions aufgelöst.
 	 */
-	ITAFileDatasink(std::string sFilename,
-		            ITADatasource* pdsSource,
-					ITAQuantization eQuantization=ITA_INT16);	
+	ITAFileDatasink( std::string sFilename,
+		ITADatasource* pdsSource,
+		ITAQuantization eQuantization = ITAQuantization::ITA_FLOAT );
 
 	//! Destruktor
 	virtual ~ITAFileDatasink();

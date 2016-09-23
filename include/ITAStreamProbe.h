@@ -15,7 +15,6 @@
 * ----------------------------------------------------------------
 *
 */
-// $Id: ITAStreamProbe.h 2900 2012-09-17 08:42:42Z stienen $
 
 #ifndef INCLUDE_WATCHER_ITA_STREAM_PROBE
 #define INCLUDE_WATCHER_ITA_STREAM_PROBE
@@ -36,7 +35,8 @@ class ITAAudiofileWriter;
  * Instanzen der Klasse ITAStreamProbe können als "Messspitze" in Audiostreams
  * eingehängt werden. Sie schreiben dann alle vorbeigeflossenen Daten in eine Audiodatei.
  */
-class ITA_DATA_SOURCES_API ITAStreamProbe : public ITADatasource {
+class ITA_DATA_SOURCES_API ITAStreamProbe : public ITADatasource
+{
 public:
 	//! Konstruktor
 	/**
@@ -44,7 +44,7 @@ public:
 	 *
 	 * \note Es darf kein Nullzeiger übergeben werden.
 	 */
-	ITAStreamProbe(ITADatasource* pDatasource, const std::string& sFilename, ITAQuantization iQuantization=ITA_INT16);	
+	ITAStreamProbe( ITADatasource* pDatasource, const std::string& sFilename, ITAQuantization iQuantization = ITAQuantization::ITA_FLOAT );
 
 	//! Destruktor
 	virtual ~ITAStreamProbe();
@@ -62,7 +62,7 @@ public:
 
 	unsigned int GetBlocklength() const;
 	unsigned int GetNumberOfChannels() const;
-	double GetSamplerate() const;
+	double GetSampleRate() const;
 
 	virtual const float* GetBlockPointer(unsigned int uiChannel, const ITAStreamInfo* pStreamInfo);	
 	virtual void IncrementBlockPointer();

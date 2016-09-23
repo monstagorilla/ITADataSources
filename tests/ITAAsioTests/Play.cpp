@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
 		std::string sFilePath = correctPath( argv[2] );
 		ITAFileDatasource source( sFilePath, (signed int) lBuffersize, false);
 
-		if (ITAsioSetSampleRate((ASIOSampleRate) source.GetSamplerate()) != ASE_OK) {
+		if (ITAsioSetSampleRate((ASIOSampleRate) source.GetSampleRate()) != ASE_OK) {
 			ITAsioFinalizeLibrary();
 			fprintf(stderr, "Fehler: ITAsioSetSamplerate schlug fehl!\n");
 
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
 			return 255;
 		}
 
-		ITAStreamPatchbay patchbay( source.GetSamplerate(), lBuffersize );
+		ITAStreamPatchbay patchbay( source.GetSampleRate(), lBuffersize );
 		patchbay.AddInput( &source );
 		patchbay.AddOutput( int( lNumOutputChannels ) );
 		

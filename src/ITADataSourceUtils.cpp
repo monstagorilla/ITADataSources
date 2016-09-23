@@ -26,7 +26,7 @@ void WriteFromDatasourceToBuffer(ITADatasource* pSource,
 	if (!pSource) return;
 
 	unsigned int uiChannels = pSource->GetNumberOfChannels();
-	double dSamplerate = pSource->GetSamplerate();
+	double dSamplerate = pSource->GetSampleRate();
 	unsigned int uiBlocklength = pSource->GetBlocklength();
 	ITAStreamInfo siState;
 
@@ -110,18 +110,18 @@ void WriteFromDatasourceToFile(ITADatasource* pSource,
 
 	unsigned int uiChannels = pSource->GetNumberOfChannels();
 	unsigned int uiBlocklength = pSource->GetBlocklength();
-	double dSamplerate = pSource->GetSamplerate();
+	double dSamplerate = pSource->GetSampleRate();
 
 	std::vector<float*> vpfData;
 	for (unsigned int i=0; i<uiChannels; i++)
 		vpfData.push_back(new float[uiBlocklength]);
 
 	ITAAudiofileProperties props;
-	props.uiChannels = uiChannels;
-	props.dSamplerate = dSamplerate;
-	props.eQuantization = ITA_INT16;
-	props.eDomain = ITA_TIME_DOMAIN;
-	props.uiLength = uiNumberOfSamples;
+	props.iChannels = uiChannels;
+	props.dSampleRate = dSamplerate;
+	props.eQuantization = ITAQuantization::ITA_FLOAT;
+	props.eDomain = ITADomain::ITA_TIME_DOMAIN;
+	props.iLength = uiNumberOfSamples;
 	ITAAudiofileWriter* writer = ITAAudiofileWriter::create(sFilename, props);
 	ITAStreamInfo siState;
 

@@ -193,7 +193,7 @@ public:
 
 	unsigned int GetBlocklength() const;
 	unsigned int GetNumberOfChannels() const;
-	double GetSamplerate() const;
+	double GetSampleRate() const;
 
     const float* GetBlockPointer(unsigned int uiChannel, const ITAStreamInfo* pStreamInfo);	
 	void IncrementBlockPointer();

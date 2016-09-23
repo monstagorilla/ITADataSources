@@ -110,7 +110,7 @@ public:
 	const ITAStreamProperties* GetStreamProperties() const { return &m_oStreamProps; }
 	unsigned int GetBlocklength() const { return m_uiBlocklength; }
 	unsigned int GetNumberOfChannels() const { return m_uiChannels; }
-	double GetSamplerate() const { return m_dSamplerate; }
+	double GetSampleRate() const { return m_dSampleRate; }
 
     virtual const float* GetBlockPointer(unsigned int uiChannel, const ITAStreamInfo* pStreamInfo);
 	virtual void IncrementBlockPointer();
@@ -164,7 +164,7 @@ protected:
 	 *        Tipparbeit in Unterklassen. Bitte diese Werte aber
 	 *        nur lesend [read-only] benutzen!!
 	 */
-	double m_dSamplerate;				// Abtastrate [Hz]
+	double m_dSampleRate;				// Abtastrate [Hz]
 	unsigned int m_uiChannels;			// Anzahl Kanäle
 	unsigned int m_uiBlocklength;		// Streaming Puffergröße [Samples]
 	

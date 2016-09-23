@@ -14,14 +14,14 @@ ITAStreamProbe::ITAStreamProbe(ITADatasource* pDatasource, const std::string& sF
 	m_pDatasource = pDatasource;
 	m_sFilename = sFilename;
 
-	m_dSamplerate = pDatasource->GetSamplerate();
+	m_dSamplerate = pDatasource->GetSampleRate();
 	m_uiChannels = pDatasource->GetNumberOfChannels();
 	m_uiBlocklength = pDatasource->GetBlocklength();
 
 	ITAAudiofileProperties props;
-	props.uiChannels = m_uiChannels;
-	props.dSamplerate = m_dSamplerate;
-	props.eDomain = ITA_TIME_DOMAIN;
+	props.iChannels = m_uiChannels;
+	props.dSampleRate = m_dSamplerate;
+	props.eDomain = ITADomain::ITA_TIME_DOMAIN;
 	props.eQuantization = iQuantization;
 
 	m_pWriter = ITABufferedAudiofileWriter::create(sFilename, props);
@@ -51,7 +51,7 @@ unsigned int ITAStreamProbe::GetNumberOfChannels() const {
 	return m_uiChannels;
 }
 
-double ITAStreamProbe::GetSamplerate() const {
+double ITAStreamProbe::GetSampleRate() const {
 	return m_dSamplerate;
 }
 

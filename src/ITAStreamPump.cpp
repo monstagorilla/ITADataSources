@@ -3,7 +3,7 @@
 #include <ITADataSource.h>
 
 ITAStreamPump::ITAStreamPump(ITADatasource* pDatasource) : m_pDatasource(pDatasource), m_pTimer(NULL) {
-	m_pTimer = new ITATimer( (double) pDatasource->GetBlocklength() / pDatasource->GetSamplerate(), true);
+	m_pTimer = new ITATimer( (double) pDatasource->GetBlocklength() / pDatasource->GetSampleRate(), true);
 	m_pTimer->attach(this);
 	m_uiChannels = pDatasource->GetNumberOfChannels();
 }
@@ -26,6 +26,6 @@ void ITAStreamPump::handleTimerEvent(const ITATimer& tSource) {
 		m_pDatasource->IncrementBlockPointer();
 
 		m_siState.nSamples += m_pDatasource->GetBlocklength();
-		m_siState.dTimecode = (double) (m_siState.nSamples) / m_pDatasource->GetSamplerate();
+		m_siState.dTimecode = (double) (m_siState.nSamples) / m_pDatasource->GetSampleRate();
 	}	
 }

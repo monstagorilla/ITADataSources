@@ -49,8 +49,8 @@ public:
 		return m_pDatasourceDelegatorTarget->GetNumberOfChannels();
 	}
 
-	double GetSamplerate() const {
-		return m_pDatasourceDelegatorTarget->GetSamplerate();
+	double GetSampleRate() const {
+		return m_pDatasourceDelegatorTarget->GetSampleRate();
 	}
 
 	virtual const float* GetBlockPointer(unsigned int uiChannel, const ITAStreamInfo* pStreamInfo) {

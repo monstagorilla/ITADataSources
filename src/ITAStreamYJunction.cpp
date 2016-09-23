@@ -8,7 +8,7 @@ ITAStreamYJunction::ITAStreamYJunction(unsigned int uiOutputs, ITADatasource* pd
 	if (uiOutputs == 0)
 		ITA_EXCEPT1(INVALID_PARAMETER, "The number of outputs must at least be one");
 
-	m_pImpl = new ITAStreamPatchbay(pdsInput->GetSamplerate(), pdsInput->GetBlocklength());
+	m_pImpl = new ITAStreamPatchbay(pdsInput->GetSampleRate(), pdsInput->GetBlocklength());
 	m_pImpl->AddInput(pdsInput->GetNumberOfChannels());
 	m_pImpl->SetInputDatasource(0, pdsInput);
 	for (unsigned int i=0; i<uiOutputs; i++) {

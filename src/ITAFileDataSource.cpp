@@ -19,7 +19,7 @@ ITAFileDatasource::ITAFileDatasource(std::string sFilename,
 	// TODO: Ausnahme auslösen, falls Spektraldaten!
 	ITAAudiofileReader* pReader = ITAAudiofileReader::create(sFilename);
 	ITAAudiofileProperties props = pReader->getAudiofileProperties();
-	m_uiFileCapacity = props.uiLength;
+	m_uiFileCapacity = props.iLength;
 
 	if (m_uiFileCapacity > 0) {
 		// Länge auf Vielfaches der Blocklänge erweitern
@@ -28,7 +28,7 @@ ITAFileDatasource::ITAFileDatasource(std::string sFilename,
 		unsigned int uiCapacity = k * uiBlocklength;
 
 		// Datenpuffer allozieren und Daten hinein kopieren
-		for (unsigned int i=0; i<props.uiChannels; i++) {
+		for ( int i=0; i<props.iChannels; i++) {
 			// TODO: Fehlerbehandlung!
 			float* pfData = new float[uiCapacity];
 
@@ -38,10 +38,10 @@ ITAFileDatasource::ITAFileDatasource(std::string sFilename,
 			vpfData.push_back(pfData);
 		}
 
-		pReader->read(props.uiLength, vpfData);
+		pReader->read(props.iLength, vpfData);
 
 		// Unterliegende Puffer-Datenquelle initialisieren
-		Init(vpfData, uiCapacity, props.dSamplerate, uiBlocklength, bLoopMode);
+		Init(vpfData, uiCapacity, props.dSampleRate, uiBlocklength, bLoopMode);
 	}
 
 	delete pReader;

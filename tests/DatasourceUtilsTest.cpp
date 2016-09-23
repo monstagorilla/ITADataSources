@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
 		printf("Channels:       %d\n", source.GetNumberOfChannels());
 		printf("Capacity:       %d Samples\n", source.GetCapacity());
 		printf("File capacity:  %d Samples\n", source.GetFileCapacity());
-		printf("Samplerate:     %0.3f KHz\n", source.GetSamplerate()/1000);
+		printf("Samplerate:     %0.3f KHz\n", source.GetSampleRate()/1000);
 
 		printf("\nOutput file: \"%s\"\n", argv[2]);
 

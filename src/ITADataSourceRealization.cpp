@@ -19,7 +19,7 @@ ITADatasourceRealization::ITADatasourceRealization(unsigned int uiChannels,
 												   unsigned int uiCapacity)
 {
 	assert( dSamplerate > 0 );
-	m_dSamplerate = dSamplerate;
+	m_dSampleRate = dSamplerate;
 	m_oStreamProps.dSamplerate = dSamplerate;
 
 	Init(uiChannels, uiBlocklength, uiCapacity);
@@ -45,7 +45,7 @@ void ITADatasourceRealization::Init(unsigned int uiChannels,
 	m_uiChannels = uiChannels;
 	m_uiBlocklength = uiBlocklength;
 
-	m_oStreamProps.dSamplerate = m_dSamplerate;
+	m_oStreamProps.dSamplerate = m_dSampleRate;
 	m_oStreamProps.uiChannels = m_uiChannels;
 	m_oStreamProps.uiBlocklength = m_uiBlocklength;
 

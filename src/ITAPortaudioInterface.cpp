@@ -407,7 +407,7 @@ ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::SetPlaybackDataso
 	if (pidsDatasource->GetBlocklength() != m_iBufferSize)
 		return ITA_PA_UNMATCHED_BUFFER_SIZE;
 
-	if (pidsDatasource->GetSamplerate() != m_dSampleRate)
+	if (pidsDatasource->GetSampleRate() != m_dSampleRate)
 		return ITA_PA_UNMATCHED_SAMPLE_RATE;
 
 	m_oUserData.pdsPlaybackDatasource = pidsDatasource;

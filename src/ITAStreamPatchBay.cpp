@@ -148,7 +148,7 @@ void ITAStreamPatchbay::SetInputDatasource( const int iInput, ITADatasource* pds
 		int channels = pdsDatasource->GetNumberOfChannels();
 		if (pdsDatasource->GetNumberOfChannels() != m_vpInputs[iInput]->iChannels)
 			ITA_EXCEPT1(INVALID_PARAMETER, "Datasource properties do not match the input properties (num channel missmatch");
-		if (pdsDatasource->GetSamplerate() != m_dSamplerate)
+		if (pdsDatasource->GetSampleRate() != m_dSamplerate)
 			ITA_EXCEPT1(INVALID_PARAMETER, "Datasource properties do not match the input properties (samplerate missmatch");
 		if (pdsDatasource->GetBlocklength() != m_iBlockLength)
 			ITA_EXCEPT1(INVALID_PARAMETER, "Datasource properties do not match the input properties (blocklength missmatch)");

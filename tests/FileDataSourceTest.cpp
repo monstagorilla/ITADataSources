@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
 		printf("Channels:       %d\n", pSource->GetNumberOfChannels());
 		printf("Capacity:       %d Samples\n", ((ITAFileDatasource*) pSource)->GetCapacity());
 		printf("File capacity:  %d Samples\n", ((ITAFileDatasource*) pSource)->GetFileCapacity());
-		printf("Samplerate:     %0.3f KHz\n", pSource->GetSamplerate()/1000);
+		printf("Samplerate:     %0.3f KHz\n", pSource->GetSampleRate()/1000);
 
 /*		unsigned int n=1;
 		while (pSource->GetCursor() < pSource->GetCapacity()) {

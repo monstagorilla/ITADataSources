@@ -7,7 +7,7 @@
 ITAPeakDetector::ITAPeakDetector(ITADatasource* pDatasource)
 {
 	m_pDatasource = pDatasource;
-	m_dSamplerate = pDatasource->GetSamplerate();
+	m_dSamplerate = pDatasource->GetSampleRate();
 	m_uiChannels = pDatasource->GetNumberOfChannels();
 	m_uiBlocklength = pDatasource->GetBlocklength();
 	m_pfPeaks = 0;

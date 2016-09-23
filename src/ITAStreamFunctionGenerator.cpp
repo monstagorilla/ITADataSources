@@ -58,13 +58,13 @@ void ITAStreamFunctionGenerator::SetFunction(int iFunction)
 
 double ITAStreamFunctionGenerator::GetFrequency() const
 {
-	return m_dSamplerate / (double) m_iPeriodLengthSamples;
+	return m_dSampleRate / (double) m_iPeriodLengthSamples;
 }
 
 void ITAStreamFunctionGenerator::SetFrequency(double dFrequency)
 {
 	assert( dFrequency >= 0 );
-	m_iPeriodLengthSamples = (int) round( m_dSamplerate / dFrequency );
+	m_iPeriodLengthSamples = (int) round( m_dSampleRate / dFrequency );
 }
 
 int ITAStreamFunctionGenerator::GetPeriodAsSamples() const
@@ -80,12 +80,12 @@ void ITAStreamFunctionGenerator::SetPeriodAsSamples(int iNumSamples)
 
 double ITAStreamFunctionGenerator::GetPeriodAsTime() const
 {
-	return (double) m_iPeriodLengthSamples / m_dSamplerate;
+	return (double) m_iPeriodLengthSamples / m_dSampleRate;
 }
 
 void ITAStreamFunctionGenerator::SetPeriodAsTime(double dPeriodLength)
 {
-	m_iPeriodLengthSamples = (int) round(dPeriodLength * m_dSamplerate);
+	m_iPeriodLengthSamples = (int) round(dPeriodLength * m_dSampleRate);
 }
 
 bool ITAStreamFunctionGenerator::IsPeriodic() const

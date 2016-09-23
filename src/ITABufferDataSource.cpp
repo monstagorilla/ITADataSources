@@ -253,7 +253,7 @@ unsigned int ITABufferDatasource::GetNumberOfChannels() const {
 	return m_uiChannels;
 }
 
-double ITABufferDatasource::GetSamplerate() const {
+double ITABufferDatasource::GetSampleRate() const {
 	return m_dSamplerate;
 }
 

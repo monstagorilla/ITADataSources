@@ -9,7 +9,7 @@
 
 ITAStreamAmplifier::ITAStreamAmplifier(ITADatasource* pdsInput, float fInitialGain)
 : ITADatasourceRealization(pdsInput->GetNumberOfChannels(),
-                           pdsInput->GetSamplerate(),
+                           pdsInput->GetSampleRate(),
 						   pdsInput->GetBlocklength()),
   m_pInputDatasource(pdsInput),
   m_bMuted(false),

@@ -14,7 +14,7 @@
 using namespace std;
 
 ITAStreamMultiplier1N::ITAStreamMultiplier1N(ITADatasource* pdsInput,int iOutputChannels, unsigned int uiFadeLength)
-: ITADatasourceRealization(iOutputChannels, pdsInput->GetSamplerate(), pdsInput->GetBlocklength()),
+: ITADatasourceRealization(iOutputChannels, pdsInput->GetSampleRate(), pdsInput->GetBlocklength()),
   m_pInputDatasource(pdsInput),
   m_bMuted(false),
   m_iOutputChannels(iOutputChannels),

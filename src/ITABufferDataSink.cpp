@@ -96,7 +96,7 @@ void ITABufferDatasink::Transfer(unsigned int uiSamples) {
 			m_uiWriteCursor += m;
 
 			m_siState.nSamples += b;
-			m_siState.dTimecode = (double) (m_siState.nSamples) / m_pdsSource->GetSamplerate();
+			m_siState.dTimecode = (double) (m_siState.nSamples) / m_pdsSource->GetSampleRate();
 		}
 	}	
 }

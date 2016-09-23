@@ -28,7 +28,7 @@ int main(int , char** )
 	catch (ITAException& e)
 	{
 		cerr << "Could open audio file, error = " << e << endl;
-		pSource = new ITAStreamFunctionGenerator(1, dSampleRate, iBlockSize, ITAStreamFunctionGenerator::SINE, 300, 0.9, true);
+		pSource = new ITAStreamFunctionGenerator(1, dSampleRate, iBlockSize, ITAStreamFunctionGenerator::SINE, 300, 0.9f, true);
 	}
 		
 	// Instantiate

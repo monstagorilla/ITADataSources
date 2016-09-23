@@ -54,7 +54,7 @@
     2.02	18.1.2005	 Warten auf neue Daten in GetBlockPointer() hinzugefügt,
 	                     Dokumentation vervollständigt
 
-    2.01    14.1.2005    Samplerate hinzugefügt, sowie GetSamplerate()
+    2.01    14.1.2005    Samplerate hinzugefügt, sowie GetSampleRate()
 
     2.00    12.1.2005    Die neue Klasse ITADatasource als verbesserte,
                          bereinigte Version der alt-eingesessenen DataSource-Klasse.
@@ -177,7 +177,7 @@ public:
 	 * \note Falls die Samplerate der Datenquelle noch nicht feststeht,
 	 *       wird 0 zurückgegeben (siehe Klassenbeschreibung).
      */
-	virtual double GetSamplerate() const=0;
+	virtual double GetSampleRate() const=0;
 
 	//! Blockzeiger abrufen
 	/**

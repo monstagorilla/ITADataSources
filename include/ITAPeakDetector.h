@@ -142,7 +142,7 @@ public:
 	
 	unsigned int GetBlocklength() const { return m_uiBlocklength; }
 	unsigned int GetNumberOfChannels() const { return m_uiChannels; }
-	double GetSamplerate() const { return m_dSamplerate; }
+	double GetSampleRate() const { return m_dSamplerate; }
 
 	virtual const float* GetBlockPointer(unsigned int uiChannel, const ITAStreamInfo* pStreamInfo);	
 	virtual void IncrementBlockPointer();
