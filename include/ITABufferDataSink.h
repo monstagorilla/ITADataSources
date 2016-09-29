@@ -15,7 +15,6 @@
 * ----------------------------------------------------------------
 *
 */
-// $Id: ITABufferDataSink.h 2900 2012-09-17 08:42:42Z stienen $
 
 #ifndef INCLUDE_WATCHER_ITA_BUFFER_DATA_SINK
 #define INCLUDE_WATCHER_ITA_BUFFER_DATA_SINK

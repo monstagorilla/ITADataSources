@@ -15,19 +15,18 @@
 * ----------------------------------------------------------------
 *
 */
-// $Id: ITADataSourceDefinitions.h 2900 2012-09-17 08:42:42Z stienen $
 
 #ifndef INCLUDE_WATCHER_ITA_DATA_SOURCES_DEFINITIONS
 #define INCLUDE_WATCHER_ITA_DATA_SOURCES_DEFINITIONS
 
-#ifdef ITA_DATA_SOURCES_DLL
-	#ifdef ITA_DATA_SOURCES_EXPORT
-		#define ITA_DATA_SOURCES_API __declspec(dllexport)
-	#else
-		#define ITA_DATA_SOURCES_API __declspec(dllimport)
-	#endif
+#if ( defined WIN32 ) && !( defined ITA_DATA_SOURCES_STATIC )
+ #ifdef ITA_DATA_SOURCES_EXPORT
+  #define ITA_DATA_SOURCES_API __declspec( dllexport )
+ #else
+  #define ITA_DATA_SOURCES_API __declspec( dllimport )
+ #endif
 #else
-	#define ITA_DATA_SOURCES_API
+ #define ITA_DATA_SOURCES_API
 #endif
 
 #endif // INCLUDE_WATCHER_ITA_DATA_SOURCES_DEFINITIONS
