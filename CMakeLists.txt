@@ -98,7 +98,7 @@ endif( NOT WIN32)
 
 
 # linker
-add_library( ITADataSources SHARED ${ITADataSourcesHeader} ${ITADataSourcesSources} )
+add_library( ITADataSources ${ITADataSourcesHeader} ${ITADataSourcesSources} )
 target_link_libraries( ITADataSources ${VISTA_USE_PACKAGE_LIBRARIES} )
 
 
