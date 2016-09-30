@@ -90,6 +90,11 @@ if( NOT ITA_CORE_LIBS_BUILD_STATIC )
 	add_definitions( -DITA_DATA_SOURCES_EXPORT )
 else( NOT ITA_CORE_LIBS_BUILD_STATIC )
 	add_definitions( -DITA_BASE_STATIC -DITA_DATA_SOURCES_STATIC )
+	set( BUILD_SHARED_LIBS_TEMP ${BUILD_SHARED_LIBS} )
+	if( BUILD_SHARED_LIBS )
+		set( BUILD_SHARED_LIBS OFF )
+		message( "Ignoring activated BUILD_SHARED_LIBS temporary because static ITA core libs requested" )
+	endif( BUILD_SHARED_LIBS )
 endif( NOT ITA_CORE_LIBS_BUILD_STATIC )
 
 if( NOT WIN32 )
@@ -100,6 +105,8 @@ endif( NOT WIN32)
 # linker
 add_library( ITADataSources ${ITADataSourcesHeader} ${ITADataSourcesSources} )
 target_link_libraries( ITADataSources ${VISTA_USE_PACKAGE_LIBRARIES} )
+
+set( BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP} )
 
 
 # config
