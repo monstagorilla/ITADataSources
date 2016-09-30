@@ -147,7 +147,8 @@ class ITAStreamInfo;
  *
  * \ingroup datasources
  */
-class ITA_DATA_SOURCES_API ITADatasource {
+class ITA_DATA_SOURCES_API ITADatasource
+{
 public:
     //! Destruktor
 	virtual ~ITADatasource();

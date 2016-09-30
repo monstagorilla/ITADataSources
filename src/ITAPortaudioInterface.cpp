@@ -14,7 +14,7 @@ static int PortaudioCallbackFunction( const void*, void*, unsigned long, const P
 class ITAPortaudioSource : public ITADatasourceRealization
 {
 public:
-	ITAPortaudioSource( int iChannels, double dSampleRate, int iBufferSize )
+	inline ITAPortaudioSource( int iChannels, double dSampleRate, int iBufferSize )
 		: ITADatasourceRealization( ( unsigned int ) iChannels, dSampleRate, ( unsigned int ) iBufferSize, 16 ) {};
 };
 

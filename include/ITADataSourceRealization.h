@@ -50,7 +50,8 @@ class ITADatasourceRealizationEventHandler;
  * \ingroup datasources
  */
 
-class ITA_DATA_SOURCES_API ITADatasourceRealization : public ITADatasource {
+class ITA_DATA_SOURCES_API ITADatasourceRealization : public ITADatasource
+{
 public:
 	//! Konstruktor
 	/**
@@ -107,10 +108,10 @@ public:
 
 	// -= Realisierung der abstrakten Methoden von "ITADatasource" =-
 
-	const ITAStreamProperties* GetStreamProperties() const { return &m_oStreamProps; }
-	unsigned int GetBlocklength() const { return m_uiBlocklength; }
-	unsigned int GetNumberOfChannels() const { return m_uiChannels; }
-	double GetSampleRate() const { return m_dSampleRate; }
+	inline const ITAStreamProperties* GetStreamProperties() const { return &m_oStreamProps; }
+	inline unsigned int GetBlocklength() const { return m_uiBlocklength; }
+	inline unsigned int GetNumberOfChannels() const { return m_uiChannels; }
+	inline double GetSampleRate() const { return m_dSampleRate; }
 
     virtual const float* GetBlockPointer(unsigned int uiChannel, const ITAStreamInfo* pStreamInfo);
 	virtual void IncrementBlockPointer();
@@ -140,13 +141,13 @@ public:
 	 * Wird aufgerufen, wenn GetBlockPointer vom Stream aufgerufen wird,
 	 * noch bevor intern Daten verarbeitert werden (also noch vor ProcessStream)
 	 */
-	virtual void PreGetBlockPointer() {};
+	inline virtual void PreGetBlockPointer() {};
 
 	//! Nachrichten-Methode
 	/*
 	 * Wird aufgerufen, nachdem IncrementBlockPointer vom Stream aufgerufen wurde.
 	 */
-	virtual void PostIncrementBlockPointer() {};
+	inline virtual void PostIncrementBlockPointer() {};
 
 	//! Verarbeitungsmethode
 	/**
@@ -154,7 +155,7 @@ public:
 	 * produziert werden sollen. Unterklassen sollten diese Methode redefinieren, 
 	 * um die Verarbeitung von Samples zu realisieren.
 	 */
-	virtual void ProcessStream(const ITAStreamInfo* ) {};
+	inline virtual void ProcessStream(const ITAStreamInfo* ) {};
 
 protected:
 	
@@ -190,9 +191,10 @@ private:
 };
 
 //! Schnittstelle für Nachrichten-Verarbeitung der Klasse ITADatasourceRealization
-class ITA_DATA_SOURCES_API ITADatasourceRealizationEventHandler {
+class ITA_DATA_SOURCES_API ITADatasourceRealizationEventHandler
+{
 public:
-	virtual ~ITADatasourceRealizationEventHandler() {};
+	inline virtual ~ITADatasourceRealizationEventHandler() {};
 
 	virtual void HandlePreGetBlockPointer(ITADatasourceRealization* pSender, unsigned int uiChannel);
 	virtual void HandlePostIncrementBlockPointer(ITADatasourceRealization* pSender);
