@@ -11,6 +11,10 @@ vista_use_package( ITABase REQUIRED FIND_DEPENDENCIES )
 vista_use_package( ASIO QUIET )
 vista_use_package( Portaudio QUIET )
 
+if( NOT DEFINED ITA_VISTA_BUILD_STATIC )
+	set( ITA_VISTA_BUILD_STATIC OFF CACHE BOOL "Build against static ViSTA libraries" )
+endif( NOT DEFINED ITA_VISTA_BUILD_STATIC )
+
 if( NOT DEFINED ITA_CORE_LIBS_BUILD_STATIC )
 	set( ITA_CORE_LIBS_BUILD_STATIC OFF CACHE BOOL "Build all ITA core libs in static mode" )
 endif( NOT DEFINED ITA_CORE_LIBS_BUILD_STATIC )
@@ -86,6 +90,10 @@ endif( VPORTAUDIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
 
 
 # compiler settings
+if( ITA_VISTA_BUILD_STATIC )
+	add_definitions( -DVISTABASE_STATIC -DVISTAMATH_STATIC -DVISTAASPECTS_STATIC -DVISTATOOLS_STATIC -DVISTAINTERPROCCOMM_STATIC )
+endif( ITA_VISTA_BUILD_STATIC )
+
 if( NOT ITA_CORE_LIBS_BUILD_STATIC )
 	add_definitions( -DITA_DATA_SOURCES_EXPORT )
 else( NOT ITA_CORE_LIBS_BUILD_STATIC )
@@ -96,6 +104,7 @@ else( NOT ITA_CORE_LIBS_BUILD_STATIC )
 		message( "Ignoring activated BUILD_SHARED_LIBS temporary because static ITA core libs requested" )
 	endif( BUILD_SHARED_LIBS )
 endif( NOT ITA_CORE_LIBS_BUILD_STATIC )
+
 
 if( NOT WIN32 )
 	add_definitions( -std=c++11 )
