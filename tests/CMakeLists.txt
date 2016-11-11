@@ -123,3 +123,4 @@ set_property( TARGET StreamProbeTest PROPERTY FOLDER "ITATests/ITADataSources" )
 
 # Portaudio tests
 add_subdirectory( "ITAPortaudioTests" )
+add_subdirectory( "VistaNetTest" )

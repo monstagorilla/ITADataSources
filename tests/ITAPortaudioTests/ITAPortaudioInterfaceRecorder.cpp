@@ -14,7 +14,7 @@ void record() {
 	ITAPortaudioInterface ITAPA(dSampleRate, iBlockSize);
 
 	int iInputDevice = ITAPA.GetDefaultInputDevice();
-	iInputDevice = 4;
+	//iInputDevice = 4;
 	
 	ITAPortaudioInterface::ITA_PA_ERRORCODE err;
 	err = ITAPA.Initialize(iInputDevice);
