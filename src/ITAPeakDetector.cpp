@@ -1,15 +1,16 @@
 #include "ITAPeakDetector.h"
 
-#include <cmath>
 #include <ITAException.h>
 #include <ITANumericUtils.h>
 
-ITAPeakDetector::ITAPeakDetector(ITADatasource* pDatasource)
+#include <cmath>
+
+ITAPeakDetector::ITAPeakDetector( ITADatasource* pDataSource )
+	: m_pDataSource( pDataSource )
 {
-	m_pDatasource = pDatasource;
-	m_dSamplerate = pDatasource->GetSampleRate();
-	m_uiChannels = pDatasource->GetNumberOfChannels();
-	m_uiBlocklength = pDatasource->GetBlocklength();
+	m_dSamplerate = pDataSource->GetSampleRate();
+	m_uiChannels = pDataSource->GetNumberOfChannels();
+	m_uiBlocklength = pDataSource->GetBlocklength();
 	m_pfPeaks = 0;
 
 	// Unspezifizierte Parameter werden nicht erlaubt!
@@ -132,7 +133,7 @@ void ITAPeakDetector::GetPeaksDecibel(std::vector<double>& vdDestDecibel, bool b
 
 const float* ITAPeakDetector::GetBlockPointer(unsigned int uiChannel, const ITAStreamInfo* pStreamInfo) {
 	// Datenzeiger seinerseits bei der angeschlossenen Datenquelle abrufen
-	const float* pfData = m_pDatasource->GetBlockPointer(uiChannel, pStreamInfo);
+	const float* pfData = m_pDataSource->GetBlockPointer(uiChannel, pStreamInfo);
 
 	if (pfData) {
 		// TODO: Ist es wirklich nötig bei jedem GBP die CS zu betreten? :-(
@@ -159,5 +160,5 @@ const float* ITAPeakDetector::GetBlockPointer(unsigned int uiChannel, const ITAS
 
 void ITAPeakDetector::IncrementBlockPointer() {
 	// Blockzeiger der angeschlossenen Datenquelle inkrementieren
-	m_pDatasource->IncrementBlockPointer();
+	m_pDataSource->IncrementBlockPointer();
 }

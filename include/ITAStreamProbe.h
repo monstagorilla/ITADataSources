@@ -22,62 +22,68 @@
 #include <ITADataSourcesDefinitions.h>
 #include <ITADataSource.h>
 
+#include <ITASampleFrame.h>
 #include <ITAAtomicPrimitives.h>
 #include <ITAAudiofileCommon.h>
+
 #include <string>
 #include <vector>
 
 // Vorwärtedeklarationen
 class ITAAudiofileWriter;
 
-//! Eine "Messspitze mit Lautsprecher" für Audiostreams
+//! A measuring sensor for audio streams
 /**
- * Instanzen der Klasse ITAStreamProbe können als "Messspitze" in Audiostreams
- * eingehängt werden. Sie schreiben dann alle vorbeigeflossenen Daten in eine Audiodatei.
- */
+  * Instanzen der Klasse ITAStreamProbe können als "Messspitze" in Audiostreams
+  * eingehängt werden. Sie schreiben dann alle vorbeigeflossenen Daten in eine Audiodatei.
+  */
 class ITA_DATA_SOURCES_API ITAStreamProbe : public ITADatasource
 {
 public:
-	//! Konstruktor
-	/**
-	 * \param pDatasource Datenquelle
-	 *
-	 * \note Es darf kein Nullzeiger übergeben werden.
-	 */
 	ITAStreamProbe( ITADatasource* pDatasource, const std::string& sFilename, ITAQuantization iQuantization = ITAQuantization::ITA_FLOAT );
 
-	//! Destruktor
 	virtual ~ITAStreamProbe();
 
-	//! Datenquelle zurückgeben
-	ITADatasource* GetDatasource() const { return m_pDatasource; }
+	inline ITADatasource* GetDatasource() const 
+	{ 
+		return m_pDataSource;
+	}
 
-	//! Dateiname zurückgeben
-	std::string GetFilename() const { return m_sFilename; }
+	inline std::string GetFilename() const
+	{
+		return GetFilePath();
+	};
 
-	//! Anzahl der aufgenommenen Samples zurückgeben
-	unsigned int GetNumRecordedSamples() const { return m_iRecordedSamples; }
+	inline std::string GetFilePath() const
+	{ 
+		return m_sFilePath;
+	};
 
-	// -= Überladene Methoden von ITADatasource =-
-
+	inline unsigned int GetNumRecordedSamples() const 
+	{ 
+		return m_iRecordedSamples;
+	}
+	
 	unsigned int GetBlocklength() const;
 	unsigned int GetNumberOfChannels() const;
 	double GetSampleRate() const;
 
-	virtual const float* GetBlockPointer(unsigned int uiChannel, const ITAStreamInfo* pStreamInfo);	
+	virtual const float* GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pStreamInfo );
 	virtual void IncrementBlockPointer();
 
 protected:
-	ITADatasource* m_pDatasource;		//!< Angeschlossene Datenquelle
-	std::string m_sFilename;			//!< Dateiname
-	double m_dSamplerate;				//!< Abtastrate [Hz]
-	unsigned int m_uiChannels;			//!< Anzahl Kanäle
-	unsigned int m_uiBlocklength;		//!< Streaming Puffergröße [Samples]
-	ITAAtomicInt m_iRecordedSamples;	//!< Anzahl aufgenommene Samples
+	ITADatasource* m_pDataSource;		//!< Incoming data source
+
+	double m_dSampleRate;				//!< Sampling rate [Hz]
+	int m_iChannels;					//!< Number of channels
+	int m_iBlockLength;					//!< Streaming buffer size [Samples]
+
+	ITAAtomicInt m_iRecordedSamples;	//!< Number of recorded samples
+	ITASampleFrame m_sfBuffer;
+	std::vector< bool > m_vbDataPresent;
+	
+	std::string m_sFilePath;			//!< File path
 	ITAAudiofileWriter* m_pWriter;
-	float* m_pfBuffer;
-	std::vector<float*> m_vpfAlias;
-	bool* m_pbDataPresent;
 
 };
 

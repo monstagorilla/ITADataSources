@@ -57,7 +57,7 @@ public:
 	virtual ~ITAPeakDetector();
 
 	//! Datenquelle zurückgeben
-	ITADatasource* GetDatasource() const { return m_pDatasource; }
+	ITADatasource* GetDatasource() const { return m_pDataSource; }
 
 	//! Messung zurücksetzen
 	void Reset();
@@ -148,7 +148,7 @@ public:
 	virtual void IncrementBlockPointer();
 
 protected:
-	ITADatasource* m_pDatasource;			// Angeschlossene Datenquelle
+	ITADatasource* m_pDataSource;			// Angeschlossene Datenquelle
 	double m_dSamplerate;					// Abtastrate [Hz]
 	unsigned int m_uiChannels;				// Anzahl Kanäle
 	unsigned int m_uiBlocklength;			// Streaming Puffergröße [Samples]
