@@ -36,7 +36,7 @@ set_property( TARGET ITAPortaudioInterfaceTest PROPERTY FOLDER "ITATests/ITAData
 add_executable( ITAPortaudioMeasurementTest ITAPortaudioMeasurementTest.cpp )
 target_link_libraries( ITAPortaudioMeasurementTest ${VISTA_USE_PACKAGE_LIBRARIES} )
 
-vista_set_target_msvc_arguments( ITAPortaudioMeasurementTest "ITAPortaudioMeasurement_ExcitationSignal.wav ITAPortaudioMeasurement_Record.wav 44100 512" )
+vista_set_target_msvc_arguments( ITAPortaudioMeasurementTest "${CMAKE_CURRENT_SOURCE_DIR}/ITAPortaudioInterfaceMeasurement_ExcitationSignal.wav ${CMAKE_CURRENT_SOURCE_DIR}/ITAPortaudioInterfaceMeasurement_Record.wav 44100 512" )
 
 vista_configure_app( ITAPortaudioMeasurementTest )
 vista_install( ITAPortaudioMeasurementTest )
