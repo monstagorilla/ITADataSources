@@ -31,3 +31,15 @@ vista_install( ITAPortaudioInterfaceTest )
 vista_create_default_info_file( ITAPortaudioInterfaceTest )
 
 set_property( TARGET ITAPortaudioInterfaceTest PROPERTY FOLDER "ITATests/ITADataSources" )
+
+
+add_executable( ITAPortaudioMeasurementTest ITAPortaudioMeasurementTest.cpp )
+target_link_libraries( ITAPortaudioMeasurementTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+
+vista_set_target_msvc_arguments( ITAPortaudioMeasurementTest "ITAPortaudioMeasurement_ExcitationSignal.wav ITAPortaudioMeasurement_Record.wav 44100 512" )
+
+vista_configure_app( ITAPortaudioMeasurementTest )
+vista_install( ITAPortaudioMeasurementTest )
+vista_create_default_info_file( ITAPortaudioMeasurementTest )
+
+set_property( TARGET ITAPortaudioMeasurementTest PROPERTY FOLDER "ITATests/ITADataSources" )

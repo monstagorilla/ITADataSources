@@ -64,8 +64,6 @@ const float* ITAStreamProbe::GetBlockPointer( unsigned int uiChannel, const ITAS
 		m_sfBuffer[ uiChannel ].write( pfData, GetBlocklength() );
 		m_vbDataPresent[ uiChannel ] = true;
 	}
-	else
-		assert( false );
 
 	return pfData;
 }
