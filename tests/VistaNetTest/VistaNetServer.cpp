@@ -9,6 +9,9 @@
 #include <VistaInterProcComm/IPNet/VistaIPAddress.h>
 
 #include <ITAStringUtils.h>
+#include <ITASampleFrame.h>
+#include <ITAAudiofileWriter.h>
+
 
 int main(int argc, char** argv) {
 
@@ -48,9 +51,43 @@ int main(int argc, char** argv) {
 
 		VistaConnectionIP oConnection( VistaConnectionIP::CT_TCP, sRemoteAddress, iRequestedResultChannelPort);
 
-		bool bAck = oConnection.GetIsConnected();
-		oConnection.Send(&bAck, sizeof( bool ) );
-		oConnection.WaitForSendFinish( 0 );
+		// Bool senden
+		//bool bAck = oConnection.GetIsConnected();
+		//oConnection.Send(&bAck, sizeof( bool ) );
+
+		// Bool Array Senden
+		//bool bArr[5] = { 1, 0, 1, 0 };
+		//oConnection.Send(&bArr, sizeof(bArr));
+
+		// int array senden
+		//int iArr[6] = { 12, 2, 34, -5, 111 };
+
+		//oConnection.Send(&iArr, sizeof(iArr));
+
+
+		//einlesen waveDatei
+		ITASampleFrame oMusik;
+		oMusik.Load("music.wav");
+		int iLength = oMusik.GetLength();
+		int iChannels = oMusik.channels();
+		int iFrequency = 44100;
+		writeAudiofile("sendMusik.wav", &oMusik, 44100, ITAQuantization::ITA_INT16);
+
+		//senden der infos vor übertragung
+		int iDetails[3] = { iLength, iChannels, iFrequency};
+		oConnection.Send(&iDetails, sizeof(iDetails));
+		oConnection.WaitForSendFinish(0);
+
+		//senden des Objektes
+		std::cout << iLength*sizeof(float) << std::endl;
+		oConnection.Send(oMusik[0].data(), iLength * sizeof(float));
+		oConnection.WaitForSendFinish(0);
+
+		
+
+		//oConnection.Send(&oFrame, sizeof(oFrame));
+		//std::cout << sizeof(oFrame) << std::endl;
+		
 
 		std::cout << "Result channel connection successfully established" << std::endl;
 
