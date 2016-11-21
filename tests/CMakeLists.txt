@@ -28,7 +28,7 @@ vista_configure_app( BufferDataSourceTest )
 vista_install( BufferDataSourceTest )
 vista_create_default_info_file( BufferDataSourceTest )
 
-set_property( TARGET BufferDataSourceTest PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET BufferDataSourceTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( FileDataSourceTest FileDataSourceTest.cpp )
@@ -38,7 +38,7 @@ vista_configure_app( FileDataSourceTest )
 vista_install( FileDataSourceTest )
 vista_create_default_info_file( FileDataSourceTest )
 
-set_property( TARGET FileDataSourceTest PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET FileDataSourceTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( DatasourceUtilsTest DatasourceUtilsTest.cpp )
@@ -48,7 +48,7 @@ vista_configure_app( DatasourceUtilsTest )
 vista_install( DatasourceUtilsTest )
 vista_create_default_info_file( DatasourceUtilsTest )
 
-set_property( TARGET DatasourceUtilsTest PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET DatasourceUtilsTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 # add_executable( FilterTest FilterTest.cpp )
@@ -58,7 +58,7 @@ set_property( TARGET DatasourceUtilsTest PROPERTY FOLDER "ITATests/ITADataSource
 # vista_install( FilterTest )
 # vista_create_default_info_file( FilterTest )
 
-# set_property( TARGET FilterTest PROPERTY FOLDER "ITATests/ITADataSources" )
+# set_property( TARGET FilterTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 # add_executable( Patchbay1Test Patchbay1Test.cpp )
@@ -68,7 +68,7 @@ set_property( TARGET DatasourceUtilsTest PROPERTY FOLDER "ITATests/ITADataSource
 # vista_install( Patchbay1Test )
 # vista_create_default_info_file( Patchbay1Test )
 
-# set_property( TARGET Patchbay1Test PROPERTY FOLDER "ITATests/ITADataSources" )
+# set_property( TARGET Patchbay1Test PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( PeakDetectorTest PeakDetectorTest.cpp )
@@ -78,7 +78,7 @@ vista_configure_app( PeakDetectorTest )
 vista_install( PeakDetectorTest )
 vista_create_default_info_file( PeakDetectorTest )
 
-set_property( TARGET PeakDetectorTest PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET PeakDetectorTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( StreamFunctionGeneratorTest StreamFunctionGeneratorTest.cpp )
@@ -88,7 +88,7 @@ vista_configure_app( StreamFunctionGeneratorTest )
 vista_install( StreamFunctionGeneratorTest )
 vista_create_default_info_file( StreamFunctionGeneratorTest )
 
-set_property( TARGET StreamFunctionGeneratorTest PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET StreamFunctionGeneratorTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( StreamPatchbayTest StreamPatchbayTest.cpp )
@@ -98,7 +98,7 @@ vista_configure_app( StreamPatchbayTest )
 vista_install( StreamPatchbayTest )
 vista_create_default_info_file( StreamPatchbayTest )
 
-set_property( TARGET StreamPatchbayTest PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET StreamPatchbayTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( StreamProbeTest StreamProbeTest.cpp )
@@ -108,7 +108,7 @@ vista_configure_app( StreamProbeTest )
 vista_install( StreamProbeTest )
 vista_create_default_info_file( StreamProbeTest )
 
-set_property( TARGET StreamProbeTest PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET StreamProbeTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 # add_executable( YJunctionTest YJunctionTest.cpp )
@@ -118,7 +118,7 @@ set_property( TARGET StreamProbeTest PROPERTY FOLDER "ITATests/ITADataSources" )
 # vista_install( YJunctionTest )
 # vista_create_default_info_file( YJunctionTest )
 
-# set_property( TARGET YJunctionTest PROPERTY FOLDER "ITATests/ITADataSources" )
+# set_property( TARGET YJunctionTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 # Portaudio tests
