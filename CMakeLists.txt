@@ -72,6 +72,8 @@ set( ITADataSourcesSources
 	"src/ITAStreamYJunction.cpp"
 	)
 
+list( APPEND ITADataSourcesSources "src/ITADataSourceUtils.cpp" )
+
 # Filter windows-only components
 if( WIN32 )
 	list( APPEND ITADataSourcesHeader "include/ITAStreamPump.h" "include/ITADataSourceUtils.h" )

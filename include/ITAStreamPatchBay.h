@@ -259,7 +259,7 @@ private:
 		std::vector< const float* > vpfInputData;	//!< Pointers to the next stream blocks
 
 		InputDesc( const int iChannels, const int iBlockLength )
-		: vpfInputData( iChannels, NULL )
+		: vpfInputData( iChannels, nullptr )
 		{
 			this->iChannels = iChannels;
 			fCurrentGain = 1.0F, fNewGain = 1.0F;
