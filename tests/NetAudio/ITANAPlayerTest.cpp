@@ -25,12 +25,9 @@ public:
 		: m_iBufferSize( iBufferSize )
 		, m_dSampleRate( dSamplingRate )
 		, m_iNumChannels( iChannels )
-		//, m_iReadPointer( 0 )
 		, m_sfOutBuffer( iChannels, iBufferSize, true )
 		, m_pConnection( NULL )
 	{
-		m_sfNetBuffer.Load( "Bauer.wav" );
-
 		m_pConnection = new VistaConnectionIP( VistaConnectionIP::CT_TCP, g_sServerName, g_iServerPort );
 		if( m_pConnection->GetIsConnected() )
 		{
@@ -82,8 +79,6 @@ public:
 
 	void IncrementBlockPointer()
 	{
-		//m_iReadPointer += m_iBufferSize;
-		//m_iReadPointer = m_iReadPointer % m_sfNetBuffer.GetLength();
 		//cout << "Block pointer increment" << endl;
 	};
 
@@ -92,9 +87,7 @@ private:
 	 int m_iBufferSize;
 	 int m_iNumChannels;
 	 double m_dSampleRate;
-	 ITASampleFrame m_sfNetBuffer;
 	 ITASampleFrame m_sfOutBuffer;
-	 //int m_iReadPointer;
 	 VistaConnectionIP* m_pConnection;
 };
 
