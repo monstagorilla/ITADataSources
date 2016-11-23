@@ -6,55 +6,120 @@
 #include <VistaInterProcComm/IPNet/VistaTCPSocket.h>
 #include <VistaInterProcComm/IPNet/VistaIPAddress.h>
 
-#include <ITAStringUtils.h>
-#include <ITAStopwatch.h>
-#include <ITAStringUtils.h>
+#include <ITAPortaudioInterface.h>
+#include <ITADataSource.h>
+#include <ITASampleFrame.h>
+#include <ITAStreamMultiplier1N.h>
 
-int main(int argc, char** argv)
+using namespace std;
+
+static string g_sServerName = "localhost";
+static int g_iServerPort = 12480;
+static double g_dSampleRate = 44.1e3;
+static int g_iBufferSize = 256;
+
+class CITANAStream : public ITADatasource
 {
-	std::string sServerName ="localhost";
-	int iServerPort = 12343;
-
-	std::cout << "Attempting to connect to ITANA server at '" << sServerName << ":" << iServerPort << "'" << std::endl;
-
-	VistaConnectionIP oCommandChannelConnection( VistaConnectionIP::CT_TCP, sServerName, iServerPort);
-
-	if( oCommandChannelConnection.GetIsConnected() == false )
+public:
+	inline CITANAStream( int iChannels, double dSamplingRate, int iBufferSize )
+		: m_iBufferSize( iBufferSize )
+		, m_dSampleRate( dSamplingRate )
+		, m_iNumChannels( iChannels )
+		//, m_iReadPointer( 0 )
+		, m_sfOutBuffer( iChannels, iBufferSize, true )
+		, m_pConnection( NULL )
 	{
-		std::cerr << "Connection error, exiting." << std::endl;
-		return 255;
-	}
+		m_sfNetBuffer.Load( "Bauer.wav" );
 
-	std::string sLocalAddress;
-	oCommandChannelConnection.GetLocalAddress().GetIPAddress().GetAddressString( sLocalAddress );
+		m_pConnection = new VistaConnectionIP( VistaConnectionIP::CT_TCP, g_sServerName, g_iServerPort );
+		if( m_pConnection->GetIsConnected() )
+		{
+			cout << "Connection established" << endl;
+		}
+	};
+
+	inline ~CITANAStream()
+	{
+		delete m_pConnection;
+	};
+
+	inline unsigned int GetBlocklength() const
+	{
+		return m_iBufferSize;
+	};
 	
-	int iBackChannelPort = 12481;
-	VistaTCPServer oServer( sLocalAddress, iBackChannelPort, 1 );
-
-	if( oServer.GetIsValid() == false)
+	inline unsigned int GetNumberOfChannels() const
 	{
-		std::cerr << "Could not start server" << std::endl;
-		return 255;
-	}
-	else
-	{
-		std::cout << "Duplex connection opened, data communication channel port: " << iBackChannelPort << std::endl;
-	}
-
-	// Transmit port on command channel
-	oCommandChannelConnection.WriteRawBuffer( &iBackChannelPort, 8 );
+		return m_iNumChannels;
+	};
 	
-	VistaTCPSocket* pSocket = oServer.GetNextClient();
-	unsigned long l = pSocket->WaitForIncomingData( 0 );
-
-	if( l == sizeof( VistaType::byte ) )
+	inline double GetSampleRate() const
 	{
-		bool bAck;
-		pSocket->ReceiveRaw( &bAck, l );
-		std::cout << "Client received acknowledge flag '" << bAck << "'" << std::endl;
-	}
+		return m_dSampleRate;
+	};
 
-	oCommandChannelConnection.Close( false );
-	
+	inline const float* GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* )
+	{
+		// get buffer from net audio stream
+		if( m_pConnection->GetIsConnected() )
+		{
+			m_pConnection->Send( &uiChannel, sizeof( int ) );
+			m_pConnection->Send( &m_iBufferSize, sizeof( int ) );
+
+			void* pDestination = ( void* ) m_sfOutBuffer[ uiChannel ].data();
+			int iReceiveBufferLength = sizeof( float ) * m_iBufferSize;
+			int l = m_pConnection->Receive( pDestination, iReceiveBufferLength );
+			assert( l == iReceiveBufferLength );
+			//cout << "Data received: " << l << endl;
+		}
+		else
+		{
+			m_sfOutBuffer.zero();
+		}
+		
+		return m_sfOutBuffer[ uiChannel].GetData();
+	};
+
+	void IncrementBlockPointer()
+	{
+		//m_iReadPointer += m_iBufferSize;
+		//m_iReadPointer = m_iReadPointer % m_sfNetBuffer.GetLength();
+		//cout << "Block pointer increment" << endl;
+	};
+
+
+private:
+	 int m_iBufferSize;
+	 int m_iNumChannels;
+	 double m_dSampleRate;
+	 ITASampleFrame m_sfNetBuffer;
+	 ITASampleFrame m_sfOutBuffer;
+	 //int m_iReadPointer;
+	 VistaConnectionIP* m_pConnection;
+};
+
+int main(int , char** )
+{
+	CITANAStream* pNetAudioStream = new CITANAStream( 1, g_dSampleRate, g_iBufferSize );
+	ITAStreamMultiplier1N oMultiplier( pNetAudioStream, 2 );
+
+	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBufferSize );
+	ITAPA.Initialize();
+	ITAPA.SetPlaybackDatasource( &oMultiplier );
+	ITAPA.Open();
+	ITAPA.Start(); 
+
+	// Playback
+	float seconds = 10.0f;
+	cout << "Playback started, waiting " << seconds << " seconds" << endl;
+	ITAPA.Sleep( seconds ); // blocking
+	cout << "Done." << endl;
+
+	ITAPA.Stop();
+	ITAPA.Close();
+	ITAPA.Finalize();
+
+	delete pNetAudioStream;
+
 	return 0;
 }

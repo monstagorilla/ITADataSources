@@ -24,7 +24,8 @@ public:
 		Run();
 	}
 
-	~CServer() {
+	~CServer()
+	{
 		delete m_pServer;
 	}
 

@@ -523,12 +523,16 @@ static int PortaudioCallbackFunction( const void* pInBuffer, void* pOutBuffer, u
 	{
 		int iNumOutputChannels = pipdsPlaybackDatasource->GetNumberOfChannels();
 		const float* pOutDataBlock;
+		std::vector< const float* > vpBlockPointer( iNumOutputChannels );
+		for( int j = 0; j < iNumOutputChannels; j++ )
+			vpBlockPointer[ j ] = pipdsPlaybackDatasource->GetBlockPointer( j, &oStreamInfo );
+
 		for( unsigned int i = 0; i < ulBuffersize; i++ )
 		{
 			for( int j = 0; j < iNumOutputChannels; j++ )
 			{
 				int index = i*iNumOutputChannels + j;
-				pOutDataBlock = pipdsPlaybackDatasource->GetBlockPointer( j, &oStreamInfo );
+				pOutDataBlock = vpBlockPointer[ j ];
 				float fValue = pOutDataBlock ? pOutDataBlock[ i ] : 0.0f;
 				out[ index ] = fValue;
 			}

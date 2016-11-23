@@ -8,50 +8,108 @@
 //#include <VistaBase/VistaTimeUtils.h>
 #include <VistaInterProcComm/IPNet/VistaIPAddress.h>
 
-#include <ITAStringUtils.h>
+#include <ITASampleFrame.h>
 
-int main( int argc, char** argv )
+#include <cassert>
+
+
+using namespace std;
+
+static string g_sServerName = "localhost";
+static int g_iServerPort = 12480;
+
+//! NetAudio buffer server
+class CITANAServer : public VistaThreadLoop
 {
-	std::string sServerName = "localhost";
-	int iServerPort = 12343;
-
-	std::cout << "Setting up ITANA server command channel on '" << sServerName << ":" << iServerPort << "'" << std::endl;
-	VistaTCPServer oNAServer( sServerName, iServerPort, 1 );
-
-	std::cout << "Waiting for connection" << std::endl;
-	VistaTCPSocket* pSocket = oNAServer.GetNextClient();
-
-	if( oNAServer.GetIsValid() == false )
+public:
+	CITANAServer()
 	{
-		std::cerr << "Could not start server" << std::endl;
-		return 255;
+		m_pServer = new VistaTCPServer( g_sServerName, g_iServerPort, 1 );
+		cout << "ITANA server running, waiting for connection" << endl;
+
+		m_sfBuffer.Load( "Bauer.wav" );
+		m_iReadPointer = 0;
+
+		m_pSocket = m_pServer->GetNextClient();
+
+		Run();
 	}
 
-	std::cout << "Waiting for result channel port" << std::endl;
-	unsigned long l = pSocket->WaitForIncomingData( 0 );
-
-	if( l == 8 )
+	~CITANAServer()
 	{
-		unsigned long iRequestedResultChannelPort;
-		pSocket->ReceiveRaw( &iRequestedResultChannelPort, 8 );
-
-		std::string sRemoteAddress;
-		VistaSocketAddress sAddr;
-		pSocket->GetPeerSockName( sAddr );
-		sAddr.GetIPAddress().GetAddressString( sRemoteAddress );
-
-		VistaConnectionIP oConnection( VistaConnectionIP::CT_TCP, sRemoteAddress, iRequestedResultChannelPort );
-
-		bool bAck = oConnection.GetIsConnected();
-		oConnection.Send( &bAck, sizeof( bool ) );
-		oConnection.WaitForSendFinish( 0 );
-
-		std::cout << "Result channel connection successfully established" << std::endl;
-
-		oConnection.Close( false );
+		delete m_pServer;
 	}
 
-	pSocket->CloseSocket();
+	bool LoopBody()
+	{
+		if( m_pSocket->GetIsConnected() == false )
+		{
+			cout << "Connection closed. Stopping loop." << endl;
+			StopGently( true );
+
+			return false;
+		}
+
+		size_t nGetReceiveBufferSize = m_pSocket->GetReceiveBufferSize();
+
+		cout << "Waiting for new incoming data" << endl;
+		long nIncomingBytes = m_pSocket->WaitForIncomingData( 0 );
+		cout << "Server incoming bytes: " << nIncomingBytes << " bytes" << endl;
+
+		if( nGetReceiveBufferSize == nIncomingBytes )
+			cout << "Warning: payload as long as receiver buffer size ... problem will occur!" << endl;
+
+		if( nIncomingBytes == 0 )
+		{
+			cout << "Connection closed. Stopping loop." << endl;
+			StopGently( true );
+
+			return false;
+		}
+
+		assert( sizeof( int ) <= nIncomingBytes );
+		int iChannelIndex;
+		int iBytesReceived = m_pSocket->ReceiveRaw( &iChannelIndex, sizeof( int ) );
+
+		nIncomingBytes = m_pSocket->WaitForIncomingData( 0 );
+		assert( sizeof( int ) <= nIncomingBytes );
+		int iNumSamples;
+		iBytesReceived = m_pSocket->ReceiveRaw( &iNumSamples, sizeof( int ) );
+
+		if( m_sfOutBuffer.channels() <= iChannelIndex || m_sfOutBuffer.length() != iNumSamples )
+			m_sfOutBuffer.init( iChannelIndex + 1, iNumSamples, true );
+		else
+			m_sfOutBuffer.zero();
+
+		cout << "Server sending samples";
+		ITASampleBuffer* pBuf = &m_sfBuffer[ iChannelIndex ];
+		pBuf->cyclic_read( m_sfOutBuffer[ iChannelIndex ].data(), iNumSamples, m_iReadPointer );
+		m_pSocket->SendRaw( m_sfOutBuffer[ iChannelIndex ].data(), iNumSamples * sizeof( float ) );
+		m_pSocket->WaitForSendFinish( 0 );
+		cout << " ... finished" << endl;
+
+		m_iReadPointer += iNumSamples;
+		m_iReadPointer = m_iReadPointer % m_sfBuffer.length();
+
+		return true;
+	}
+
+private:
+	VistaTCPServer* m_pServer;
+	VistaTCPSocket* m_pSocket;
+	ITASampleFrame m_sfBuffer;
+	ITASampleFrame m_sfOutBuffer;
+	int m_iReadPointer;
+};
+
+int main( int , char**  )
+{
+	CITANAServer oITANAServer;
+	
+	cout << "Press any key to quit" << endl;
+
+	int iIn;
+	cin >> iIn;
 
 	return 0;
 }
