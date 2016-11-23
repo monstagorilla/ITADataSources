@@ -28,4 +28,4 @@ vista_configure_app( ita_whad )
 vista_install( ita_whad )
 vista_create_default_info_file( ita_whad )
 
-set_property( TARGET ita_whad PROPERTY FOLDER "ITAApps/ITADataSources" )
+set_property( TARGET ita_whad PROPERTY FOLDER "ITACoreLibs/Apps/ITADataSources" )

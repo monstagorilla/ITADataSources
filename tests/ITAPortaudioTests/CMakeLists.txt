@@ -20,7 +20,7 @@ vista_configure_app( ITAPortaudioInterfaceRecorder )
 vista_install( ITAPortaudioInterfaceRecorder )
 vista_create_default_info_file( ITAPortaudioInterfaceRecorder )
 
-set_property( TARGET ITAPortaudioInterfaceRecorder PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET ITAPortaudioInterfaceRecorder PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( ITAPortaudioInterfaceTest ITAPortaudioInterfaceTest.cpp )
@@ -30,7 +30,7 @@ vista_configure_app( ITAPortaudioInterfaceTest )
 vista_install( ITAPortaudioInterfaceTest )
 vista_create_default_info_file( ITAPortaudioInterfaceTest )
 
-set_property( TARGET ITAPortaudioInterfaceTest PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET ITAPortaudioInterfaceTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( ITAPortaudioMeasurementTest ITAPortaudioMeasurementTest.cpp )
@@ -42,4 +42,4 @@ vista_configure_app( ITAPortaudioMeasurementTest )
 vista_install( ITAPortaudioMeasurementTest )
 vista_create_default_info_file( ITAPortaudioMeasurementTest )
 
-set_property( TARGET ITAPortaudioMeasurementTest PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET ITAPortaudioMeasurementTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )

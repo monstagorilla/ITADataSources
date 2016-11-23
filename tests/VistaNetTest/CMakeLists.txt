@@ -19,7 +19,7 @@ vista_configure_app( ITAVistaNetTest )
 vista_install( ITAVistaNetTest )
 vista_create_default_info_file( ITAVistaNetTest )
 
-set_property( TARGET ITAVistaNetTest PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET ITAVistaNetTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( ITAVistaNetClient VistaNetClient.cpp )
@@ -31,7 +31,7 @@ vista_configure_app( ITAVistaNetClient )
 vista_install( ITAVistaNetClient )
 vista_create_default_info_file( ITAVistaNetClient )
 
-set_property( TARGET ITAVistaNetClient PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET ITAVistaNetClient PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( ITAVistaNetServer VistaNetServer.cpp )
@@ -43,5 +43,5 @@ vista_configure_app( ITAVistaNetServer )
 vista_install( ITAVistaNetServer )
 vista_create_default_info_file( ITAVistaNetServer )
 
-set_property( TARGET ITAVistaNetServer PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET ITAVistaNetServer PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
