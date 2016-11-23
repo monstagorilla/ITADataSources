@@ -1,11 +1,11 @@
 #include <iostream>
-#include <ITADatasource.h>
-#include <ITAFileDatasource.h>
-#include <ITAFileDatasink.h>
+#include <ITADataSource.h>
+#include <ITAFileDataSource.h>
+#include <ITAFileDataSink.h>
 #include <ITAException.h>
-#include <ITADatasourceUtils.h>
+#include <ITADataSourceUtils.h>
 #include <ITANumericUtils.h>
-#include <ITADatasourceRealization.h>
+#include <ITADataSourceRealization.h>
 
 #include <ITAStreamFunctionGenerator.h>
 

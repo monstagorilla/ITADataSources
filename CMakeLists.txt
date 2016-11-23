@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 2.8 )
+cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
 project( ITADataSources )
 
@@ -127,6 +127,11 @@ endif( NOT WIN32)
 # linker
 add_library( ITADataSources ${ITADataSourcesHeader} ${ITADataSourcesSources} )
 target_link_libraries( ITADataSources ${VISTA_USE_PACKAGE_LIBRARIES} )
+
+#target_compile_features(ITADataSources PRIVATE cxx_range_for)
+
+add_definitions( -std=c++11 )
+
 
 set( BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP} )
 

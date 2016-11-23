@@ -7,7 +7,7 @@
 #include <VistaInterProcComm/IPNet/VistaIPAddress.h>
 
 #include <ITAStringUtils.h>
-#include <ITAStopwatch.h>
+#include <ITAStopWatch.h>
 #include <ITAStringUtils.h>
 
 int main(int argc, char** argv) {

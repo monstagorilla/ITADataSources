@@ -1,4 +1,4 @@
-#include <ITADatasourceUtils.h>
+#include <ITADataSourceUtils.h>
 #include <ITAPortaudioInterface.h>
 #include <ITAStreamProbe.h>
 #include <ITAFileDataSource.h>

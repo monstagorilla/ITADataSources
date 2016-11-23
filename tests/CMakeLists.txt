@@ -122,5 +122,13 @@ set_property( TARGET StreamProbeTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataS
 
 
 # Portaudio tests
-add_subdirectory( "ITAPortaudioTests" )
+if( VPORTAUDIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
+	add_subdirectory( "ITAPortaudioTests" )
+endif( VPORTAUDIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
+
+
+if( VJACK_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_JACK )
+	add_subdirectory( "ITAJACKTests" )
+endif( VJACK_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_JACK )
+
 add_subdirectory( "VistaNetTest" )

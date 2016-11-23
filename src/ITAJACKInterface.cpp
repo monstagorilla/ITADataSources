@@ -6,14 +6,16 @@
 #include <vector>
 #include <math.h>
 #include <signal.h>
+#include <future>
 
 
-#include <ITADatasource.h>
-#include <ITADatasourceRealization.h>
+#include <ITADataSource.h>
+#include <ITADataSourceRealization.h>
 #include <ITAStreamInfo.h>
 
 
 static int ITAJackProcess (jack_nframes_t nframes, void *arg);
+void connectNewPortToInput(jack_port_t * port, ITAJACKInterface::ITAJackUserData* userData);
 
 jack_client_t *ITAJACKInterface::s_jackClient = NULL;
 
@@ -36,7 +38,8 @@ public:
 };
 
 
-ITAJACKInterface::ITAJACKInterface()
+ITAJACKInterface::ITAJACKInterface(int blockSize)
+	:m_iBufferSize(blockSize)
 {
 	m_jackClient = NULL;
 
@@ -104,7 +107,11 @@ ITAJACKInterface::ITA_JACK_ERRORCODE ITAJACKInterface::Initialize(const std::str
 	jack_on_shutdown (m_jackClient, ITAJackShutdown, 0);
 	jack_set_port_connect_callback(m_jackClient, ITAJackPortConnected, &m_oUserData);
 
-	m_iBufferSize = jack_get_buffer_size(m_jackClient);
+	if (m_iBufferSize > 0)
+		jack_set_buffer_size(m_jackClient, m_iBufferSize);
+	else
+		m_iBufferSize = jack_get_buffer_size(m_jackClient);
+
 	m_dSampleRate = jack_get_sample_rate(m_jackClient);
 	
 	// get physical ports
@@ -451,3 +458,129 @@ static int ITAJackProcess (jack_nframes_t nframes, void *arg)
 
 	return 0;
 }
+
+
+
+
+// Callbacks
+
+
+void ITAJackPortRegistered(jack_port_id_t port_id, int reg, void *arg)
+{
+	ITAJACKInterface::ITAJackUserData* userData = (ITAJACKInterface::ITAJackUserData*)arg;	
+	jack_port_t * port = jack_port_by_id (ITAJACKInterface::GetJackClient(), port_id);
+
+	// ignore own ports
+	if(jack_port_is_mine(ITAJACKInterface::GetJackClient(), port)) {
+		return;
+	}
+	
+	// ignore mplayer!
+	if(strstr(jack_port_name (port), "MPlayer") != NULL) {
+		return;
+	}
+
+	int flags = jack_port_flags(port);
+
+	if(flags & JackPortIsOutput) {
+		std::async(std::launch::async, [port, userData] {
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			connectNewPortToInput(port, userData);
+		});
+	}
+
+	/*
+	do_http_callback("port_registered",
+		"port_name=%s", jack_port_name (port),
+		"register=%d", reg,
+		"flags=%d", jack_port_flags(port),
+		NULL
+	);*/
+}
+
+int ITAJackXRUN(void *arg)
+{
+	ITAJACKInterface::ITAJackUserData* userData = (ITAJACKInterface::ITAJackUserData*)arg;
+	userData->num_xruns++;
+	
+	if((userData->num_xruns % 100) == 0)
+	//	fprintf(stderr,"XRUNS: %lu\n",userData->num_xruns);
+	
+    return 0;
+}
+
+
+
+void ITAJackMsg(const char *msg)
+{
+	fprintf(stderr,"%s\n",msg);
+}
+
+void ITAJackShutdown (void *arg)
+{
+	//if(arg != NULL)
+//		delete arg;
+	fprintf(stderr, "ITAJackShutdown: exiting ...\n");
+	exit(0);
+}
+
+
+
+void connectNewPortToInput(jack_port_t * port, ITAJACKInterface::ITAJackUserData* userData)
+{
+	const char *portNameA = jack_port_name(port);
+
+	// get channel number by trailing number (-1 because 0 indexing)
+	int ch = atoi(&portNameA[strlen(portNameA) - 1]) - 1;
+	if (ch >= 0 && ch < JACK_MAX_CHANNELS) {
+		if (userData->input_ports[ch] && !jack_port_connected_to(userData->input_ports[ch], portNameA)) {
+			printf("Connecting port %s -> %s\n", portNameA, jack_port_name(userData->input_ports[ch]));
+			if (jack_connect(ITAJACKInterface::GetJackClient(), portNameA, jack_port_name(userData->input_ports[ch])) != 0) {
+				printf("\t... connection failed!\n");
+			}
+		}
+	}
+
+	// if mono, connect to all ports!
+	if (ch == -1) {
+		for (ch = 0; ch < JACK_MAX_CHANNELS; ch++) {
+			if (userData->input_ports[ch] && !jack_port_connected_to(userData->input_ports[ch], portNameA)) {
+				printf("Connecting port %s -> %s\n", portNameA, jack_port_name(userData->input_ports[ch]));
+				if (jack_connect(ITAJACKInterface::GetJackClient(), portNameA, jack_port_name(userData->input_ports[ch])) != 0)
+					printf("\t... connection failed!\n");
+			}
+		}
+	}
+}
+
+
+
+void ITAJackPortConnected(jack_port_id_t a, jack_port_id_t b, int connect, void* arg)
+{
+	ITAJACKInterface::ITAJackUserData* userData = (ITAJACKInterface::ITAJackUserData*)arg;
+
+	jack_client_t *client = ITAJACKInterface::GetJackClient();
+
+	jack_port_t * portA = jack_port_by_id (client, a);
+	jack_port_t * portB = jack_port_by_id (client, b);
+
+	// ignore if any of the port belongs to the client
+	if(jack_port_is_mine(client, portA) || jack_port_is_mine(client, portB) ) {
+		return;
+	}
+
+	//int flagsA = jack_port_flags(portA);
+	int flagsB = jack_port_flags(portB);
+
+	if(flagsB & JackPortIsPhysical) {
+
+		const char *portNameA = jack_port_name(portA);
+		
+		std::async(std::launch::async, [client, portNameA, portA, portB, userData] {
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			jack_disconnect(client, portNameA, jack_port_name(portB));
+			connectNewPortToInput(portA, userData);
+		});
+	}
+}
+

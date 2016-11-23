@@ -58,7 +58,7 @@ void ITAJackPortRegistered(jack_port_id_t port_id, int reg, void *arg);
 class ITAJACKInterface {
 public:
 	//! ITAPortaudio error code table
-	typedef enum ITA_JACK_ERRORCODE {
+	enum ITA_JACK_ERRORCODE {
 		//! Portaudio/ITAPortaudio no error
 		ITA_JACK_NO_ERROR=0,
 		ITA_JACK_ERROR=1,
@@ -77,35 +77,15 @@ public:
 
 	};
 
-
-	//! Constructor with sample rate and buffer size
-	/**
-	  * Set up internal variables of ITAPortaudio. No exception will be
-	  * thrown here.
-	  * \note Next do initialization
-	  *
-	  * \see #Initialize #Initialize(const int iDriver)
-	  */
-	ITAJACKInterface();
+	ITAJACKInterface(int blockSize = -1);
 
 	//! Destructor
 	~ITAJACKInterface();
 
-	//! Initialize Portaudio using default hardware and default host/driver
-	/**
-	  * Initializes Portaudio with the current driver. If no driver has been set,
-	  * the default output device will be used, while the input device will be
-	  * deactivated (playback mode on, recording mode off).
-	  * 
-	  * \return Will return error code if Portaudio could not be initialized with the current configuration, ITA_JACK_NO_ERROR otherwise
-	  */
-	ITA_JACK_ERRORCODE Initialize();
 
 	//! Initialize JACK
 	ITA_JACK_ERRORCODE Initialize(const std::string& clientName);
 
-	//! Use Portaudio with specific input device
-	ITA_JACK_ERRORCODE SetOutputDevice( int iOutputDevice );
 
 	//! Returns true if playback is enabled, false otherwise
 	bool IsPlaybackEnabled() const;
@@ -153,18 +133,6 @@ public:
 
 	ITA_JACK_ERRORCODE GetDriverSampleRate(int iDeviceID, double& dSampleRate) const;
 
-	//! Returns the name of the current devices in Portaudio
-	std::string GetInputDeviceName() const;
-
-	//! Returns the name of the current devices in Portaudio
-	std::string GetOutputDeviceName() const;
-
-	//! Get default input device index
-	int GetDefaultInputDevice() const;
-
-	//! Get default output device index
-	int GetDefaultOutputDevice() const;
-
 
 	//! Get current input device index
 	int GetInputDevice() const;
@@ -179,7 +147,7 @@ public:
 	/**
 	  * \return Number of input channels (>=0) or #ITA_JACK_ERRORCODE (<0)
 	  */
-	int GetNumInputChannels(int iDeviceID) const;
+	int GetNumInputChannels(int iDeviceID=0) const;
 
 	//! Returns the number of output channels
 	/**
