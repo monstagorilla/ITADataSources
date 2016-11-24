@@ -24,17 +24,9 @@
 #include <string>
 #include <vector>
 #include <queue> 
-#include <jack/jack.h>
-
-
-
-#ifndef JACK_MAX_CHANNELS
-	#define JACK_MAX_CHANNELS 16
-#endif
-
-
-
 #include <functional>
+
+#include <jack/jack.h>
 
 // Forward declaration of ITADatasource
 class ITADatasource;
@@ -77,9 +69,8 @@ public:
 
 	};
 
+	//! If no blockSize given the interface will use blockSize of JACK server
 	ITAJACKInterface(int blockSize = -1);
-
-	//! Destructor
 	~ITAJACKInterface();
 
 
@@ -87,79 +78,39 @@ public:
 	ITA_JACK_ERRORCODE Initialize(const std::string& clientName);
 
 
-	//! Returns true if playback is enabled, false otherwise
-	bool IsPlaybackEnabled() const;
-
-	//! Set playback enabled/disabled
-	void SetPlaybackEnabled( bool bEnabled);
-
-	//! Returns true if record is enabled, false otherwise
-	bool IsRecordEnabled() const;
-
-	//! Set record enabled/disabled
-	void SetRecordEnabled( bool bEnabled);
-
-	//! Finalize Portaudio
+	//! Finalize JACK
 	/**
 	  * This also deletes the record datasource.
 	  */
 	ITA_JACK_ERRORCODE Finalize();
 
-	//! Opens a Portaudio stream
+	//! Opens a JACK client
 	ITA_JACK_ERRORCODE Open();
 
-	//! Closes the Portaudio stream
+	//! Closes the JACK client
 	ITA_JACK_ERRORCODE Close();
 
-	//! Start Portaudio streaming
+	//! Start JACK client
 	ITA_JACK_ERRORCODE Start();
 
-	//! Stop Portaudio streaming
+	//! Stop JACK client
 	ITA_JACK_ERRORCODE Stop();
 
-	//! Returns the number of drivers found by Portaudio
-	int GetNumDevices() const;
+	inline int GetNumInputChannels() const {
+		return m_bInitialized ? m_iNumInputChannels : 0;
+	}
+	inline int GetNumOutputChannels() const {
+		return m_bInitialized ? m_iNumOutputChannels : 0;
+	}
 
-	//! Returns the name of the driver avaiable in Portaudio
-	std::string GetDeviceName( int iDriverID ) const;
+	inline int GetSampleRate() const {
+		return m_dSampleRate;
+	}
 
+	inline int GetBlockSize() const { return m_iBufferSize; }
 
-	//! Returns the interactive low latency capability of the driver
-	/**
-	  * \param iDriverID Identifier of driver
-	  * \return Latency in seconds, -1 if any error with the driver occurs
-	  */
-	float GetDeviceLatency() const;
+	inline int SetBlockSize(int blockSize);
 
-	ITA_JACK_ERRORCODE GetDriverSampleRate(int iDeviceID, double& dSampleRate) const;
-
-
-	//! Get current input device index
-	int GetInputDevice() const;
-
-	//! Get current output device index
-	int GetOutputDevice() const;
-
-	//! Returns the number of input and output channels
-	void GetNumChannels(int iDeviceID, int& iNumInputChannels, int& iNumOutputChannels) const;
-
-	//! Returns the number of input channels
-	/**
-	  * \return Number of input channels (>=0) or #ITA_JACK_ERRORCODE (<0)
-	  */
-	int GetNumInputChannels(int iDeviceID=0) const;
-
-	//! Returns the number of output channels
-	/**
-	  * \return Number of output channels (>=0) or #ITA_JACK_ERRORCODE (<0)
-	  */
-	int GetNumOutputChannels(int iDeviceID) const;
-
-	//! Returns the sample rate
-	double GetSampleRate() const;
-
-	//! Sets the sample rate
-	ITA_JACK_ERRORCODE SetSampleRate(double dSampleRate);
 	
 	//! Set the playback data source
 	/**
@@ -182,41 +133,22 @@ public:
 	
 	inline static jack_client_t *GetJackClient() { return s_jackClient; }
 
-
-
+	void printInfo();
 	
 	struct ITAJackUserData {
 		ITADatasource* pdsPlaybackDatasource; //!< ITADatasource playback datasource
-		ITADatasource* pdsRecordDatasource;   //!< ITADatasource record datasource		
-
-		bool bPlayback;	//!< Playback enabled
-		bool bRecord;   //!< Record enabled
-		jack_port_t *input_ports[JACK_MAX_CHANNELS];
-		jack_port_t *output_ports[JACK_MAX_CHANNELS];
+		ITADatasource* pdsRecordDatasource;   //!< ITADatasource record datasource
+		std::vector<jack_port_t *> input_ports, output_ports;
 		uint64_t num_xruns;
 		uint64_t num_samples;
-		
-	
 
-
-		ITAJackUserData() 
+		ITAJackUserData() : num_xruns(0), num_samples(0), pdsPlaybackDatasource(nullptr), pdsRecordDatasource(nullptr)
 		{
-			pdsPlaybackDatasource = NULL;
-			pdsRecordDatasource = NULL;
-			bPlayback = false;
-			bRecord = false;
-			memset(input_ports, 0, sizeof(input_ports));
-			memset(output_ports, 0, sizeof(output_ports));
-			num_xruns = 0;
-			num_samples = 0;
 		}
 	};
 	
 
-	
-
 private:
-
 	static jack_client_t *s_jackClient;
 	jack_client_t *m_jackClient;
 	
@@ -230,8 +162,6 @@ private:
 	bool m_bOpen;				//!< Portaudio open status
 	bool m_bStreaming;			//!< Portaudio streaming status
 		
-	bool m_bRecord;				//!< Portaudio recording mode
-	bool m_bPlayback;			//!< Portaudio playback mode
 	
 	int m_iNumInputChannels;	//!< Number of input channels
 	int m_iNumOutputChannels;	//!< Number of output channels

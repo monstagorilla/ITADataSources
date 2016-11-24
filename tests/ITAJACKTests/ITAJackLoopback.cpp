@@ -6,11 +6,12 @@
 #include <ITAJACKInterface.h>
 #include <ITADataSourceRealization.h>
 
-#include <ITAFileDatasource.h>
+#include <ITAFileDataSource.h>
 #include <ITAStreamFunctionGenerator.h>
 
-static double dSampleRate = 44.1e3;
-static int iBlockSize = 512;
+#include <ITAException.h>
+
+
 static std::string sOutputFileName = "ITAPA_Record.wav";
 float fRecordingTime = 5; // Seconds
 
@@ -50,46 +51,37 @@ private:
 };
 
 void loopback() {
-	ITAJACKInterface jack(iBlockSize);	
-	jack.SetPlaybackEnabled(true);
-	jack.SetRecordEnabled(true);
+	ITAJACKInterface jack;	
 
-	auto err = jack.Initialize("jack-test");
+	auto err = jack.Initialize("jack-loopback");
 	if (err != ITAJACKInterface::ITA_JACK_NO_ERROR) {
-		std::cerr << "Failed to init jack!" << std::endl;
+		std::cerr << "Failed to init jack:" << jack.GetErrorCodeString(err) << std::endl;
 		return;
 	}
+	
+	jack.printInfo();
 
+	std::cout << "GetRecordDatasource..." << std::endl;
 	auto dsIn = jack.GetRecordDatasource();
-	int blockSize = dsIn->GetBlocklength();
-
-// TODO
-	ITADatasource* pSource = NULL;
-
-	try
-	{
-		pSource = new ITAFileDatasource("../ITAAsioTests/Trompete.wav", blockSize, true);
-	}
-	catch (ITAException& e)
-	{
-		std::cerr << "Could open audio file, error = " << e << std::endl;
-		pSource = new ITAStreamFunctionGenerator(1, dSampleRate, blockSize, ITAStreamFunctionGenerator::SINE, 300, 0.9f, true);
-	}
-
+	int blockSize = jack.GetBlockSize();
 	
 
-	Loopback dsLoop(pSource, jack.GetNumInputChannels(), jack.GetSampleRate(), dsIn->GetBlocklength());
+	std::cout << "creating loopback" << std::endl;
+	Loopback dsLoop(dsIn, jack.GetNumInputChannels(), jack.GetSampleRate(), blockSize);
 	
-	jack.SetPlaybackDatasource(&dsLoop);
 
+	std::cout << "settings playback datasource" << std::endl;
+	jack.SetPlaybackDatasource(dsIn);
+
+	std::cout << "open..." << std::endl;
 	jack.Open();
-	
+	std::cout << "start..." << std::endl;
 	jack.Start();
 	
+	std::cout << "Started. Press any key to quit." << std::endl;
 	getchar();
 
 	jack.Stop();
-
 	jack.Close();
 	jack.Finalize();
 
