@@ -4,8 +4,8 @@
 #include <portaudio.h>
 #include <vector>
 
-#include <ITADatasource.h>
-#include <ITADatasourceRealization.h>
+#include <ITADataSource.h>
+#include <ITADataSourceRealization.h>
 #include <ITAStreamInfo.h>
 
 // Portaudio Callback Function

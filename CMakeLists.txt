@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 2.8 )
+cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
 project( ITADataSources )
 
@@ -10,6 +10,7 @@ include( VistaCommon )
 vista_use_package( ITABase REQUIRED FIND_DEPENDENCIES )
 vista_use_package( ASIO QUIET )
 vista_use_package( Portaudio QUIET )
+vista_use_package( JACK QUIET )
 
 if( NOT DEFINED ITA_VISTA_BUILD_STATIC )
 	set( ITA_VISTA_BUILD_STATIC OFF CACHE BOOL "Build against static ViSTA libraries" )
@@ -26,6 +27,10 @@ endif( NOT DEFINED ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
 if( NOT DEFINED ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
 	set( ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO ${VPORTAUDIO_FOUND} CACHE BOOL "Build with Portaudio support" )
 endif( NOT DEFINED ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
+
+if( NOT DEFINED ITA_DATA_SOURCE_WITH_INTEGRATED_JACK )
+	set( ITA_DATA_SOURCE_WITH_INTEGRATED_JACK ${VJACK_FOUND} CACHE BOOL "Build with JACK2 support" )
+endif( NOT DEFINED ITA_DATA_SOURCE_WITH_INTEGRATED_JACK )
 
 
 # includes
@@ -72,6 +77,8 @@ set( ITADataSourcesSources
 	"src/ITAStreamYJunction.cpp"
 	)
 
+list( APPEND ITADataSourcesSources "src/ITADataSourceUtils.cpp" )
+
 # Filter windows-only components
 if( WIN32 )
 	list( APPEND ITADataSourcesHeader "include/ITAStreamPump.h" "include/ITADataSourceUtils.h" )
@@ -83,10 +90,16 @@ if( VASIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
 	list( APPEND ITADataSourcesSources "src/ITAAsioInterface.cpp" )
 	add_definitions( -DIEEE754_64FLOAT=1 )
 endif( VASIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
+
 if( VPORTAUDIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
 	list( APPEND ITADataSourcesHeader "include/ITAPortaudioInterface.h" )
 	list( APPEND ITADataSourcesSources "src/ITAPortaudioInterface.cpp" )
 endif( VPORTAUDIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
+
+if( VJACK_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_JACK )
+	list( APPEND ITADataSourcesHeader "include/ITAJACKInterface.h" )
+	list( APPEND ITADataSourcesSources "src/ITAJACKInterface.cpp" )
+endif( VJACK_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_JACK )
 
 
 # compiler settings
@@ -114,6 +127,11 @@ endif( NOT WIN32)
 # linker
 add_library( ITADataSources ${ITADataSourcesHeader} ${ITADataSourcesSources} )
 target_link_libraries( ITADataSources ${VISTA_USE_PACKAGE_LIBRARIES} )
+
+#target_compile_features(ITADataSources PRIVATE cxx_range_for)
+
+add_definitions( -std=c++11 )
+
 
 set( BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP} )
 

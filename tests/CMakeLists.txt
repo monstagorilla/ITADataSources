@@ -121,9 +121,14 @@ set_property( TARGET StreamProbeTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataS
 if( ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
 	add_subdirectory( ITAAsioTests )
 endif( ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
+
 if( ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
 	add_subdirectory( "ITAPortaudioTests" )
 endif( ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
+
+if( VJACK_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_JACK )
+	add_subdirectory( "ITAJACKTests" )
+endif( VJACK_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_JACK )
 
 add_subdirectory( "NetAudio" )
 add_subdirectory( "VistaNetTest" )

@@ -11,8 +11,13 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <cstring>
+#include <algorithm>
+
 #ifdef WIN32
 #include <windows.h>
+#else
+#include <unistd.h>
 #endif
 
 void WriteFromDatasourceToBuffer(ITADatasource* pSource,
@@ -30,26 +35,34 @@ void WriteFromDatasourceToBuffer(ITADatasource* pSource,
 	unsigned int uiBlocklength = pSource->GetBlocklength();
 	ITAStreamInfo siState;
 
-	HANDLE hTimer=0;
+	long periodMs = (long)ceil(uiBlocklength / dSamplerate * 1000);
 
+#ifdef _WIN32
+	HANDLE hTimer=0;
 	if (bOnline) {
 		// Timer erzeugen
-		if (FAILED(hTimer = CreateWaitableTimer(NULL, false, NULL))) 
+		if (FAILED(hTimer = CreateWaitableTimer(NULL, false, NULL)))
 			ITA_EXCEPT1(UNKNOWN, "Timer konnte nicht erzeugt werden");
 
 		LARGE_INTEGER liDueTime;
-		liDueTime.QuadPart=0;
-		long ms = (long) ceil(uiBlocklength/dSamplerate*1000);
-		SetWaitableTimer(hTimer, &liDueTime, ms, NULL, NULL, true);
+		liDueTime.QuadPart = 0;
+		SetWaitableTimer(hTimer, &liDueTime, periodMs, NULL, NULL, true);
 	}
+#endif
+
+
 
 	try {
 		unsigned int n=0;
 		float fProgress = 0.0f;
 		while (n < uiNumberOfSamples) 
 		{
+#ifdef _WIN32
 			// Warten
 			if (bOnline) WaitForSingleObject(hTimer, INFINITE);
+#else
+			if (bOnline) usleep(periodMs * 1000);
+#endif
 
 			// Daten von der Quelle holen
 			for (unsigned int i=0; i<uiChannels; i++) {
@@ -87,15 +100,19 @@ void WriteFromDatasourceToBuffer(ITADatasource* pSource,
 			}
 		}
 	} catch (...) {
+#ifdef _WIN32
 		if (bOnline) CloseHandle(hTimer);
+#endif
 		throw;
 	}
 
 	if (bDisplayProgress) 
 		printf("WriteFromDatasourceToBuffer: 100,00%% geschrieben");
 
+#ifdef _WIN32
 	if (bOnline) 
 		CloseHandle(hTimer);
+#endif
 }
 
 void WriteFromDatasourceToFile(ITADatasource* pSource,
@@ -125,6 +142,9 @@ void WriteFromDatasourceToFile(ITADatasource* pSource,
 	ITAAudiofileWriter* writer = ITAAudiofileWriter::create(sFilename, props);
 	ITAStreamInfo siState;
 
+	long periodMs = (long)ceil(uiBlocklength / dSamplerate * 1000);
+
+#ifdef _WIN32
 	HANDLE hTimer=0;
 
 	if (bOnline) {
@@ -136,16 +156,21 @@ void WriteFromDatasourceToFile(ITADatasource* pSource,
 		
 		LARGE_INTEGER liDueTime;
 		liDueTime.QuadPart=0;
-		long ms = (long) ceil(uiBlocklength/dSamplerate*1000);
-		SetWaitableTimer(hTimer, &liDueTime, ms, NULL, NULL, true);
+		
+		SetWaitableTimer(hTimer, &liDueTime, periodMs, NULL, NULL, true);
 	}
+#endif
 
 	try {
 		unsigned int n=0;
 		float fProgress = 0.0;
 		while (n < uiNumberOfSamples) {
+#ifdef _WIN32
 			// Warten
 			if (bOnline) WaitForSingleObject(hTimer, INFINITE);
+#else
+			if (bOnline) usleep(periodMs * 1000);
+#endif
 
 			// Daten von der Quelle holen
 			for (unsigned int i=0; i<uiChannels; i++) {
@@ -168,7 +193,7 @@ void WriteFromDatasourceToFile(ITADatasource* pSource,
 			siState.dTimecode = (double) (siState.nSamples) / dSamplerate;
 
 			// Daten schreiben
-			writer->write(__min(uiBlocklength, (uiNumberOfSamples - n)), vpfData);
+			writer->write((std::min)(uiBlocklength, (uiNumberOfSamples - n)), vpfData);
 
 			n += uiBlocklength;
 
@@ -183,7 +208,9 @@ void WriteFromDatasourceToFile(ITADatasource* pSource,
 			}
 		}
 	} catch (...) {
+#ifdef _WIN32
 		if (bOnline) CloseHandle(hTimer);
+#endif
 		delete writer;
 		throw;
 	}
@@ -191,8 +218,10 @@ void WriteFromDatasourceToFile(ITADatasource* pSource,
 	if (bDisplayProgress) 
 	printf("WriteFromDatasourceToFile: 100,00%% geschrieben\r");
 
+#ifdef _WIN32
 	if (bOnline) 
 		CloseHandle(hTimer);
+#endif
 
 	delete writer;
 }

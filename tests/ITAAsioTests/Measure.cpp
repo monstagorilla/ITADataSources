@@ -20,7 +20,7 @@
 // $Id: Measure.cpp 1801 2011-04-13 14:07:25Z stienen $
 
 #include <ITAsioInterface.h>
-#include <ITADatasourceUtils.h>
+#include <ITADataSourceUtils.h>
 #include <ITAException.h>
 #include <ITAFileDatasource.h>
 #include <stdio.h>
