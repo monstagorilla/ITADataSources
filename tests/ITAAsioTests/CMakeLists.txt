@@ -20,7 +20,7 @@ vista_configure_app( ListDevices )
 vista_install( ListDevices )
 vista_create_default_info_file( ListDevices )
 
-set_property( TARGET ListDevices PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET ListDevices PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( Loopback Loopback.cpp )
@@ -30,7 +30,7 @@ vista_configure_app( Loopback )
 vista_install( Loopback )
 vista_create_default_info_file( Loopback )
 
-set_property( TARGET Loopback PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET Loopback PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( Play Play.cpp )
@@ -40,7 +40,7 @@ vista_configure_app( Play )
 vista_install( Play )
 vista_create_default_info_file( Play )
 
-set_property( TARGET Play PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET Play PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( Record Record.cpp )
@@ -50,7 +50,7 @@ vista_configure_app( Record )
 vista_install( Record )
 vista_create_default_info_file( Record )
 
-set_property( TARGET Record PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET Record PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( ThreadInit ThreadInit.cpp )
@@ -60,5 +60,5 @@ vista_configure_app( ThreadInit )
 vista_install( ThreadInit )
 vista_create_default_info_file( ThreadInit )
 
-set_property( TARGET ThreadInit PROPERTY FOLDER "ITATests/ITADataSources" )
+set_property( TARGET ThreadInit PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 

@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <string>
-#include <ITADatasourceUtils.h>
+#include <ITADataSourceUtils.h>
 #include <ITAPortaudioInterface.h>
 
 static double dSampleRate = 44.1e3;

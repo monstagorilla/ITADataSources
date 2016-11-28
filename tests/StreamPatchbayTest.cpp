@@ -1,9 +1,9 @@
 
-#include <ITAStreamPatchbay.h>
-#include <ITAFileDatasource.h>
-#include <ITAFileDatasink.h>
-#include <ITADatasource.h>
-#include <ITADatasourceUtils.h>
+#include <ITAStreamPatchBay.h>
+#include <ITAFileDataSource.h>
+#include <ITAFileDataSink.h>
+#include <ITADataSource.h>
+#include <ITADataSourceUtils.h>
 #include <ITAException.h>
 #include <iostream>
 

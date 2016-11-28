@@ -1,6 +1,6 @@
 #include <ITAException.h>
 #include <ITAFileDatasource.h>
-#include <ITADatasourceUtils.h>
+#include <ITADataSourceUtils.h>
 #include <ITAStreamFilterType1.h>
 #include <ITAStringUtils.h>
 #include <iostream>
