@@ -20,7 +20,7 @@ vista_configure_app( ITAJackLoopback )
 vista_install( ITAJackLoopback )
 vista_create_default_info_file( ITAJackLoopback )
 
-set_property( TARGET ITAJackLoopback PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
+set_property( TARGET ITAJackLoopback PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/Jack" )
 
 
 
@@ -32,6 +32,6 @@ vista_configure_app( ITAJackPlayback )
 vista_install( ITAJackPlayback )
 vista_create_default_info_file( ITAJackPlayback )
 
-set_property( TARGET ITAJackPlayback PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
+et_property( TARGET ITAJackPlayback PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/Jack" )
 
 
