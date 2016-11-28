@@ -38,12 +38,13 @@ class ITADatasource;
  * welche die Audiodaten in eine Datei schreibt. Der Datentransfer muss
  * selbst initiiert werden.
  */
-class ITA_DATA_SOURCES_API ITABufferDatasink {
+class ITA_DATA_SOURCES_API ITABufferDataSink
+{
 public:
 	//! Konstruktor (Eigene Pufferverwaltung)
 	/**
 	 * Dieser Konstruktor erzeugt eine Puffer-Datensenke. Die Puffer zum Speichern
-	 * der Audiodaten werden bei diesem Konstruktor selbst erzeugt und von der 
+	 * der Audiodaten werden bei diesem Konstruktor selbst erzeugt und von der
 	 * Datenquelle verwaltet. Mit dem Aufruf des Destruktors werden die Puffer
 	 * freigeben. Die Pufferzeiger können mit der Methode GetBuffers() abgerufen werden.
 	 *
@@ -52,8 +53,7 @@ public:
 	 *
 	 * \note Bei Fehlern werden ITAExceptions aufgelöst.
 	 */
-	ITABufferDatasink(ITADatasource* pdsSource,
-		              unsigned int uiBuffersize);	
+	ITABufferDataSink( ITADatasource* pdsSource, int uiBuffersize );
 
 	//! Konstruktor (Fremdverwaltete Puffer)
 	/**
@@ -66,24 +66,22 @@ public:
 	 *
 	 * \note Bei Fehlern werden ITAExceptions aufgelöst.
 	 */
-	ITABufferDatasink(ITADatasource* pdsSource,
-		              std::vector<float*> vpfBuffer,
-		              unsigned int uiBuffersize);	
+	ITABufferDataSink( ITADatasource* pdsSource, std::vector< float* > vpfBuffer, int uiBuffersize );
 
 	//! Destruktor
-	virtual ~ITABufferDatasink();
+	virtual ~ITABufferDataSink();
 
 	//! Puffergröße [Anzahl Samples] zurückgeben
-	unsigned int GetBuffersize() const;
+	int GetBuffersize() const;
 
 	//! Pufferzeiger zurückgeben
-	std::vector<float*> GetBuffers() const;
+	std::vector< float* > GetBuffers() const;
 
 	//! Schreibposition in den Puffern zurückgeben
 	unsigned int GetWriteCursor() const;
 
 	//! Schreibposition in den Puffern setzen
-	void SetWriteCursor(unsigned int uiWriteCursor);
+	void SetWriteCursor( unsigned int uiWriteCursor );
 
 	//! Audiodaten transferrieren
 	/**
@@ -91,9 +89,9 @@ public:
 	 * und schreibt diese in die Audiodatei. Hierbei wird die Anzahl Samples
 	 * auf das nächstgrößere Vielfache der Blocklänge aufgerundet.
 	 */
-	void Transfer(unsigned int uiSamples);
+	void Transfer( unsigned int uiSamples );
 
-private:	
+private:
 	ITADatasource* m_pdsSource;				// Datenquelle
 	std::vector<float*> m_vpfBuffer;		// Puffervektor
 	std::vector<const float*> m_vpfBufferX;	// Export-Puffervektor (const)
