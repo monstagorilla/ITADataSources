@@ -91,10 +91,10 @@ private:
 	 VistaConnectionIP* m_pConnection;
 };
 
-int main(int , char** )
+int main( int , char** )
 {
-	CITANAStream* pNetAudioStream = new CITANAStream( 1, g_dSampleRate, g_iBufferSize );
-	ITAStreamMultiplier1N oMultiplier( pNetAudioStream, 2 );
+	CITANAStream oNetAudioStream( 1, g_dSampleRate, g_iBufferSize );
+	ITAStreamMultiplier1N oMultiplier( &oNetAudioStream, 2 );
 
 	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBufferSize );
 	ITAPA.Initialize();
@@ -103,16 +103,14 @@ int main(int , char** )
 	ITAPA.Start(); 
 
 	// Playback
-	float seconds = 10.0f;
-	cout << "Playback started, waiting " << seconds << " seconds" << endl;
-	ITAPA.Sleep( seconds ); // blocking
+	float fSeconds = 10.0f;
+	cout << "Playback started, waiting " << fSeconds << " seconds" << endl;
+	ITAPA.Sleep( fSeconds ); // blocking
 	cout << "Done." << endl;
 
 	ITAPA.Stop();
 	ITAPA.Close();
 	ITAPA.Finalize();
-
-	delete pNetAudioStream;
 
 	return 0;
 }
