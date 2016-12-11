@@ -132,7 +132,9 @@ target_link_libraries( ITADataSources ${VISTA_USE_PACKAGE_LIBRARIES} )
 
 #target_compile_features(ITADataSources PRIVATE cxx_range_for)
 
-add_definitions( -std=c++11 )
+if( NOT WIN32 
+	add_definitions( -std=c++11 )
+endif()
 
 
 set( BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP} )

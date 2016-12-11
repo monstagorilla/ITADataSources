@@ -8,12 +8,12 @@
 ITARMSDetector::ITARMSDetector( ITADatasource* pDataSource )
 	: m_pDataSource( pDataSource )
 {
-	m_dSamplerate = pDataSource->GetSampleRate();
+	m_dSampleRate = pDataSource->GetSampleRate();
 	m_uiChannels = pDataSource->GetNumberOfChannels();
 	m_uiBlocklength = pDataSource->GetBlocklength();
 	m_pfRMSs = 0;
 
-	if( ( m_uiBlocklength == 0 ) || ( m_uiChannels == 0 ) || ( m_dSamplerate == 0 ) )
+	if( ( m_uiBlocklength == 0 ) || ( m_uiChannels == 0 ) || ( m_dSampleRate == 0 ) )
 		ITA_EXCEPT0( INVALID_PARAMETER );
 
 	m_pfRMSs = new float[ m_uiChannels ];
@@ -96,22 +96,7 @@ double ITARMSDetector::GetRMSDecibel( unsigned int uiChannel, bool bReset )
 	return ratio_to_db20( GetRMS( uiChannel, bReset ) );
 }
 
-void ITARMSDetector::GetRMSs( float* pfDest, bool bReset )
-{
-	if( !pfDest )
-		ITA_EXCEPT0( INVALID_PARAMETER );
-
-	m_cs.enter();
-	for( unsigned int c = 0; c < m_uiChannels; c++ )
-	{
-		pfDest[ c ] = m_pfRMSs[ c ];
-		if( bReset )
-			m_pfRMSs[ c ] = 0;
-	}
-	m_cs.leave();
-}
-
-void ITARMSDetector::GetRMSs( std::vector<float>& vfDest, bool bReset )
+void ITARMSDetector::GetRMSs( std::vector< float >& vfDest, bool bReset )
 {
 	if( ( ( unsigned int ) vfDest.size() ) < m_uiChannels )
 		vfDest.resize( m_uiChannels );
