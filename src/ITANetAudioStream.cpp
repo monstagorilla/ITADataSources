@@ -124,6 +124,24 @@ CITANetAudioStream::~CITANetAudioStream()
 	delete m_pNetAudioProducer;
 }
 
+const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* )
+{
+	// @todo: implement cyclic read from ring buffer
+	
+	return m_sfOutputStreamBuffer[ uiChannel ].GetData();
+}
+
+void CITANetAudioStream::IncrementBlockPointer()
+{
+	// Increment read cursor by one audio block and wrap around if exceeding ring buffer
+	m_iReadCursor = ( m_iReadCursor + m_sfOutputStreamBuffer.GetLength() ) % m_sfRingBuffer.GetLength();
+}
+
+int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples )
+{
+	ITA_EXCEPT0( NOT_IMPLEMENTED );
+}
+
 int CITANetAudioStream::GetRingBufferSize() const
 {
 	return m_sfRingBuffer.GetLength();
@@ -142,22 +160,4 @@ unsigned int CITANetAudioStream::GetNumberOfChannels() const
 double CITANetAudioStream::GetSampleRate() const
 {
 	return m_dSampleRate;
-}
-
-const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* )
-{
-	// @todo: implement cyclic read from ring buffer
-	
-	return m_sfOutputStreamBuffer[ uiChannel ].GetData();
-}
-
-void CITANetAudioStream::IncrementBlockPointer()
-{
-	// Increment read cursor by one audio block and wrap around if exceeding ring buffer
-	m_iReadCursor = ( m_iReadCursor + m_sfOutputStreamBuffer.GetLength() ) % m_sfRingBuffer.GetLength();
-}
-
-int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples )
-{
-	ITA_EXCEPT0( NOT_IMPLEMENTED );
 }
