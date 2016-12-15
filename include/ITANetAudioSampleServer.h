@@ -24,7 +24,10 @@
 #include <string>
 #include <vector>
 
+#include <ITASampleFrame.h>
+
 class ITADatasource;
+class CITANetAudioStreamServer;
 
 //! Network audio sample server (for connecting a net audio stream)
 /**
@@ -33,11 +36,11 @@ class ITADatasource;
  * \sa CITANetAudioStream
  * \note not thread-safe
  */
-class CITANetAudioSampleServer
+class ITA_DATA_SOURCES_API CITANetAudioSampleServer
 {
 public:
 	CITANetAudioSampleServer();
-	virtual ~CITANetAudioStream();
+	virtual ~CITANetAudioSampleServer();
 
 	bool Start( const std::string& sAddress, int iPort );
 	bool IsClientConnected() const;

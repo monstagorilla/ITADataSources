@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-class CITANetAudioStreamConnection;
+class ITA_DATA_SOURCES_API CITANetAudioStreamConnection;
 
 //! Network audio stream
 /**
