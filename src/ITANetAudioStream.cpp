@@ -78,8 +78,11 @@ public:
 
 	inline ~CITANetAudioStreamConnection()
 	{
-		int iMessageType = NET_MESSAGE_CLOSE;
-		m_pConnection->Send( &iMessageType, sizeof( int ) );
+		if( m_pConnection )
+		{
+			int iMessageType = NET_MESSAGE_CLOSE;
+			m_pConnection->Send( &iMessageType, sizeof( int ) );
+		}
 	};
 
 	inline bool LoopBody()

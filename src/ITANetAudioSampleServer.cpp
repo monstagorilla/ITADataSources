@@ -37,6 +37,7 @@ public:
 		, m_iClientBufferSize( -1 )
 		, m_iClientRingBufferFreeSamples( 0 )
 		, m_dClientSampleRate( -1 )
+		, m_iServerPort( -1 )
 	{
 	};
 
@@ -46,22 +47,12 @@ public:
 
 	inline std::string GetServerAddress() const
 	{
-		if( m_pServer )
-		{
-			std::string sAddress;
-			m_pServer->GetServerAddress().GetIPAddress().GetAddressString( sAddress );
-			return sAddress;
-		}
-		else
-			return "";
+		return m_sServerAddress;
 	};
 
 	inline int GetNetworkPort() const
 	{
-		if( m_pServer )
-			m_pServer->GetServerAddress().GetPortNumber();
-		else
-			return -1;
+		return m_iServerPort;
 	};
 
 	inline bool Start( const std::string& sAddress, int iPort )
@@ -70,6 +61,8 @@ public:
 			ITA_EXCEPT1( MODAL_EXCEPTION, "This net sample server is already started" );
 
 		m_pServer = new VistaTCPServer( sAddress, iPort, 1 );
+		m_sServerAddress = sAddress;
+		m_iServerPort = iPort;
 
 		m_pSocket = m_pServer->GetNextClient();
 
@@ -134,6 +127,8 @@ public:
 private:
 	VistaTCPServer* m_pServer;
 	VistaTCPSocket* m_pSocket;
+	int m_iServerPort;
+	std::string m_sServerAddress;
 	CITANetAudioSampleServer* m_pParent;
 	ITASampleFrame m_sfReceivingBuffer;
 	

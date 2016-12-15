@@ -18,7 +18,7 @@ int main( int , char** )
 	CITANetAudioSampleServer oSampleServer;
 	oSampleServer.SetInputStream( &oGenerator );
 
-	cout << "Starting server and waiting for connections on '" << oSampleServer.GetNetworkAddress() << "' on port " << oSampleServer.GetNetworkPort() << endl;
+	cout << "Starting server and waiting for connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
 	oSampleServer.Start( g_sServerName, g_iServerPort );
 	
 	return 0;
