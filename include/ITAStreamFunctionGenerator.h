@@ -23,10 +23,12 @@
 #include <ITADataSourcesDefinitions.h>
 #include <ITADataSourceRealization.h>
 
-class ITA_DATA_SOURCES_API ITAStreamFunctionGenerator : public ITADatasourceRealization {
+class ITA_DATA_SOURCES_API ITAStreamFunctionGenerator : public ITADatasourceRealization
+{
 public:
 	//! Signal functions
-	enum {
+	enum SignalFunctions
+	{
 		SINE = 0,		//!< Sine signal1
 		TRIANGLE,		//!< Triangle signal
 		SAWTOOTH,		//!< Sawtooth signal
@@ -43,9 +45,7 @@ public:
 	 * \param dSamplerate		Sampling rate [Hz]
 	 * \param uiBlocklength		Blocklength [samples]
 	 */
-	ITAStreamFunctionGenerator(unsigned int uiChannels,
-		                       double dSamplerate,
-					           unsigned int uiBlocklength);
+	ITAStreamFunctionGenerator( unsigned int uiChannels, double dSamplerate, unsigned int uiBlocklength );
 
 	//! Constructor
 	/**
@@ -59,14 +59,8 @@ public:
 	 * \param dAmplitude		Signal amplitude
 	 * \param bPeriodic			Generate a periodic signal?
 	 */
-	ITAStreamFunctionGenerator(unsigned int uiChannels,
-		                       double dSamplerate,
-					           unsigned int uiBlocklength,
-							   int iSignalFunction,
-							   double dFrequency,
-							   float fAmplitude,
-							   bool bPeriodic);
-
+	ITAStreamFunctionGenerator( unsigned int uiChannels, double dSamplerate, unsigned int uiBlocklength, int iSignalFunction, double dFrequency, float fAmplitude, bool bPeriodic );
+	
 	//! Destructor
 	virtual ~ITAStreamFunctionGenerator();
 

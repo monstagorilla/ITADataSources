@@ -8,6 +8,7 @@ include( VistaCommon )
 
 # dependencies
 vista_use_package( ITABase REQUIRED FIND_DEPENDENCIES )
+vista_use_package( VistaCoreLibs REQUIRED COMPONENTS VistaInterProcComm FIND_DEPENDENCIES )
 vista_use_package( ASIO QUIET )
 vista_use_package( Portaudio QUIET )
 vista_use_package( JACK QUIET )
@@ -46,6 +47,8 @@ set( ITADataSourcesHeader
 	"include/ITADataSourcesDefinitions.h"
 	"include/ITAFileDataSink.h"
 	"include/ITAFileDataSource.h"
+	"include/ITANetAudioStream.h"
+	"include/ITANetAudioSampleServer.h"
 	"include/ITAPeakDetector.h"
 	"include/ITARMSDetector.h"
 	"include/ITAStreamAmplifier.h"
@@ -66,6 +69,7 @@ set( ITADataSourcesSources
 	"src/ITADataSourceRealization.cpp"	
 	"src/ITAFileDataSink.cpp"
 	"src/ITAFileDataSource.cpp"
+	"src/ITANetAudioStream.cpp"
 	"src/ITAPeakDetector.cpp"
 	"src/ITARMSDetector.cpp"
 	"src/ITAStreamAmplifier.cpp"
@@ -130,8 +134,6 @@ endif( NOT WIN32)
 # linker
 add_library( ITADataSources ${ITADataSourcesHeader} ${ITADataSourcesSources} )
 target_link_libraries( ITADataSources ${VISTA_USE_PACKAGE_LIBRARIES} )
-
-
 
 set( BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP} )
 

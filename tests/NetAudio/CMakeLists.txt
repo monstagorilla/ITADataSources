@@ -30,3 +30,23 @@ vista_install( ITANAPlayerTest )
 vista_create_default_info_file( ITANAPlayerTest )
 
 set_property( TARGET ITANAPlayerTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+
+
+add_executable( ITANetAudioSampleServerTest ITANetAudioSampleServerTest.cpp )
+target_link_libraries( ITANetAudioSampleServerTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+
+vista_configure_app( ITANetAudioSampleServerTest )
+vista_install( ITANetAudioSampleServerTest )
+vista_create_default_info_file( ITANetAudioSampleServerTest )
+
+set_property( TARGET ITANetAudioSampleServerTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+
+
+add_executable( ITANetAudioClientTest ITANetAudioClientTest.cpp )
+target_link_libraries( ITANetAudioClientTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+
+vista_configure_app( ITANetAudioClientTest )
+vista_install( ITANetAudioClientTest )
+vista_create_default_info_file( ITANetAudioClientTest )
+
+set_property( TARGET ITANetAudioClientTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
