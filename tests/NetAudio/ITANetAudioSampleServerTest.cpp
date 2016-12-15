@@ -20,6 +20,9 @@ int main( int , char** )
 
 	cout << "Starting server and waiting for connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
 	oSampleServer.Start( g_sServerName, g_iServerPort );
+
+	int iKey;
+	cin >> iKey;
 	
 	return 0;
 }
