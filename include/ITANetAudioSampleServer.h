@@ -39,8 +39,16 @@ class CITANetAudioStreamServer;
 class ITA_DATA_SOURCES_API CITANetAudioSampleServer
 {
 public:
+
+	enum UpdateStrategy
+	{
+		AUTO = 1, //!< Automatic update rate based on sample rate and block length of client (default)
+		ADAPTIVE, //!< Adaptive update rate, adjusts for drifting clocks
+		CONSTANT, //!< Set a user-defined update rate (may cause forced pausing of sample feeding or dropouts on client side)
+	};
+
 	CITANetAudioSampleServer();
-	virtual ~CITANetAudioSampleServer();
+	virtual ~CITANetAudioSampleServer() {};
 
 	bool Start( const std::string& sAddress, int iPort );
 	bool IsClientConnected() const;
@@ -54,13 +62,18 @@ public:
 	int GetNetStreamNumberOfChannels() const;
 	double GetNetStreamSampleRate() const;
 
+	void SetAutomaticUpdateRate();
+
 protected:
 	int Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples );
+	ITADatasource* GetInputStream() const;
 
 private:
 	CITANetAudioStreamServer* m_pNetAudioServer;
 	ITASampleFrame m_sfTempTransmitBuffer;
 	ITADatasource* m_pInputStream;
+
+	int m_iUpdateStrategy;
 
 	friend class CITANetAudioStreamServer;
 };

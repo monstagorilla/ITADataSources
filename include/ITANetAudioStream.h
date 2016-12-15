@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-class ITA_DATA_SOURCES_API CITANetAudioStreamConnection;
+class CITANetAudioStreamConnection;
 
 //! Network audio stream
 /**
@@ -35,7 +35,7 @@ class ITA_DATA_SOURCES_API CITANetAudioStreamConnection;
  *
  * \note not thread-safe
  */
-class CITANetAudioStream : public ITADatasource
+class ITA_DATA_SOURCES_API CITANetAudioStream : public ITADatasource
 {
 public:
 	CITANetAudioStream( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity );

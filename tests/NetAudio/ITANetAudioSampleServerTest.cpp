@@ -13,9 +13,7 @@ static int g_iBlockLength = 265;
 
 int main( int , char** )
 {
-	ITAStreamFunctionGenerator oGenerator( 1, g_dSampleRate, g_iBlockLength );
-	oGenerator.SetFunction( ITAStreamFunctionGenerator::SINE );
-	oGenerator.SetFrequency( 567.89f );
+	ITAStreamFunctionGenerator oGenerator( 1, g_dSampleRate, g_iBlockLength, ITAStreamFunctionGenerator::SINE, 456.78f, 0.81f, true );
 
 	CITANetAudioSampleServer oSampleServer;
 	oSampleServer.SetInputStream( &oGenerator );

@@ -39,16 +39,6 @@ public:
 
 	//! Constructor
 	/**
-	 * Creates a new function generator.
-	 *
-	 * \param uiChannels		Number of output channels
-	 * \param dSamplerate		Sampling rate [Hz]
-	 * \param uiBlocklength		Blocklength [samples]
-	 */
-	ITAStreamFunctionGenerator( unsigned int uiChannels, double dSamplerate, unsigned int uiBlocklength );
-
-	//! Constructor
-	/**
 	 * Creates a new function generator with specific parameters
 	 *
 	 * \param uiChannels		Number of output channels
@@ -62,7 +52,7 @@ public:
 	ITAStreamFunctionGenerator( unsigned int uiChannels, double dSamplerate, unsigned int uiBlocklength, int iSignalFunction, double dFrequency, float fAmplitude, bool bPeriodic );
 	
 	//! Destructor
-	virtual ~ITAStreamFunctionGenerator();
+	inline virtual ~ITAStreamFunctionGenerator() {};
 
 	//! Reset
 	/**
