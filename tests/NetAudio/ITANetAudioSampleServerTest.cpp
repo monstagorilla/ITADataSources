@@ -9,13 +9,19 @@ using namespace std;
 static string g_sServerName = "localhost";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44.1e3;
+static int g_iBlockLength = 265;
 
 int main( int , char** )
 {
-	ITAStreamFunctionGenerator oGenerator();
-	CITANetAudioSampleServer oSampleServer();
+	ITAStreamFunctionGenerator oGenerator( 1, g_dSampleRate, g_iBlockLength );
+	oGenerator.SetFunction( ITAStreamFunctionGenerator::SINE );
+	oGenerator.SetFrequency( 567.89f );
 
-	oSampleServer.Start( g_iServerPort, g_iServerPort );
+	CITANetAudioSampleServer oSampleServer;
+	oSampleServer.SetInputStream( &oGenerator );
+
+	cout << "Starting server and waiting for connections on '" << oSampleServer.GetNetworkAddress() << "' on port " << oSampleServer.GetNetworkPort() << endl;
+	oSampleServer.Start( g_sServerName, g_iServerPort );
 	
 	return 0;
 }
