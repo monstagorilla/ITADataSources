@@ -130,11 +130,10 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 	// @todo: is connected?
 	int iCurrentWritePointer = m_iWriteCursor;
 	if (iCurrentWritePointer > m_iReadCursor) {
-		// kein lesen über das Bufferende hinaus
 		m_sfOutputStreamBuffer[uiChannel].cyclic_write(&m_sfRingBuffer[uiChannel], 
 			m_sfOutputStreamBuffer.GetLength(), m_iReadCursor, iCurrentWritePointer);
 	} else {
-		// in diesem Block alle Kanäle auf 0 setzen
+		// in diesem Block alle Kanaele auf 0 setzen
 		m_sfOutputStreamBuffer[uiChannel].Zero();
 	}
 	
@@ -155,7 +154,10 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	m_sfRingBuffer.cyclic_write(sfNewSamples, iNumSamples, 
 		iCurrentReadCursor, m_iWriteCursor);
 
-	// Gibt freien Platz im RingBuffer zurück
+	// Schreibpointer weiter setzen
+	m_iWriteCursor = ( m_iWriteCursor + iNumSamples ) % m_sfRingBuffer.GetLength();
+
+	// Gibt freien Platz im RingBuffer zurueck
 	if (iCurrentReadCursor > m_iWriteCursor) {
 		return m_iWriteCursor - iCurrentReadCursor;
 	}
@@ -165,7 +167,7 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 		
 	// Threadsave programmieren
 
-	m_iWriteCursor+=iNumSamples;
+	
 }
 
 int CITANetAudioStream::GetRingBufferSize() const
