@@ -1,4 +1,5 @@
 #include <ITANetAudioSampleServer.h>
+#include <ITANetAudioProtocol.h>
 
 // ITA includes
 #include <ITADataSource.h>
@@ -20,14 +21,6 @@
 class CITANetAudioStreamServer : public VistaThreadLoop
 {
 public:
-	enum MessageType
-	{
-		NET_MESSAGE_NONE = 0,
-		NET_MESSAGE_OPEN,
-		NET_MESSAGE_CLOSE,
-		NET_MESSAGE_SAMPLES,
-	};
-
 	inline CITANetAudioStreamServer( CITANetAudioSampleServer* pParent )
 		: m_pParent( pParent )
 		, m_bStopIndicated( false )

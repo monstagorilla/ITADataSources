@@ -48,6 +48,7 @@ set( ITADataSourcesHeader
 	"include/ITAFileDataSink.h"
 	"include/ITAFileDataSource.h"
 	"include/ITANetAudioStream.h"
+	"include/ITANetAudioProtocol.h"
 	"include/ITANetAudioSampleServer.h"
 	"include/ITAPeakDetector.h"
 	"include/ITARMSDetector.h"
