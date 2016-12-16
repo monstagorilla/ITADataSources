@@ -42,8 +42,9 @@ class VistaConnectionIP;
 /**
   * Declaration of message types
   */
-struct ITA_DATA_SOURCES_API CITANetAudioProtocol
+class ITA_DATA_SOURCES_API CITANetAudioProtocol
 {
+public:
 	static const int NET_AUDIO_VERSION = 1;
 
 	static const int NP_INVALID = -1;
@@ -56,6 +57,15 @@ struct ITA_DATA_SOURCES_API CITANetAudioProtocol
 	static const int NP_SERVER_GET_RINGBUFFER_SIZE = 201;
 	static const int NP_SERVER_GET_RINGBUFFER_FREE = 202;
 	static const int NP_SERVER_SEND_SAMPLES = 203;
+
+	CITANetAudioProtocol();
+	virtual ~CITANetAudioProtocol();
+
+	// Connection
+
+	bool InitializeAsServer( CRavenNetServerImpl* pServer );
+	bool InitializeAsClient( CRavenNetClientImpl* pServer, VistaConnectionIP* pCommandChannel, VistaConnectionIP* pHeadChannel, int iExceptionhandlingmode );
+
 };
 
 
