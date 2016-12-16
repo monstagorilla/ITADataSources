@@ -83,6 +83,10 @@ public:
 	int GetOutgoingMessageSize() const;
 	bool GetOutgoingMessageHasData() const;
 
+	void SetMessageType( int nType );
+	void SetAnswerType( int nType );
+	int GetMessageType() const;
+	int GetAnswerType() const;
 
 	// --= Serializing functions =--
 
@@ -116,7 +120,7 @@ private:
 	int m_nMessageId;
 	int m_nAnswerType;
 	VistaByteBufferSerializer m_oOutgoing;
-	VistaByteBufferSerializer m_oIncoming;
+	VistaByteBufferDeSerializer m_oIncoming;
 	std::vector< VistaType::byte > m_vecIncomingBuffer;
 
 	VistaConnectionIP* m_pConnection;

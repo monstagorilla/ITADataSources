@@ -1,166 +1,378 @@
-#include <ITANetAudioStream.h>
+#include <ITANetAudioProtocol.h>
 
-// ITA includes
-#include <ITAException.h>
+#include <ITASampleFrame.h>
+#include <ITAStringUtils.h>
 
-// Vista includes
-#include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
-#include <VistaInterProcComm/IPNet/VistaTCPServer.h>
-#include <VistaInterProcComm/IPNet/VistaTCPSocket.h>
-//#include <VistaBase/VistaTimeUtils.h>
-#include <VistaInterProcComm/IPNet/VistaIPAddress.h>
+#include <VistaBase/VistaExceptionBase.h>
 
-// STL
-#include <cmath>
+#include <cassert>
 
-class CITANetAudioStreamConnection : public VistaThreadLoop
+static int S_nMessageIds = 0;
+
+CITANetAudioMessage::CITANetAudioMessage( VistaSerializingToolset::ByteOrderSwapBehavior bSwapBuffers )
+	: m_vecIncomingBuffer()
+	, m_oOutgoing()
+	, m_pConnection( NULL )
 {
-public:
-	enum MessageType
+	m_oOutgoing.SetByteorderSwapFlag( bSwapBuffers );
+	m_oIncoming.SetByteorderSwapFlag( bSwapBuffers );
+	ResetMessage();
+}
+
+void CITANetAudioMessage::ResetMessage()
+{
+	if( m_oIncoming.GetTailSize() > 0 )
 	{
-		NET_MESSAGE_NONE = 0,
-		NET_MESSAGE_OPEN,
-		NET_MESSAGE_CLOSE,
-		NET_MESSAGE_SAMPLES,
-	};
+		std::cerr << "CITANetAudioMessage::ResetMessage() called before message was fully processed!" << std::endl;
+	}
 
-	inline CITANetAudioStreamConnection( CITANetAudioStream* pParent )
-		: m_pParent( pParent )
-		, m_pConnection( NULL )
-		, m_bStopIndicated( false )
-	{
-	};
-
-	inline bool Connect( const std::string& sAddress, int iPort )
-	{
-		if( m_pConnection )
-			ITA_EXCEPT1( MODAL_EXCEPTION, "This net stream is already connected" );
-
-		// Attempt to connect and check parameters
-		m_pConnection = new VistaConnectionIP( VistaConnectionIP::CT_TCP, sAddress, iPort );
-		if( !m_pConnection->GetIsConnected() )
-		{
-			delete m_pConnection;
-			m_pConnection = NULL;
-			return false;
-		}
-
-		int iMessageType = NET_MESSAGE_OPEN;
-		m_pConnection->Send( &iMessageType, sizeof( int ) );
-
-		int iNumChannels = ( int ) m_pParent->GetNumberOfChannels();
-		m_pConnection->Send( &iNumChannels, sizeof( int ) );
-		double dSampleRate = m_pParent->GetSampleRate();
-		m_pConnection->Send( &dSampleRate, sizeof( double ) );
-		int iBlockLength = ( int ) m_pParent->GetBlocklength();
-		m_pConnection->Send( &iBlockLength, sizeof( int ) );
-		int iRingBufferSize = ( int ) m_pParent->GetRingBufferSize();
-		m_pConnection->Send( &iRingBufferSize, sizeof( int ) );
+	// wait till sending is complete -> this prevents us
+	// from deleting the buffer while it is still being read
+	// by the connection
+	if( m_pConnection )
 		m_pConnection->WaitForSendFinish();
 
-		int iServerMessageType;
-		m_pConnection->Receive( &iServerMessageType, sizeof( int ) );
+	m_nMessageId = S_nMessageIds++;
 
-		Run();
-	};
+	m_oOutgoing.ClearBuffer();
+	m_oOutgoing.WriteInt32( 0 ); // size dummy
+	m_oOutgoing.WriteInt32( 0 ); // type dummy
+	m_oOutgoing.WriteInt32( 0 ); // exceptmode dummy
+	m_oOutgoing.WriteInt32( 0 ); // ID
 
-	inline void Disconnect()
-	{
-		m_bStopIndicated = true;
-		StopGently( true );
+	m_oIncoming.SetBuffer( NULL, 0 );
 
-		delete m_pConnection;
-		m_pConnection = NULL;
+	m_nMessageType = CITANetAudioProtocol::NP_INVALID;
+	m_nAnswerType = CITANetAudioProtocol::NP_INVALID;
 
-		m_bStopIndicated = false;
-	};
+	m_pConnection = NULL;
+}
 
-	inline ~CITANetAudioStreamConnection()
-	{
-		if( m_pConnection )
-		{
-			int iMessageType = NET_MESSAGE_CLOSE;
-			m_pConnection->Send( &iMessageType, sizeof( int ) );
-		}
-	};
+void CITANetAudioMessage::SetConnection( VistaConnectionIP* pConn )
+{
+	m_pConnection = pConn;
+}
 
-	inline bool LoopBody()
-	{
-		if( m_bStopIndicated )
-			return true;
+void CITANetAudioMessage::WriteMessage()
+{
+	VistaType::byte* pBuffer = ( VistaType::byte* ) m_oOutgoing.GetBuffer();
+	VistaType::sint32 iSwapDummy;
 
-		// Receive messages
-		while( true )
-		{
-			m_pConnection->Receive( NULL, 0 ); // @todo: receive messages and react
+	// rewrite size dummy
+	iSwapDummy = m_oOutgoing.GetBufferSize() - sizeof( VistaType::sint32 );
+	if( m_oOutgoing.GetByteorderSwapFlag() )
+		VistaSerializingToolset::Swap4( &iSwapDummy );
+	memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
 
-			int iNumSamples = 12;
-			if( true )
-				m_pParent->Transmit( m_sfReceivingBuffer, iNumSamples );
-		}
-	};
+	pBuffer += sizeof( VistaType::sint32 );
 
-private:
-	VistaConnectionIP* m_pConnection;
-	CITANetAudioStream* m_pParent;
-	ITASampleFrame m_sfReceivingBuffer;	
-	bool m_bStopIndicated;
-};
+	// rewrite type dummy
+	iSwapDummy = m_nMessageType;
+	if( m_oOutgoing.GetByteorderSwapFlag() )
+		VistaSerializingToolset::Swap4( &iSwapDummy );
+	memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
 
-CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity )
-	: m_sfOutputStreamBuffer( iChannels, iBufferSize, true )
-	, m_dSampleRate( dSamplingRate )
-	, m_sfRingBuffer( iChannels, iRingBufferCapacity, true )
+	pBuffer += sizeof( VistaType::sint32 );
 	
-{
-	m_pNetAudioProducer = new CITANetAudioStreamConnection( this );
+	// rewrite messageid dummy
+	iSwapDummy = m_nMessageId;
+	if( m_oOutgoing.GetByteorderSwapFlag() )
+		VistaSerializingToolset::Swap4( &iSwapDummy );
+	memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
+
+	try
+	{
+		int iSize = m_oOutgoing.GetBufferSize();
+		int nRet = m_pConnection->WriteRawBuffer( m_oOutgoing.GetBuffer(), iSize );
+		if( nRet != m_oOutgoing.GetBufferSize() )
+		{
+			VistaExceptionBase ex( "ITANetAudioMessage::WriteMessage: Connection error", "CITANetAudioMessage", -1, -1 );
+			//throw( ex );
+		}
+	}
+	catch( VistaExceptionBase& ex )
+	{
+		std::string sExceptionText = ex.GetExceptionText();
+		std::cerr << sExceptionText << std::endl;
+		//ITA_EXCEPT1(UNKNOWN, sExceptionText.c_str());
+	}
 }
 
-bool CITANetAudioStream::Connect( const std::string& sAddress, int iPort )
+
+void CITANetAudioMessage::ReadMessage()
 {
-	return m_pNetAudioProducer->Connect( sAddress, iPort );
+	try
+	{
+		VistaType::sint32 nMessageSize;
+		int nReturn = m_pConnection->ReadInt32( nMessageSize );
+		
+		// we need at least the two protocol ints
+		assert( nMessageSize >= 3 * sizeof( VistaType::sint32 ) );
+
+		if( nMessageSize > ( int ) m_vecIncomingBuffer.size() )
+			m_vecIncomingBuffer.resize( nMessageSize );
+
+		nReturn = m_pConnection->ReadRawBuffer( &m_vecIncomingBuffer[ 0 ], nMessageSize );
+		if( nReturn != nMessageSize )
+			ITA_EXCEPT1( UNKNOWN, "Protokoll error, Received less bytes than expected" );
+
+		m_oIncoming.SetBuffer( &m_vecIncomingBuffer[ 0 ], nReturn );
+
+		// DEBUG: std::cout << "Remainign Size after Mesage Read: " << m_pConnection->PendingDataSize() << std::endl;
+	}
+	catch( VistaExceptionBase& ex )
+	{
+		ITA_EXCEPT1( UNKNOWN, ex.GetExceptionText() );
+	}
+	catch( ITAException& ex )
+	{
+		ex;
+	}
+
+	m_nMessageType = ReadInt();
+	m_nMessageId = ReadInt();
 }
 
-CITANetAudioStream::~CITANetAudioStream()
-{
-	delete m_pNetAudioProducer;
-}
 
-const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* )
+void CITANetAudioMessage::WriteAnswer()
 {
-	// @todo: implement cyclic read from ring buffer
+	VistaType::byte* pBuffer = ( VistaType::byte* )m_oOutgoing.GetBuffer();
+	VistaType::sint32 iSwapDummy;
+
+	// rewrite size dummy
+	iSwapDummy = m_oOutgoing.GetBufferSize() - sizeof( VistaType::sint32 );
+	if( m_oOutgoing.GetByteorderSwapFlag() )
+		VistaSerializingToolset::Swap4( &iSwapDummy );
+	memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
+
+	pBuffer += sizeof( VistaType::sint32 );
+
+	// rewrite type dummy
+	iSwapDummy = m_nAnswerType;
+	if( m_oOutgoing.GetByteorderSwapFlag() )
+		VistaSerializingToolset::Swap4( &iSwapDummy );
+	memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
+
+	pBuffer += sizeof( VistaType::sint32 );
 	
-	return m_sfOutputStreamBuffer[ uiChannel ].GetData();
+	// rewrite message dummy
+	iSwapDummy = m_nMessageId;
+	if( m_oOutgoing.GetByteorderSwapFlag() )
+		VistaSerializingToolset::Swap4( &iSwapDummy );
+	memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
+
+	try	{
+		int nRet = m_pConnection->WriteRawBuffer( m_oOutgoing.GetBuffer(), m_oOutgoing.GetBufferSize() );
+		if( nRet != m_oOutgoing.GetBufferSize() )
+			ITA_EXCEPT1( UNKNOWN, "Could not write the expected number of bytes" );
+	}
+	catch( VistaExceptionBase& ex ) {
+		ITA_EXCEPT1( UNKNOWN, ex.GetExceptionText() );
+	}
 }
 
-void CITANetAudioStream::IncrementBlockPointer()
+void CITANetAudioMessage::ReadAnswer()
 {
-	// Increment read cursor by one audio block and wrap around if exceeding ring buffer
-	m_iReadCursor = ( m_iReadCursor + m_sfOutputStreamBuffer.GetLength() ) % m_sfRingBuffer.GetLength();
+	try
+	{
+		VistaType::sint32 nMessageSize;
+		int nReturn;
+		try
+		{
+			nReturn = m_pConnection->ReadInt32( nMessageSize );
+		}
+		catch( ... )
+		{
+			nReturn = -1; // Network connection error
+		}
+
+		if( nReturn != sizeof( VistaType::sint32 ) ) {
+			ITA_EXCEPT1( UNKNOWN, "Protokoll error, Received less bytes than expected" );
+		}
+
+		// we need at least the two protocol types
+		assert( nMessageSize >= 2 * sizeof( VistaType::sint32 ) );
+
+		if( nMessageSize > ( int ) m_vecIncomingBuffer.size() )
+			m_vecIncomingBuffer.resize( nMessageSize );
+
+		nReturn = m_pConnection->ReadRawBuffer( &m_vecIncomingBuffer[ 0 ], nMessageSize );
+		if( nReturn != nMessageSize )
+			ITA_EXCEPT1( UNKNOWN, "Protokoll error, Received less bytes than expected" );
+
+		m_oIncoming.SetBuffer( &m_vecIncomingBuffer[ 0 ], nReturn );
+	}
+	catch( VistaExceptionBase& ex )
+	{
+		// Probable connection loss
+		return;
+		ITA_EXCEPT1( UNKNOWN, ex.GetExceptionText() );
+	}
+	catch( ITAException& ex )
+	{
+		std::string sErrorText = ex.ToString();
+	}
+
+	try
+	{
+		m_nAnswerType = ReadInt(); // TODO: assert weg, dafür Kontrolle falls Server crasht<
+		ReadInt(); // protocol overhead - just read and ignore
+		int nMessageID = ReadInt();
+		assert( nMessageID == m_nMessageId );
+		m_nMessageId = nMessageID;
+	}
+	catch( ITAException& ex )
+	{
+		std::cerr << "ITANetAudioMessage: Protocol error: " << ex << std::endl;
+	}
 }
 
-int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples )
+
+int CITANetAudioMessage::GetMessageType() const
 {
-	ITA_EXCEPT0( NOT_IMPLEMENTED );
+	return m_nMessageType;
 }
 
-int CITANetAudioStream::GetRingBufferSize() const
+void CITANetAudioMessage::SetMessageType( int nType )
 {
-	return m_sfRingBuffer.GetLength();
+	assert( m_nMessageType == CITANetAudioProtocol::NP_INVALID ); // should only be set once
+	m_nMessageType = nType;
 }
 
-unsigned int CITANetAudioStream::GetBlocklength() const
+void CITANetAudioMessage::SetAnswerType( int nType )
 {
-	return  ( unsigned int ) m_sfOutputStreamBuffer.GetLength();
+	assert( m_nAnswerType == CITANetAudioProtocol::NP_INVALID ); // should only be set once
+	m_nAnswerType = nType;
 }
 
-unsigned int CITANetAudioStream::GetNumberOfChannels() const
+int CITANetAudioMessage::GetIncomingMessageSize() const
 {
-	return ( unsigned int ) m_sfOutputStreamBuffer.channels();
+	return m_oIncoming.GetTailSize();
 }
 
-double CITANetAudioStream::GetSampleRate() const
+int CITANetAudioMessage::GetOutgoingMessageSize() const
 {
-	return m_dSampleRate;
+	return m_oOutgoing.GetBufferSize();
+}
+
+bool CITANetAudioMessage::GetOutgoingMessageHasData() const
+{
+	return ( m_oOutgoing.GetBufferSize() > 4 * sizeof( VistaType::sint32 ) );
+}
+
+void CITANetAudioMessage::WriteString( const std::string& sValue )
+{
+	m_oOutgoing.WriteInt32( ( VistaType::sint32 )sValue.size() );
+	if( !sValue.empty() ) m_oOutgoing.WriteString( sValue );
+}
+
+void CITANetAudioMessage::WriteInt( const int iValue )
+{
+	m_oOutgoing.WriteInt32( ( VistaType::sint32 )iValue );
+}
+
+void CITANetAudioMessage::WriteBool( const bool bValue )
+{
+	m_oOutgoing.WriteBool( bValue );
+}
+
+void CITANetAudioMessage::WriteFloat( const float fValue )
+{
+	m_oOutgoing.WriteFloat32( fValue );
+}
+
+void CITANetAudioMessage::WriteDouble( const double dValue )
+{
+	m_oOutgoing.WriteFloat64( dValue );
+}
+
+std::string CITANetAudioMessage::ReadString()
+{
+	VistaType::sint32 nSize;
+	int nReturn = m_oIncoming.ReadInt32( nSize );
+	assert( nReturn == sizeof( VistaType::sint32 ) );
+
+	// Empty string?
+	if( nSize == 0 ) return "";
+
+	std::string sValue;
+	nReturn = m_oIncoming.ReadString( sValue, nSize );
+	assert( nReturn == nSize );
+	return sValue;
+}
+
+int CITANetAudioMessage::ReadInt()
+{
+	VistaType::sint32 nValue;
+	int nReturn = m_oIncoming.ReadInt32( nValue );
+	if( nReturn == -1 )
+		ITA_EXCEPT1( UNKNOWN, "Could not read integer value from incoming message" );
+	assert( nReturn == sizeof( VistaType::sint32 ) );
+	return nValue;
+}
+
+bool CITANetAudioMessage::ReadBool()
+{
+	bool bValue;
+	int nReturn = m_oIncoming.ReadBool( bValue );
+	assert( nReturn == sizeof( bool ) );
+	return bValue;
+}
+float CITANetAudioMessage::ReadFloat()
+{
+	float fValue;
+	int nReturn = m_oIncoming.ReadFloat32( fValue );
+	assert( nReturn == sizeof( float ) );
+	return fValue;
+}
+double CITANetAudioMessage::ReadDouble()
+{
+	double dValue;
+	int nReturn = m_oIncoming.ReadFloat64( dValue );
+	assert( nReturn == sizeof( double ) );
+	return dValue;
+}
+
+
+void CITANetAudioMessage::WriteException( const ITAException& oException )
+{
+	WriteInt( oException.iErrorCode );
+	WriteString( oException.sModule );
+	WriteString( oException.sReason );
+}
+
+ITAException CITANetAudioMessage::ReadException()
+{
+	int iErrorCode = ReadInt();
+	std::string sModule = ReadString();
+	std::string sReason = ReadString();
+	return ITAException( iErrorCode, sModule, sReason );
+}
+
+VistaConnectionIP* CITANetAudioMessage::GetConnection() const
+{
+	return m_pConnection;
+}
+
+void CITANetAudioMessage::ClearConnection() {
+	m_pConnection = NULL;
+}
+
+void CITANetAudioMessage::WriteIntVector( const std::vector<int> viData )
+{
+	int iSize = ( int ) viData.size();
+	WriteInt( iSize );
+	for( int i = 0; i<iSize; i++ )
+		WriteInt( viData[ i ] );
+}
+
+std::vector<int> CITANetAudioMessage::ReadIntVector()
+{
+	std::vector<int> viData;
+	int iSize = ReadInt();
+	for( int i = 0; i<iSize; i++ )
+		viData.push_back( ReadInt() );
+
+	return viData;
 }

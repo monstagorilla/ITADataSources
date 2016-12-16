@@ -70,6 +70,7 @@ set( ITADataSourcesSources
 	"src/ITAFileDataSink.cpp"
 	"src/ITAFileDataSource.cpp"
 	"src/ITANetAudioStream.cpp"
+	"src/ITANetAudioProtocol.cpp"
 	"src/ITANetAudioSampleServer.cpp"
 	"src/ITAPeakDetector.cpp"
 	"src/ITARMSDetector.cpp"
