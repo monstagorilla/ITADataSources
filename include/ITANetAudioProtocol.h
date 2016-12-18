@@ -56,9 +56,10 @@ public:
 	static const int NP_CLIENT_CLOSE = 101;
 
 	static const int NP_SERVER_CLOSE = 200;
-	static const int NP_SERVER_GET_RINGBUFFER_SIZE = 201;
-	static const int NP_SERVER_GET_RINGBUFFER_FREE = 202;
-	static const int NP_SERVER_SEND_SAMPLES = 203;
+	static const int NP_SERVER_OPEN = 201;
+	static const int NP_SERVER_GET_RINGBUFFER_SIZE = 210;
+	static const int NP_SERVER_GET_RINGBUFFER_FREE = 211;
+	static const int NP_SERVER_SEND_SAMPLES = 222;
 
 	CITANetAudioProtocol();
 	virtual ~CITANetAudioProtocol();
