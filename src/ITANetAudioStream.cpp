@@ -2,6 +2,8 @@
 
 // ITA includes
 #include <ITAException.h>
+#include <ITANetAudioMessage.h>
+#include <ITANetAudioProtocol.h>
 
 // Vista includes
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
@@ -101,10 +103,23 @@ public:
 		}
 	};
 
+
+	inline bool GetIsConnected()
+	{
+		if( m_pConnection )
+			return true;
+		else
+			return false;
+	};
+
 private:
-	VistaConnectionIP* m_pConnection;
 	CITANetAudioStream* m_pParent;
-	ITASampleFrame m_sfReceivingBuffer;	
+
+	VistaConnectionIP* m_pConnection;
+	CITANetAudioProtocol* m_pProtocol;
+	CITANetAudioMessage* m_pMessage;
+
+	ITASampleFrame m_sfReceivingBuffer;
 	bool m_bStopIndicated;
 };
 
@@ -117,14 +132,19 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	m_pNetAudioProducer = new CITANetAudioStreamConnection( this );
 }
 
+CITANetAudioStream::~CITANetAudioStream()
+{
+	delete m_pNetAudioProducer;
+}
+
 bool CITANetAudioStream::Connect( const std::string& sAddress, int iPort )
 {
 	return m_pNetAudioProducer->Connect( sAddress, iPort );
 }
 
-CITANetAudioStream::~CITANetAudioStream()
+bool CITANetAudioStream::GetIsConnected() const
 {
-	delete m_pNetAudioProducer;
+	return m_pNetAudioProducer->GetIsConnected();
 }
 
 const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* )

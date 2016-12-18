@@ -37,6 +37,8 @@
 
 // Forward declarations
 class VistaConnectionIP;
+class CITANetAudioSampleServer;
+class CITANetAudioStream;
 
 //! Network audio protocol
 /**
@@ -60,80 +62,6 @@ public:
 
 	CITANetAudioProtocol();
 	virtual ~CITANetAudioProtocol();
-
-	// Connection
-
-	bool InitializeAsServer( CRavenNetServerImpl* pServer );
-	bool InitializeAsClient( CRavenNetClientImpl* pServer, VistaConnectionIP* pCommandChannel, VistaConnectionIP* pHeadChannel, int iExceptionhandlingmode );
-
-};
-
-
-/** Network audio messages 
- *
- * Messages consist of a message part and an answer part, each read or written
- * separately. Messages have a two-int-header (SIZE, MSGTYPE), and
- * answers have a two-int header (SIZE; ANSWERTYPE)
- */
-class ITA_DATA_SOURCES_API CITANetAudioMessage
-{
-public:
-	CITANetAudioMessage( VistaSerializingToolset::ByteOrderSwapBehavior bSwapBuffers );
-
-	void ResetMessage();
-
-	void SetConnection( VistaConnectionIP* );
-
-	void WriteMessage();
-	void ReadMessage();
-	void WriteAnswer();
-	void ReadAnswer();
-
-	int GetIncomingMessageSize() const;
-	int GetOutgoingMessageSize() const;
-	bool GetOutgoingMessageHasData() const;
-
-	void SetMessageType( int nType );
-	void SetAnswerType( int nType );
-	int GetMessageType() const;
-	int GetAnswerType() const;
-
-	// --= Serializing functions =--
-
-	// Basics
-	void WriteInt( const int );
-	void WriteBool( const bool );
-	void WriteDouble( const double );
-	void WriteException( const ITAException& );
-	void WriteFloat( const float );
-	void WriteString( const std::string& );
-	void WriteIntVector( const std::vector< int > );
-	void WriteFloatVector( const std::vector< float > );
-
-
-	// --= Reader =--
-
-	std::string ReadString();
-	int ReadInt();
-	bool ReadBool();
-	ITAException ReadException();
-	float ReadFloat();
-	double ReadDouble();
-	std::vector< int > ReadIntVector();
-	std::vector< float > ReadFloatVector();
-	
-	VistaConnectionIP* GetConnection() const;
-	void ClearConnection();
-
-private:
-	int m_nMessageType;
-	int m_nMessageId;
-	int m_nAnswerType;
-	VistaByteBufferSerializer m_oOutgoing;
-	VistaByteBufferDeSerializer m_oIncoming;
-	std::vector< VistaType::byte > m_vecIncomingBuffer;
-
-	VistaConnectionIP* m_pConnection;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_PROTOCOL
