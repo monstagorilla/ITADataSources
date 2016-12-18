@@ -4,6 +4,7 @@
 #include <ITAException.h>
 #include <ITANetAudioMessage.h>
 #include <ITANetAudioProtocol.h>
+#include <ITANetAudioConnection.h>
 
 // Vista includes
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
@@ -15,113 +16,6 @@
 
 // STL
 #include <cmath>
-
-class CITANetAudioStreamConnection : public VistaThreadLoop
-{
-public:
-	enum MessageType
-	{
-		NET_MESSAGE_NONE = 0,
-		NET_MESSAGE_OPEN,
-		NET_MESSAGE_CLOSE,
-		NET_MESSAGE_SAMPLES,
-	};
-
-	inline CITANetAudioStreamConnection( CITANetAudioStream* pParent )
-		: m_pParent( pParent )
-		, m_pConnection( NULL )
-		, m_bStopIndicated( false )
-	{
-	};
-
-	inline bool Connect( const std::string& sAddress, int iPort )
-	{
-		if( m_pConnection )
-			ITA_EXCEPT1( MODAL_EXCEPTION, "This net stream is already connected" );
-
-		// Attempt to connect and check parameters
-		m_pConnection = new VistaConnectionIP( VistaConnectionIP::CT_TCP, sAddress, iPort );
-		if( !m_pConnection->GetIsConnected() )
-		{
-			delete m_pConnection;
-			m_pConnection = NULL;
-			return false;
-		}
-
-		int iMessageType = NET_MESSAGE_OPEN;
-		m_pConnection->Send( &iMessageType, sizeof( int ) );
-
-		int iNumChannels = ( int ) m_pParent->GetNumberOfChannels();
-		m_pConnection->Send( &iNumChannels, sizeof( int ) );
-		double dSampleRate = m_pParent->GetSampleRate();
-		m_pConnection->Send( &dSampleRate, sizeof( double ) );
-		int iBlockLength = ( int ) m_pParent->GetBlocklength();
-		m_pConnection->Send( &iBlockLength, sizeof( int ) );
-		int iRingBufferSize = ( int ) m_pParent->GetRingBufferSize();
-		m_pConnection->Send( &iRingBufferSize, sizeof( int ) );
-		m_pConnection->WaitForSendFinish();
-
-		int iServerMessageType;
-		m_pConnection->Receive( &iServerMessageType, sizeof( int ) );
-
-		Run();
-	};
-
-	inline void Disconnect()
-	{
-		m_bStopIndicated = true;
-		StopGently( true );
-
-		delete m_pConnection;
-		m_pConnection = NULL;
-
-		m_bStopIndicated = false;
-	};
-
-	inline ~CITANetAudioStreamConnection()
-	{
-		if( m_pConnection )
-		{
-			int iMessageType = NET_MESSAGE_CLOSE;
-			m_pConnection->Send( &iMessageType, sizeof( int ) );
-		}
-	};
-
-	inline bool LoopBody()
-	{
-		if( m_bStopIndicated )
-			return true;
-
-		// Receive messages
-		while( true )
-		{
-			m_pConnection->Receive( NULL, 0 ); // @todo: receive messages and react
-
-			int iNumSamples = 12;
-			if( true )
-				m_pParent->Transmit( m_sfReceivingBuffer, iNumSamples );
-		}
-	};
-
-
-	inline bool GetIsConnected()
-	{
-		if( m_pConnection )
-			return true;
-		else
-			return false;
-	};
-
-private:
-	CITANetAudioStream* m_pParent;
-
-	VistaConnectionIP* m_pConnection;
-	CITANetAudioProtocol* m_pProtocol;
-	CITANetAudioMessage* m_pMessage;
-
-	ITASampleFrame m_sfReceivingBuffer;
-	bool m_bStopIndicated;
-};
 
 CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity )
 	: m_sfOutputStreamBuffer( iChannels, iBufferSize, true )
