@@ -63,7 +63,7 @@ private:
 
 	int m_iReadCursor; //!< Cursor where samples will be consumed from ring buffer on next block
 	int m_iWriteCursor; //!< Cursor where samples will feeded into ring buffer from net audio producer
-	ITASampleFrame m_sfRingBuffer;
+	ITASampleFrame m_sfRingBuffer; //!< Buffer incoming data
 
 	friend class CITANetAudioStreamingClient;
 };

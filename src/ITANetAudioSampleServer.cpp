@@ -22,7 +22,7 @@ CITANetAudioSampleServer::CITANetAudioSampleServer()
 	: m_pInputStream( NULL )
 	, m_iUpdateStrategy( AUTO )
 {
-	m_pNetAudioServer = new CITANetAudioStreamServer( this );
+	m_pNetAudioServer = new CITANetAudioStreamingServer( this );
 }
 
 bool CITANetAudioSampleServer::Start( const std::string& sAddress, int iPort )

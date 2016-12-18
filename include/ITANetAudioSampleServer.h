@@ -27,7 +27,7 @@
 #include <ITASampleFrame.h>
 
 class ITADatasource;
-class CITANetAudioStreamServer;
+class CITANetAudioStreamingServer;
 
 //! Network audio sample server (for connecting a net audio stream)
 /**
@@ -69,13 +69,13 @@ protected:
 	ITADatasource* GetInputStream() const;
 
 private:
-	CITANetAudioStreamServer* m_pNetAudioServer;
+	CITANetAudioStreamingServer* m_pNetAudioServer;
 	ITASampleFrame m_sfTempTransmitBuffer;
 	ITADatasource* m_pInputStream;
 
 	int m_iUpdateStrategy;
 
-	friend class CITANetAudioStreamServer;
+	friend class CITANetAudioStreamingServer;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_SAMPLE_SERVER

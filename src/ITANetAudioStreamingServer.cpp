@@ -19,7 +19,7 @@
 #include <cmath>
 #include <cassert>
 
-CITANetAudioStreamServer::CITANetAudioStreamServer( CITANetAudioSampleServer* pParent )
+CITANetAudioStreamingServer::CITANetAudioStreamingServer( CITANetAudioSampleServer* pParent )
 	: m_pParent( pParent )
 	, m_bStopIndicated( false )
 	, m_pServer( NULL )
@@ -32,21 +32,21 @@ CITANetAudioStreamServer::CITANetAudioStreamServer( CITANetAudioSampleServer* pP
 {
 };
 
-CITANetAudioStreamServer::~CITANetAudioStreamServer()
+CITANetAudioStreamingServer::~CITANetAudioStreamingServer()
 {
 }
 
-std::string CITANetAudioStreamServer::GetServerAddress() const
+std::string CITANetAudioStreamingServer::GetServerAddress() const
 {
 	return m_sServerAddress;
 }
 
-int CITANetAudioStreamServer::GetNetworkPort() const
+int CITANetAudioStreamingServer::GetNetworkPort() const
 {
 	return m_iServerPort;
 }
 
-bool CITANetAudioStreamServer::Start( const std::string& sAddress, int iPort )
+bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort )
 {
 	if( m_pServer )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "This net sample server is already started" );
@@ -70,7 +70,7 @@ bool CITANetAudioStreamServer::Start( const std::string& sAddress, int iPort )
 	Run();
 }
 
-void CITANetAudioStreamServer::Disconnect()
+void CITANetAudioStreamingServer::Disconnect()
 {
 	m_bStopIndicated = true;
 	StopGently( true );
@@ -83,7 +83,7 @@ void CITANetAudioStreamServer::Disconnect()
 	m_bStopIndicated = false;
 }
 
-bool CITANetAudioStreamServer::IsConnected() const
+bool CITANetAudioStreamingServer::IsConnected() const
 {
 	if( !m_pSocket )
 		return false;
@@ -91,7 +91,7 @@ bool CITANetAudioStreamServer::IsConnected() const
 	return m_pSocket->GetIsConnected();
 }
 
-bool CITANetAudioStreamServer::LoopBody()
+bool CITANetAudioStreamingServer::LoopBody()
 {
 	if( m_bStopIndicated )
 		return true;

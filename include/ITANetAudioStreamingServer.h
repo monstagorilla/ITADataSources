@@ -37,11 +37,11 @@ class VistaTCPServer;
   * Can be connected to an ITADataSource as a streaming source
   * or to a user-implemented sample producer, i.e. an audio sythesizer.
   */
-class CITANetAudioStreamServer : public VistaThreadLoop
+class CITANetAudioStreamingServer : public VistaThreadLoop
 {
 public:
-	CITANetAudioStreamServer( CITANetAudioSampleServer* pParent );
-	virtual ~CITANetAudioStreamServer();
+	CITANetAudioStreamingServer( CITANetAudioSampleServer* pParent );
+	virtual ~CITANetAudioStreamingServer();
 
 	std::string GetServerAddress() const;
 	int GetNetworkPort() const;
