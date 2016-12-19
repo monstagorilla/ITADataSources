@@ -37,7 +37,7 @@ class VistaTCPServer;
   * Can be connected to an ITADataSource as a streaming source
   * or to a user-implemented sample producer, i.e. an audio sythesizer.
   */
-class CITANetAudioServer : public VistaThreadLoop
+class ITA_DATA_SOURCES_API CITANetAudioServer : public VistaThreadLoop
 {
 public:
 	CITANetAudioServer( CITANetAudioStreamingServer* pParent );
