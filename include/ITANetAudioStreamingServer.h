@@ -81,11 +81,13 @@ private:
 
 	friend class CITANetAudioServer;
 
-	// TODO: in nem Struct speichern
-	int m_iClientChannels;
-	int m_iClientRingBufferSize;
-	int m_iClientBufferSize;
-	double m_dClientSampleRate;
+	// TODO: in einem Struct speichern
+	struct InitData {
+		int iClientChannels;
+		int iClientRingBufferSize;
+		int iClientBufferSize;
+		double dClientSampleRate;
+	} m_initData;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_SERVER

@@ -33,6 +33,17 @@ bool CITANetAudioStreamingServer::Start(const std::string& sAddress, int iPort)
 	if (m_pNetAudioServer->Start(sAddress, iPort))
 	{
 		m_pSocket = m_pNetAudioServer->GetSocket();
+		// TODO: Init neu mit Netmessage 
+		long nIncomingBytes = m_pSocket->WaitForIncomingData(0);
+		int iBytesReceived = m_pSocket->ReceiveRaw(&m_initData, sizeof( InitData ));
+		m_iClientRingBufferFreeSamples = m_iClientRingBufferFreeSamples;
+
+		int iMessageID = 1;
+		m_pSocket->SendRaw(&iMessageID, sizeof(int));
+
+		Run();
+
+		return true;
 		return true;
 	}
 	return false;
@@ -90,5 +101,5 @@ ITADatasource* CITANetAudioStreamingServer::GetInputStream() const
 
 int CITANetAudioStreamingServer::Transmit(const ITASampleFrame& sfNewSamples, int iNumSamples)
 {
-	return 1;
+	return 0;
 }
