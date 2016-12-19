@@ -21,6 +21,7 @@
 
 #include <ITADataSourcesDefinitions.h>
 
+#include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 #include <ITADataSource.h>
 #include <ITASampleFrame.h>
 
@@ -28,6 +29,7 @@
 #include <vector>
 
 class CITANetAudioClient;
+class CITANetAudioStream;
 
 //! Network audio streaming client
 /**
