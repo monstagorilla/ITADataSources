@@ -39,7 +39,7 @@ class CITANetAudioClient : public VistaThreadLoop
 {
 public:
 
-	//! Create an network audio client tha feeds into a network audio stream
+	//! Create an network audio client that feeds into a network audio stream
 	/**
 	  * \param pParent ITADataSource-compatible audio stream
 	  */
