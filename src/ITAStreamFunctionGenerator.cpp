@@ -38,8 +38,6 @@ ITAStreamFunctionGenerator::ITAStreamFunctionGenerator(unsigned int uiChannels,
 	Reset();
 }
 
-ITAStreamFunctionGenerator::~ITAStreamFunctionGenerator() {}
-
 void ITAStreamFunctionGenerator::Reset()
 {
 	m_iSampleCount = 0;

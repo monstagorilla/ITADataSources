@@ -30,7 +30,8 @@ int main( int , char** )
 	cout << "Will now connect to '" << g_sServerName << "' on port " << g_iServerPort << endl;
 	try
 	{
-		oNetAudioStream.Connect( g_sServerName, g_iServerPort );
+		if( !oNetAudioStream.Connect( g_sServerName, g_iServerPort ) )
+			ITA_EXCEPT1( INVALID_PARAMETER, "Could not connect to server" );
 	}
 	catch( ITAException e )
 	{

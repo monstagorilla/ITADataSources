@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-class ITA_DATA_SOURCES_API CITANetAudioStreamConnection;
+class CITANetAudioClient;
 
 //! Network audio stream
 /**
@@ -35,16 +35,14 @@ class ITA_DATA_SOURCES_API CITANetAudioStreamConnection;
  *
  * \note not thread-safe
  */
-class CITANetAudioStream : public ITADatasource
+class ITA_DATA_SOURCES_API CITANetAudioStream : public ITADatasource
 {
 public:
 	CITANetAudioStream( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity );
 	virtual ~CITANetAudioStream();
 
 	bool Connect( const std::string& sAddress, int iPort );
-	bool IsConnected() const;
-	std::string GetNetworkAddress() const;
-	int GetNetworkPort() const;
+	bool GetIsConnected() const;
 
 	int GetRingBufferSize() const;
 	
@@ -58,16 +56,16 @@ protected:
 	int Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples );
 
 private:
-	CITANetAudioStreamConnection* m_pNetAudioProducer;
+	CITANetAudioClient* m_pNetAudioProducer;
 
 	double m_dSampleRate;
 	ITASampleFrame m_sfOutputStreamBuffer;
 
 	int m_iReadCursor; //!< Cursor where samples will be consumed from ring buffer on next block
 	int m_iWriteCursor; //!< Cursor where samples will feeded into ring buffer from net audio producer
-	ITASampleFrame m_sfRingBuffer;
+	ITASampleFrame m_sfRingBuffer; //!< Buffer incoming data
 
-	friend class CITANetAudioStreamConnection;
+	friend class CITANetAudioClient;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAM
