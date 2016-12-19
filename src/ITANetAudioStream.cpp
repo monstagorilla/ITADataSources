@@ -113,6 +113,8 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	
 {
 	m_pNetAudioProducer = new CITANetAudioStreamConnection( this );
+	m_iReadCursor = 0;
+	m_iWriteCursor = 0;
 }
 
 bool CITANetAudioStream::Connect( const std::string& sAddress, int iPort )
@@ -163,11 +165,7 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	}
 	else {
 		return m_sfRingBuffer.GetLength() - m_iWriteCursor + iCurrentReadCursor;
-	}
-		
-	// Threadsave programmieren
-
-	
+	}	
 }
 
 int CITANetAudioStream::GetRingBufferSize() const
