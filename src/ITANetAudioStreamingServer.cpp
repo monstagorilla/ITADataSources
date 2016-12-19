@@ -21,14 +21,21 @@
 CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	: m_pInputStream( NULL )
 	, m_iUpdateStrategy( AUTO )
+	, m_pSocket( NULL )
 {
-	m_pNetAudioServer = new CITANetAudioServer( this );
+	m_pNetAudioServer = new CITANetAudioServer();
 	// TODO: Init members
 }
 
-bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort )
+bool CITANetAudioStreamingServer::Start(const std::string& sAddress, int iPort)
 {
-	return m_pNetAudioServer->Start( sAddress, iPort );
+	// TODO: vorrückgabe noch anfangen zu senden (Samples)
+	if (m_pNetAudioServer->Start(sAddress, iPort))
+	{
+		m_pSocket = m_pNetAudioServer->GetSocket();
+		return true;
+	}
+	return false;
 }
 
 bool CITANetAudioStreamingServer::IsClientConnected() const
@@ -68,7 +75,7 @@ int CITANetAudioStreamingServer::GetNetStreamNumberOfChannels() const
 
 double CITANetAudioStreamingServer::GetNetStreamSampleRate() const
 {
-	return m_pNetAudioServer->GetClientSampleRate();
+	return m_dClientSampleRate;
 }
 
 void CITANetAudioStreamingServer::SetAutomaticUpdateRate()

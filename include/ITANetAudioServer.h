@@ -39,16 +39,15 @@ class VistaTCPServer;
 class ITA_DATA_SOURCES_API CITANetAudioServer
 {
 public:
-	CITANetAudioServer( CITANetAudioStreamingServer* pParent );
+	CITANetAudioServer();
 	virtual ~CITANetAudioServer();
 
 	std::string GetServerAddress() const;
 	int GetNetworkPort() const;
-	double GetClientSampleRate() const;
 	bool Start( const std::string& sAddress, int iPort );
+	VistaTCPSocket* GetSocket() const;
 	void Disconnect(); 
 	bool IsConnected() const; 
-	bool LoopBody();
 
 
 private:
@@ -57,12 +56,6 @@ private:
 
 	int m_iServerPort;
 	std::string m_sServerAddress;
-
-	CITANetAudioStreamingServer* m_pParent;
-
-	ITASampleFrame m_sfReceivingBuffer;
-
-	bool m_bStopIndicated;
 
 };
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_SERVER

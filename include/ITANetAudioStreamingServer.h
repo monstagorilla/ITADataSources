@@ -29,6 +29,7 @@
 
 class ITADatasource;
 class CITANetAudioServer;
+class VistaTCPSocket;
 
 //! Network audio sample server (for connecting a net audio stream)
 /**
@@ -73,15 +74,17 @@ private:
 	CITANetAudioServer* m_pNetAudioServer;
 	ITASampleFrame m_sfTempTransmitBuffer;
 	ITADatasource* m_pInputStream;
+	VistaTCPSocket* m_pSocket;
 
 	int m_iUpdateStrategy;
+	int m_iClientRingBufferFreeSamples;
 
 	friend class CITANetAudioServer;
 
+	// TODO: in nem Struct speichern
 	int m_iClientChannels;
 	int m_iClientRingBufferSize;
 	int m_iClientBufferSize;
-	int m_iClientRingBufferFreeSamples;
 	double m_dClientSampleRate;
 };
 
