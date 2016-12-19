@@ -46,6 +46,11 @@ int CITANetAudioServer::GetNetworkPort() const
 	return m_iServerPort;
 }
 
+double CITANetAudioServer::GetClientSampleRate() const
+{
+	return m_dClientSampleRate;
+}
+
 bool CITANetAudioServer::Start( const std::string& sAddress, int iPort )
 {
 	if( m_pServer )
@@ -58,6 +63,7 @@ bool CITANetAudioServer::Start( const std::string& sAddress, int iPort )
 	// blocking wait for connection
 	m_pSocket = m_pServer->GetNextClient();
 
+	// TODO: Init neu mit Netmessage
 	long nIncomingBytes = m_pSocket->WaitForIncomingData( 0 );
 	int iBytesReceived = m_pSocket->ReceiveRaw( &m_iClientChannels, sizeof( int ) );
 	iBytesReceived = m_pSocket->ReceiveRaw( &m_dClientSampleRate, sizeof( double ) );

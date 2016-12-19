@@ -23,6 +23,7 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	, m_iUpdateStrategy( AUTO )
 {
 	m_pNetAudioServer = new CITANetAudioServer( this );
+	// TODO: Init members
 }
 
 bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort )
@@ -45,9 +46,29 @@ int CITANetAudioStreamingServer::GetNetworkPort() const
 	return m_pNetAudioServer->GetNetworkPort();
 }
 
+void CITANetAudioStreamingServer::Stop() 
+{
+	m_pNetAudioServer->Disconnect();
+}
+
 void CITANetAudioStreamingServer::SetInputStream( ITADatasource* pInStream )
 {
 	m_pInputStream = pInStream;
+}
+
+int CITANetAudioStreamingServer::GetNetStreamBlocklength() const
+{
+	return m_sfTempTransmitBuffer.GetLength();
+}
+
+int CITANetAudioStreamingServer::GetNetStreamNumberOfChannels() const
+{
+	return m_sfTempTransmitBuffer.channels();
+}
+
+double CITANetAudioStreamingServer::GetNetStreamSampleRate() const
+{
+	return m_pNetAudioServer->GetClientSampleRate();
 }
 
 void CITANetAudioStreamingServer::SetAutomaticUpdateRate()
@@ -58,4 +79,9 @@ void CITANetAudioStreamingServer::SetAutomaticUpdateRate()
 ITADatasource* CITANetAudioStreamingServer::GetInputStream() const
 {
 	return m_pInputStream;
+}
+
+int CITANetAudioStreamingServer::Transmit(const ITASampleFrame& sfNewSamples, int iNumSamples)
+{
+	return 1;
 }

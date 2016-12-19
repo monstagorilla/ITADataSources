@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 #include <ITASampleFrame.h>
 
 class ITADatasource;
@@ -36,7 +37,7 @@ class CITANetAudioServer;
  * \sa CITANetAudioStream
  * \note not thread-safe
  */
-class ITA_DATA_SOURCES_API CITANetAudioStreamingServer
+class ITA_DATA_SOURCES_API CITANetAudioStreamingServer : public VistaThreadLoop
 {
 public:
 
@@ -54,7 +55,7 @@ public:
 	bool IsClientConnected() const;
 	std::string GetNetworkAddress() const;
 	int GetNetworkPort() const;
-	int Stop();
+	void Stop();
 
 	void SetInputStream( ITADatasource* pInStream );
 	
@@ -76,6 +77,12 @@ private:
 	int m_iUpdateStrategy;
 
 	friend class CITANetAudioServer;
+
+	int m_iClientChannels;
+	int m_iClientRingBufferSize;
+	int m_iClientBufferSize;
+	int m_iClientRingBufferFreeSamples;
+	double m_dClientSampleRate;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_SERVER

@@ -23,7 +23,6 @@
 
 #include <ITASampleFrame.h>
 
-#include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 
 #include <string>
 #include <vector>
@@ -37,7 +36,7 @@ class VistaTCPServer;
   * Can be connected to an ITADataSource as a streaming source
   * or to a user-implemented sample producer, i.e. an audio sythesizer.
   */
-class ITA_DATA_SOURCES_API CITANetAudioServer : public VistaThreadLoop
+class ITA_DATA_SOURCES_API CITANetAudioServer
 {
 public:
 	CITANetAudioServer( CITANetAudioStreamingServer* pParent );
@@ -45,8 +44,12 @@ public:
 
 	std::string GetServerAddress() const;
 	int GetNetworkPort() const;
+	double GetClientSampleRate() const;
 	bool Start( const std::string& sAddress, int iPort );
-	void Disconnect(); bool IsConnected() const; bool LoopBody();
+	void Disconnect(); 
+	bool IsConnected() const; 
+	bool LoopBody();
+
 
 private:
 	VistaTCPServer* m_pServer;
@@ -61,10 +64,5 @@ private:
 
 	bool m_bStopIndicated;
 
-	int m_iClientChannels;
-	int m_iClientRingBufferSize;
-	int m_iClientBufferSize;
-	int m_iClientRingBufferFreeSamples;
-	double m_dClientSampleRate;
 };
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_SERVER
