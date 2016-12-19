@@ -1,3 +1,5 @@
 CMakeCache.txt
 *.suo
 CMakeFiles
+*.bat
+*.exe
