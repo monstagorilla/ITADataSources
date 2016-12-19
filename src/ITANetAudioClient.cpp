@@ -1,17 +1,17 @@
-#include <ITANetAudioStreamingCLient.h>
+#include <ITANetAudioClient.h>
 #include <ITANetAudioStream.h>
 #include <ITANetAudioProtocol.h>
 
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
 
-CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pParent )
+CITANetAudioClient::CITANetAudioClient( CITANetAudioStream* pParent )
 	: m_pParent( pParent )
 	, m_pConnection( NULL )
 	, m_bStopIndicated( false )
 {
 }
 
-CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
+CITANetAudioClient::~CITANetAudioClient()
 {
 	if( m_pConnection )
 	{
@@ -20,7 +20,7 @@ CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 	}
 }
 
-bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPort )
+bool CITANetAudioClient::Connect( const std::string& sAddress, int iPort )
 {
 	if( m_pConnection )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "This net stream is already connected" );
@@ -51,9 +51,11 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 	m_pConnection->Receive( &iServerMessageType, sizeof( int ) );
 
 	Run();
+
+	return true;
 }
 
-void CITANetAudioStreamingClient::Disconnect()
+void CITANetAudioClient::Disconnect()
 {
 	m_bStopIndicated = true;
 	StopGently( true );
@@ -64,7 +66,7 @@ void CITANetAudioStreamingClient::Disconnect()
 	m_bStopIndicated = false;
 }
 
-bool CITANetAudioStreamingClient::LoopBody()
+bool CITANetAudioClient::LoopBody()
 {
 	if( m_bStopIndicated )
 		return true;
@@ -81,7 +83,7 @@ bool CITANetAudioStreamingClient::LoopBody()
 }
 
 
-bool CITANetAudioStreamingClient::GetIsConnected()
+bool CITANetAudioClient::GetIsConnected()
 {
 	if( m_pConnection )
 		return true;

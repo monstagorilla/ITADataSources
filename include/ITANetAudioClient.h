@@ -34,12 +34,12 @@ class VistaConnectionIP;
 class CITANetAudioMessage;
 class CITANetAudioProtocol;
 
-class CITANetAudioStreamingClient : public VistaThreadLoop
+class CITANetAudioClient : public VistaThreadLoop
 {
 public:
 
-	CITANetAudioStreamingClient( CITANetAudioStream* pParent );
-	~CITANetAudioStreamingClient();
+	CITANetAudioClient( CITANetAudioStream* pParent );
+	~CITANetAudioClient();
 
 	bool Connect( const std::string& sAddress, int iPort );
 	void Disconnect();

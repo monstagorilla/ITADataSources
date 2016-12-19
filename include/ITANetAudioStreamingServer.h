@@ -16,52 +16,66 @@
  *
  */
 
-#ifndef INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_SERVER
-#define INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_SERVER
+#ifndef INCLUDE_WATCHER_ITA_NET_AUDIO_SAMPLE_SERVER
+#define INCLUDE_WATCHER_ITA_NET_AUDIO_SAMPLE_SERVER
 
 #include <ITADataSourcesDefinitions.h>
-
-#include <ITASampleFrame.h>
-
-#include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 
 #include <string>
 #include <vector>
 
-class VistaTCPSocket;
-class CITANetAudioSampleServer;
-class VistaTCPServer;
+#include <ITASampleFrame.h>
 
-//! Realizes server functionality for network audio streaming
+class ITADatasource;
+class CITANetAudioServer;
+
+//! Network audio sample server (for connecting a net audio stream)
 /**
-  * Can be connected to an ITADataSource as a streaming source
-  * or to a user-implemented sample producer, i.e. an audio sythesizer.
-  */
-class CITANetAudioStreamingServer : public VistaThreadLoop
+ * Audio sample transmitter for a networked signal source that can connect via TCP/IP.
+ *
+ * \sa CITANetAudioStream
+ * \note not thread-safe
+ */
+class ITA_DATA_SOURCES_API CITANetAudioStreamingServer
 {
 public:
-	CITANetAudioStreamingServer( CITANetAudioSampleServer* pParent );
-	virtual ~CITANetAudioStreamingServer();
 
-	std::string GetServerAddress() const;
-	int GetNetworkPort() const;
+	enum UpdateStrategy
+	{
+		AUTO = 1, //!< Automatic update rate based on sample rate and block length of client (default)
+		ADAPTIVE, //!< Adaptive update rate, adjusts for drifting clocks
+		CONSTANT, //!< Set a user-defined update rate (may cause forced pausing of sample feeding or dropouts on client side)
+	};
+
+	CITANetAudioStreamingServer();
+	virtual ~CITANetAudioStreamingServer() {};
+
 	bool Start( const std::string& sAddress, int iPort );
-	void Disconnect(); bool IsConnected() const; bool LoopBody();
+	bool IsClientConnected() const;
+	std::string GetNetworkAddress() const;
+	int GetNetworkPort() const;
+	int Stop();
+
+	void SetInputStream( ITADatasource* pInStream );
+	
+	int GetNetStreamBlocklength() const;
+	int GetNetStreamNumberOfChannels() const;
+	double GetNetStreamSampleRate() const;
+
+	void SetAutomaticUpdateRate();
+
+protected:
+	int Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples );
+	ITADatasource* GetInputStream() const;
 
 private:
-	VistaTCPServer* m_pServer;
-	VistaTCPSocket* m_pSocket;
-	int m_iServerPort;
-	std::string m_sServerAddress;
-	CITANetAudioSampleServer* m_pParent;
-	ITASampleFrame m_sfReceivingBuffer;
+	CITANetAudioServer* m_pNetAudioServer;
+	ITASampleFrame m_sfTempTransmitBuffer;
+	ITADatasource* m_pInputStream;
 
-	bool m_bStopIndicated;
+	int m_iUpdateStrategy;
 
-	int m_iClientChannels;
-	int m_iClientRingBufferSize;
-	int m_iClientBufferSize;
-	int m_iClientRingBufferFreeSamples;
-	double m_dClientSampleRate;
+	friend class CITANetAudioServer;
 };
-#endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_SERVER
+
+#endif // INCLUDE_WATCHER_ITA_NET_AUDIO_SAMPLE_SERVER

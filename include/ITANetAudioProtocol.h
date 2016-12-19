@@ -37,7 +37,7 @@
 
 // Forward declarations
 class VistaConnectionIP;
-class CITANetAudioSampleServer;
+class CITANetAudioStreamingServer;
 class CITANetAudioStream;
 
 //! Network audio protocol

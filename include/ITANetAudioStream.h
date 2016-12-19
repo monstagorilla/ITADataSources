@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-class CITANetAudioStreamingClient;
+class CITANetAudioClient;
 
 //! Network audio stream
 /**
@@ -56,7 +56,7 @@ protected:
 	int Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples );
 
 private:
-	CITANetAudioStreamingClient* m_pNetAudioProducer;
+	CITANetAudioClient* m_pNetAudioProducer;
 
 	double m_dSampleRate;
 	ITASampleFrame m_sfOutputStreamBuffer;
@@ -65,7 +65,7 @@ private:
 	int m_iWriteCursor; //!< Cursor where samples will feeded into ring buffer from net audio producer
 	ITASampleFrame m_sfRingBuffer; //!< Buffer incoming data
 
-	friend class CITANetAudioStreamingClient;
+	friend class CITANetAudioClient;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAM

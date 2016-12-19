@@ -4,7 +4,7 @@
 #include <ITAException.h>
 #include <ITANetAudioMessage.h>
 #include <ITANetAudioProtocol.h>
-#include <ITANetAudioStreamingCLient.h>
+#include <ITANetAudioClient.h>
 
 // Vista includes
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
@@ -23,7 +23,7 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	, m_sfRingBuffer( iChannels, iRingBufferCapacity, true )
 	
 {
-	m_pNetAudioProducer = new CITANetAudioStreamingClient( this );
+	m_pNetAudioProducer = new CITANetAudioClient( this );
 }
 
 CITANetAudioStream::~CITANetAudioStream()
