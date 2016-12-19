@@ -1,7 +1,8 @@
 #include <iostream>
 #include <string>
 
-#include <ITANetAudioSampleServer.h>
+#include <ITANetAudioStreamingServer.h>
+#include <ITANetAudioServer.h>
 #include <ITAStreamFunctionGenerator.h>
 
 using namespace std;
@@ -15,11 +16,12 @@ int main( int , char** )
 {
 	ITAStreamFunctionGenerator oGenerator( 1, g_dSampleRate, g_iBlockLength, ITAStreamFunctionGenerator::SINE, 456.78f, 0.81f, true );
 
-	CITANetAudioSampleServer oSampleServer;
-	oSampleServer.SetInputStream( &oGenerator );
+	CITANetAudioStreamingServer oStreamingServer;
+	oStreamingServer.SetInputStream( &oGenerator );
 
+	CITANetAudioServer oServer( &oStreamingServer );
 	cout << "Starting server and waiting for connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
-	oSampleServer.Start( g_sServerName, g_iServerPort );
+	oServer.Start( g_sServerName, g_iServerPort );
 
 	int iKey;
 	cin >> iKey;

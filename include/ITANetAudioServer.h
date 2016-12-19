@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_SERVER
-#define INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_SERVER
+#ifndef INCLUDE_WATCHER_ITA_NET_AUDIO_SERVER
+#define INCLUDE_WATCHER_ITA_NET_AUDIO_SERVER
 
 #include <ITADataSourcesDefinitions.h>
 
@@ -67,4 +67,4 @@ private:
 	int m_iClientRingBufferFreeSamples;
 	double m_dClientSampleRate;
 };
-#endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_SERVER
+#endif // INCLUDE_WATCHER_ITA_NET_AUDIO_SERVER
