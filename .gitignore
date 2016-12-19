@@ -3,7 +3,13 @@ CMakeCache.txt
 CMakeFiles
 
 *.suo
+<<<<<<< HEAD
 
 *.bat
 *.exe
 *.wav
+=======
+CMakeFiles
+*.bat
+*.exe
+>>>>>>> develop
