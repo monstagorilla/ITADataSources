@@ -1,6 +1,8 @@
 #include <ITANetAudioClient.h>
-#include <ITANetAudioStream.h>
+
+#include <ITANetAudioMessage.h>
 #include <ITANetAudioProtocol.h>
+#include <ITANetAudioStream.h>
 
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
 
@@ -9,15 +11,19 @@ CITANetAudioClient::CITANetAudioClient( CITANetAudioStream* pParent )
 	, m_pConnection( NULL )
 	, m_bStopIndicated( false )
 {
+	m_pMessage = new CITANetAudioMessage( VistaSerializingToolset::SWAPS_MULTIBYTE_VALUES );
 }
 
 CITANetAudioClient::~CITANetAudioClient()
 {
 	if( m_pConnection )
 	{
-		int iMessageType = CITANetAudioProtocol::NP_CLIENT_CLOSE;
-		m_pConnection->Send( &iMessageType, sizeof( int ) );
+		m_pMessage->ResetMessage();
+		m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_CLOSE );
+		m_pMessage->WriteAnswer();
 	}
+
+	delete m_pMessage;
 }
 
 bool CITANetAudioClient::Connect( const std::string& sAddress, int iPort )
@@ -33,22 +39,13 @@ bool CITANetAudioClient::Connect( const std::string& sAddress, int iPort )
 		m_pConnection = NULL;
 		return false;
 	}
+	
+	m_pMessage->SetConnection( m_pConnection );
 
-	int iMessageType = CITANetAudioProtocol::NP_CLIENT_OPEN;
-	m_pConnection->Send( &iMessageType, sizeof( int ) );
-
-	int iNumChannels = ( int ) m_pParent->GetNumberOfChannels();
-	m_pConnection->Send( &iNumChannels, sizeof( int ) );
-	double dSampleRate = m_pParent->GetSampleRate();
-	m_pConnection->Send( &dSampleRate, sizeof( double ) );
-	int iBlockLength = ( int ) m_pParent->GetBlocklength();
-	m_pConnection->Send( &iBlockLength, sizeof( int ) );
-	int iRingBufferSize = ( int ) m_pParent->GetRingBufferSize();
-	m_pConnection->Send( &iRingBufferSize, sizeof( int ) );
-	m_pConnection->WaitForSendFinish();
-
-	int iServerMessageType;
-	m_pConnection->Receive( &iServerMessageType, sizeof( int ) );
+	m_pMessage->ResetMessage();
+	m_pMessage->WriteClientOpen();
+	m_pMessage->WriteMessage();
+	m_pMessage->ReadAnswer();
 
 	Run();
 
@@ -71,19 +68,26 @@ bool CITANetAudioClient::LoopBody()
 	if( m_bStopIndicated )
 		return true;
 
-	// Receive messages
-	while( true )
+	// Receive message
+	m_pMessage->ReadMessage();
+	switch( m_pMessage->GetMessageType() )
 	{
-		m_pConnection->Receive( NULL, 0 ); // @todo: receive messages and react
-
-		int iNumSamples = 12;
-		if( true )
-			m_pParent->Transmit( m_sfReceivingBuffer, iNumSamples );
+	case CITANetAudioProtocol::NP_INVALID:
+		break;
+	case CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES:
+		/*
+		int iNumSamples = m_pMessage->ReadSamples( m_sfReceivingBuffer );
+		m_pParent->Transmit( m_sfReceivingBuffer, iNumSamples );
+		int iFreeSamples = m_pParent->GetRingBufferFreeSamples();
+		m_pMessage->WriteFreeRingBufferSamples( iFreeSamples );
+		m_pMessage->WriteAnswer();
+		*/
+		break;
 	}
 }
 
 
-bool CITANetAudioClient::GetIsConnected()
+bool CITANetAudioClient::GetIsConnected() const
 {
 	if( m_pConnection )
 		return true;

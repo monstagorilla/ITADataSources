@@ -87,6 +87,8 @@ public:
 	std::vector< int > ReadIntVector();
 	std::vector< float > ReadFloatVector();
 
+	void WriteClientOpen();
+
 private:
 	int m_nMessageType;
 	int m_nMessageId;
