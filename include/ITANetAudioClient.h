@@ -29,22 +29,28 @@
 #include <string>
 #include <vector>
 
-class CITANetAudioStream;
-class VistaConnectionIP;
 class CITANetAudioMessage;
 class CITANetAudioProtocol;
+class CITANetAudioStream;
+
+class VistaConnectionIP;
 
 class CITANetAudioClient : public VistaThreadLoop
 {
 public:
 
+	//! Create an network audio client tha feeds into a network audio stream
+	/**
+	  * \param pParent ITADataSource-compatible audio stream
+	  */
 	CITANetAudioClient( CITANetAudioStream* pParent );
 	~CITANetAudioClient();
 
 	bool Connect( const std::string& sAddress, int iPort );
 	void Disconnect();
+	bool GetIsConnected() const;
+
 	bool LoopBody();
-	bool GetIsConnected();
 
 private:
 	CITANetAudioStream* m_pParent;

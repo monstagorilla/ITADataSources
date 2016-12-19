@@ -376,3 +376,8 @@ std::vector<int> CITANetAudioMessage::ReadIntVector()
 
 	return viData;
 }
+
+void CITANetAudioMessage::WriteClientOpen()
+{
+	SetMessageType( CITANetAudioProtocol::NP_CLIENT_OPEN );
+}
