@@ -19,15 +19,9 @@
 #include <cmath>
 #include <cassert>
 
-CITANetAudioServer::CITANetAudioServer( CITANetAudioStreamingServer* pParent )
-	: m_pParent( pParent )
-	, m_bStopIndicated( false )
-	, m_pServer( NULL )
+CITANetAudioServer::CITANetAudioServer()
+	: m_pServer( NULL )
 	, m_pSocket( NULL )
-	, m_iClientRingBufferSize( -1 )
-	, m_iClientBufferSize( -1 )
-	, m_iClientRingBufferFreeSamples( 0 )
-	, m_dClientSampleRate( -1 )
 	, m_iServerPort( -1 )
 {
 };
@@ -46,7 +40,7 @@ int CITANetAudioServer::GetNetworkPort() const
 	return m_iServerPort;
 }
 
-bool CITANetAudioServer::Start( const std::string& sAddress, int iPort )
+bool CITANetAudioServer::Start(const std::string& sAddress, int iPort)
 {
 	if( m_pServer )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "This net sample server is already started" );
@@ -57,33 +51,22 @@ bool CITANetAudioServer::Start( const std::string& sAddress, int iPort )
 
 	// blocking wait for connection
 	m_pSocket = m_pServer->GetNextClient();
-
-	long nIncomingBytes = m_pSocket->WaitForIncomingData( 0 );
-	int iBytesReceived = m_pSocket->ReceiveRaw( &m_iClientChannels, sizeof( int ) );
-	iBytesReceived = m_pSocket->ReceiveRaw( &m_dClientSampleRate, sizeof( double ) );
-	iBytesReceived = m_pSocket->ReceiveRaw( &m_iClientBufferSize, sizeof( int ) );
-	iBytesReceived = m_pSocket->ReceiveRaw( &m_iClientRingBufferSize, sizeof( int ) );
-	m_iClientRingBufferFreeSamples = m_iClientRingBufferFreeSamples;
-
-	int iMessageID = 1;
-	m_pSocket->SendRaw( &iMessageID, sizeof( int ) );
-
-	Run();
-
-	return true;
+	if (m_pSocket != NULL)
+		return true;
+	return false;
 }
+
+VistaTCPSocket* CITANetAudioServer::GetSocket() const
+{
+	return m_pSocket;
+}
+
 
 void CITANetAudioServer::Disconnect()
 {
-	m_bStopIndicated = true;
-	StopGently( true );
-
 	m_pSocket = NULL;
-
 	delete m_pServer;
 	m_pServer = NULL;
-
-	m_bStopIndicated = false;
 }
 
 bool CITANetAudioServer::IsConnected() const
@@ -92,28 +75,4 @@ bool CITANetAudioServer::IsConnected() const
 		return false;
 
 	return m_pSocket->GetIsConnected();
-}
-
-bool CITANetAudioServer::LoopBody()
-{
-	if( m_bStopIndicated )
-		return true;
-
-	if( m_pSocket->GetIsConnected() == false )
-	{
-		StopGently( true );
-		return false;
-	}
-
-	ITAStreamInfo oStreamInfo;
-
-	ITADatasource* pIn = m_pParent->GetInputStream();
-	for( int iChannelIndex = 0; iChannelIndex < int( m_pParent->GetInputStream()->GetNumberOfChannels() ); iChannelIndex++ )
-	{
-		const float* pfData = pIn->GetBlockPointer( iChannelIndex, &oStreamInfo );
-		int iNumSamples = pIn->GetBlocklength();
-		m_pSocket->SendRaw( pfData, iNumSamples * sizeof( float ) );
-	}
-
-	return true;
 }

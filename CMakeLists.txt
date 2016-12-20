@@ -54,6 +54,7 @@ set( ITADataSourcesHeader
 	"include/ITANetAudioStream.h"
 	"include/ITANetAudioStreamingClient.h"
 	"include/ITANetAudioStreamingServer.h"
+	"include/ITANetAudioStreamingClient.h"
 	"include/ITAPeakDetector.h"
 	"include/ITARMSDetector.h"
 	"include/ITAStreamAmplifier.h"

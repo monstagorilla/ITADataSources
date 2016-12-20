@@ -21,13 +21,32 @@
 CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	: m_pInputStream( NULL )
 	, m_iUpdateStrategy( AUTO )
+	, m_pSocket( NULL )
 {
-	m_pNetAudioServer = new CITANetAudioServer( this );
+	m_pNetAudioServer = new CITANetAudioServer();
+	// TODO: Init members
 }
 
-bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort )
+bool CITANetAudioStreamingServer::Start(const std::string& sAddress, int iPort)
 {
-	return m_pNetAudioServer->Start( sAddress, iPort );
+	// TODO: vorrückgabe noch anfangen zu senden (Samples)
+	if (m_pNetAudioServer->Start(sAddress, iPort))
+	{
+		m_pSocket = m_pNetAudioServer->GetSocket();
+		// TODO: Init neu mit Netmessage 
+		long nIncomingBytes = m_pSocket->WaitForIncomingData(0);
+		int iBytesReceived = m_pSocket->ReceiveRaw(&m_initData, sizeof( InitData ));
+		m_iClientRingBufferFreeSamples = m_iClientRingBufferFreeSamples;
+
+		int iMessageID = 1;
+		m_pSocket->SendRaw(&iMessageID, sizeof(int));
+
+		Run();
+
+		return true;
+		return true;
+	}
+	return false;
 }
 
 bool CITANetAudioStreamingServer::IsClientConnected() const
@@ -45,9 +64,29 @@ int CITANetAudioStreamingServer::GetNetworkPort() const
 	return m_pNetAudioServer->GetNetworkPort();
 }
 
+void CITANetAudioStreamingServer::Stop() 
+{
+	m_pNetAudioServer->Disconnect();
+}
+
 void CITANetAudioStreamingServer::SetInputStream( ITADatasource* pInStream )
 {
 	m_pInputStream = pInStream;
+}
+
+int CITANetAudioStreamingServer::GetNetStreamBlocklength() const
+{
+	return m_sfTempTransmitBuffer.GetLength();
+}
+
+int CITANetAudioStreamingServer::GetNetStreamNumberOfChannels() const
+{
+	return m_sfTempTransmitBuffer.channels();
+}
+
+double CITANetAudioStreamingServer::GetNetStreamSampleRate() const
+{
+	return m_initData.dClientSampleRate;
 }
 
 void CITANetAudioStreamingServer::SetAutomaticUpdateRate()
@@ -58,4 +97,9 @@ void CITANetAudioStreamingServer::SetAutomaticUpdateRate()
 ITADatasource* CITANetAudioStreamingServer::GetInputStream() const
 {
 	return m_pInputStream;
+}
+
+int CITANetAudioStreamingServer::Transmit(const ITASampleFrame& sfNewSamples, int iNumSamples)
+{
+	return 0;
 }

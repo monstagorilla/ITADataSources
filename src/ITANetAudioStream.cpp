@@ -18,6 +18,8 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 		ITA_EXCEPT1( INVALID_PARAMETER, "Ring buffer capacity can not be smaller than buffer size." );
 
 	m_pNetAudioStreamingClient = new CITANetAudioStreamingClient( this );
+	m_iReadCursor = 0;
+	m_iWriteCursor = 0;
 }
 
 CITANetAudioStream::~CITANetAudioStream()
@@ -37,7 +39,15 @@ bool CITANetAudioStream::GetIsConnected() const
 
 const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* )
 {
-	// @todo: implement cyclic read from ring buffer
+	// @todo: is connected?
+	int iCurrentWritePointer = m_iWriteCursor;
+	if (iCurrentWritePointer > m_iReadCursor) {
+		m_sfOutputStreamBuffer[uiChannel].cyclic_write(&m_sfRingBuffer[uiChannel], 
+			m_sfOutputStreamBuffer.GetLength(), m_iReadCursor, iCurrentWritePointer);
+	} else {
+		// in diesem Block alle Kanaele auf 0 setzen
+		m_sfOutputStreamBuffer[uiChannel].Zero();
+	}
 	
 	return m_sfOutputStreamBuffer[ uiChannel ].GetData();
 }
@@ -50,7 +60,22 @@ void CITANetAudioStream::IncrementBlockPointer()
 
 int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples )
 {
-	ITA_EXCEPT0( NOT_IMPLEMENTED );
+	int iCurrentReadCursor = m_iReadCursor;
+
+	//kopiert Samples in den RingBuffer
+	m_sfRingBuffer.cyclic_write(sfNewSamples, iNumSamples, 
+		iCurrentReadCursor, m_iWriteCursor);
+
+	// Schreibpointer weiter setzen
+	m_iWriteCursor = ( m_iWriteCursor + iNumSamples ) % m_sfRingBuffer.GetLength();
+
+	// Gibt freien Platz im RingBuffer zurueck
+	if (iCurrentReadCursor > m_iWriteCursor) {
+		return m_iWriteCursor - iCurrentReadCursor;
+	}
+	else {
+		return m_sfRingBuffer.GetLength() - m_iWriteCursor + iCurrentReadCursor;
+	}	
 }
 
 int CITANetAudioStream::GetRingbufferFreeSamples()
