@@ -3,6 +3,7 @@
 
 // ITA includes
 #include <ITADataSource.h>
+#include <ITANetAudioMessage.h>
 #include <ITAException.h>
 #include <ITAStreamInfo.h>
 
@@ -21,7 +22,7 @@
 CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	: m_pInputStream( NULL )
 	, m_iUpdateStrategy( AUTO )
-	, m_pSocket( NULL )
+	, m_pConnection( NULL )
 {
 	m_pNetAudioServer = new CITANetAudioServer();
 	// TODO: Init members
@@ -30,22 +31,27 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 bool CITANetAudioStreamingServer::Start(const std::string& sAddress, int iPort)
 {
 	// TODO: vorrückgabe noch anfangen zu senden (Samples)
-	if (m_pNetAudioServer->Start(sAddress, iPort))
-	{
-		m_pSocket = m_pNetAudioServer->GetSocket();
-		// TODO: Init neu mit Netmessage 
-		long nIncomingBytes = m_pSocket->WaitForIncomingData(0);
-		m_iClientRingBufferFreeSamples = m_iClientRingBufferFreeSamples;
+	if (!m_pNetAudioServer->Start(sAddress, iPort))
+		return false;
 
-		int iMessageID = 1;
-		m_pSocket->SendRaw(&iMessageID, sizeof(int));
+	m_pConnection = m_pNetAudioServer->GetConnetion();
+	m_pMessage->SetConnection( m_pConnection );
 
-		Run();
+	// Get Streaming Parameters from Client
+	m_pMessage->ReadAnswer();
+	CITANetAudioProtocol::StreamingParameters m_oServerParams = m_pMessage->ReadStreamingParameters();
+	
+	// Send Streaming Parameters from Client back
+	m_pMessage->ResetMessage();
+	m_pMessage->SetMessageType(CITANetAudioProtocol::NP_SERVER_OPEN);
+	m_pMessage->WriteStreamingParameters(m_oServerParams);
+	m_pMessage->WriteMessage();
 
-		return true;
-		return true;
-	}
-	return false;
+
+	Run();
+	
+	return true;
+
 }
 
 bool CITANetAudioStreamingServer::IsClientConnected() const

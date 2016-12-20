@@ -43,14 +43,13 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 	// Validate streaming parameters of server and client
 	m_pMessage->ResetMessage();
 	m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_OPEN );
-	m_pMessage->WriteStreamingParameters( m_oClientParams );
+	m_pMessage->WriteStreamingParameters( m_oParams );
 	m_pMessage->WriteMessage();
 
 	m_pMessage->ReadAnswer();
+	// NOTE: Wieso speichern wir beie paras, nach einmal vergleichen, sollten doch sowieso beide gleich sein
 	CITANetAudioProtocol::StreamingParameters oServerParams = m_pMessage->ReadStreamingParameters();
-	if( oServerParams == m_oClientParams )
-		m_oServerParams = oServerParams;
-	else
+	if (!(oServerParams == m_oParams))
 		ITA_EXCEPT1( INVALID_PARAMETER, "Streaming parameters of network audio server and client do not match." );
 
 	Run();

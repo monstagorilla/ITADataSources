@@ -64,8 +64,7 @@ private:
 
 	ITASampleFrame m_sfReceivingBuffer; //!< Buffer incoming data
 
-	CITANetAudioProtocol::StreamingParameters m_oClientParams;
-	CITANetAudioProtocol::StreamingParameters m_oServerParams;
+	CITANetAudioProtocol::StreamingParameters m_oParams;
 
 	bool m_bStopIndicated;
 

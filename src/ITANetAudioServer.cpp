@@ -23,6 +23,7 @@ CITANetAudioServer::CITANetAudioServer()
 	: m_pServer( NULL )
 	, m_pSocket( NULL )
 	, m_iServerPort( -1 )
+	, m_pConnection( NULL )
 {
 };
 
@@ -51,14 +52,16 @@ bool CITANetAudioServer::Start(const std::string& sAddress, int iPort)
 
 	// blocking wait for connection
 	m_pSocket = m_pServer->GetNextClient();
+
 	if (m_pSocket != NULL)
+		m_pConnection = new VistaConnectionIP(m_pSocket);
 		return true;
 	return false;
 }
 
-VistaTCPSocket* CITANetAudioServer::GetSocket() const
+VistaConnectionIP* CITANetAudioServer::GetConnetion() const
 {
-	return m_pSocket;
+	return m_pConnection;
 }
 
 

@@ -16,12 +16,11 @@ int main( int , char** )
 {
 	ITAStreamFunctionGenerator oGenerator( 1, g_dSampleRate, g_iBlockLength, ITAStreamFunctionGenerator::SINE, 456.78f, 0.81f, true );
 
-	CITANetAudioStreamingServer oStreamingServer;
-	oStreamingServer.SetInputStream( &oGenerator );
+	//CITANetAudioStream oStreamingServer;
+	//oStreamingServer.SetInputStream( &oGenerator );
 
-	CITANetAudioServer oServer( &oStreamingServer );
 	cout << "Starting server and waiting for connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
-	oServer.Start( g_sServerName, g_iServerPort );
+	//oStreamingServer.Start(g_sServerName, g_iServerPort);
 
 	int iKey;
 	cin >> iKey;

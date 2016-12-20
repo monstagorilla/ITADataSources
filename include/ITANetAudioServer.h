@@ -21,6 +21,8 @@
 
 #include <ITADataSourcesDefinitions.h>
 
+#include <ITANetAudioProtocol.h>
+
 #include <ITASampleFrame.h>
 
 
@@ -44,8 +46,9 @@ public:
 
 	std::string GetServerAddress() const;
 	int GetNetworkPort() const;
-	bool Start( const std::string& sAddress, int iPort );
-	VistaTCPSocket* GetSocket() const;
+	bool Start(const std::string& sAddress, int iPort);
+	VistaConnectionIP* GetConnetion() const;
+
 	void Disconnect(); 
 	bool IsConnected() const; 
 
@@ -53,6 +56,7 @@ public:
 private:
 	VistaTCPServer* m_pServer;
 	VistaTCPSocket* m_pSocket;
+	VistaConnectionIP* m_pConnection;
 
 	int m_iServerPort;
 	std::string m_sServerAddress;

@@ -24,12 +24,15 @@
 #include <string>
 #include <vector>
 
+#include <ITANetAudioProtocol.h>
+
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 #include <ITASampleFrame.h>
 
 class ITADatasource;
+class CITANetAudioMessage;
+class CITANetAudioProtocol;
 class CITANetAudioServer;
-class VistaTCPSocket;
 
 //! Network audio sample server (for connecting a net audio stream)
 /**
@@ -74,7 +77,12 @@ private:
 	CITANetAudioServer* m_pNetAudioServer;
 	ITASampleFrame m_sfTempTransmitBuffer;
 	ITADatasource* m_pInputStream;
-	VistaTCPSocket* m_pSocket;
+
+	CITANetAudioProtocol* m_pProtocol;
+	CITANetAudioMessage* m_pMessage;
+	VistaConnectionIP* m_pConnection;
+
+	CITANetAudioProtocol::StreamingParameters m_oServerParams;
 
 	int m_iUpdateStrategy;
 	int m_iClientRingBufferFreeSamples;
