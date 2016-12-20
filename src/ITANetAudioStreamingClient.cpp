@@ -13,9 +13,9 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 {
 	m_pClient = new CITANetAudioClient();
 
-	m_oClientParams.iChannels = pParent->GetNumberOfChannels();
-	m_oClientParams.dSampleRate = pParent->GetSampleRate();
-	m_oClientParams.iBlockSize = pParent->GetBlocklength();
+	m_oParams.iChannels = pParent->GetNumberOfChannels();
+	m_oParams.dSampleRate = pParent->GetSampleRate();
+	m_oParams.iBlockSize = pParent->GetBlocklength();
 }
 
 CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
