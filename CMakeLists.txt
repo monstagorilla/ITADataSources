@@ -77,6 +77,7 @@ set( ITADataSourcesSources
 	"src/ITANetAudioMessage.cpp"
 	"src/ITANetAudioProtocol.cpp"
 	"src/ITANetAudioStream.cpp"
+	"src/ITANetAudioStreamingClient.cpp"
 	"src/ITANetAudioStreamingServer.cpp"
 	"src/ITANetAudioServer.cpp"
 	"src/ITAPeakDetector.cpp"
