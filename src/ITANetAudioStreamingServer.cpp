@@ -35,7 +35,6 @@ bool CITANetAudioStreamingServer::Start(const std::string& sAddress, int iPort)
 		m_pSocket = m_pNetAudioServer->GetSocket();
 		// TODO: Init neu mit Netmessage 
 		long nIncomingBytes = m_pSocket->WaitForIncomingData(0);
-		int iBytesReceived = m_pSocket->ReceiveRaw(&m_initData, sizeof( InitData ));
 		m_iClientRingBufferFreeSamples = m_iClientRingBufferFreeSamples;
 
 		int iMessageID = 1;
@@ -82,11 +81,6 @@ int CITANetAudioStreamingServer::GetNetStreamBlocklength() const
 int CITANetAudioStreamingServer::GetNetStreamNumberOfChannels() const
 {
 	return m_sfTempTransmitBuffer.channels();
-}
-
-double CITANetAudioStreamingServer::GetNetStreamSampleRate() const
-{
-	return m_initData.dClientSampleRate;
 }
 
 void CITANetAudioStreamingServer::SetAutomaticUpdateRate()

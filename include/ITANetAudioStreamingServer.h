@@ -80,14 +80,6 @@ private:
 	int m_iClientRingBufferFreeSamples;
 
 	friend class CITANetAudioServer;
-
-	// TODO: in einem Struct speichern
-	struct InitData {
-		int iClientChannels;
-		int iClientRingBufferSize;
-		int iClientBufferSize;
-		double dClientSampleRate;
-	} m_initData;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_SERVER
