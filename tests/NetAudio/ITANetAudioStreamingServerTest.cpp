@@ -19,8 +19,9 @@ int main( int , char** )
 	CITANetAudioStreamingServer oStreamingServer;
 	oStreamingServer.SetInputStream( &oGenerator );
 
+	CITANetAudioServer oServer( &oStreamingServer );
 	cout << "Starting server and waiting for connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
-	oStreamingServer.Start(g_sServerName, g_iServerPort);
+	oServer.Start( g_sServerName, g_iServerPort );
 
 	int iKey;
 	cin >> iKey;

@@ -22,12 +22,11 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	: m_pInputStream( NULL )
 	, m_iUpdateStrategy( AUTO )
 {
-	m_pNetAudioServer = new CITANetAudioServer(  );
+	m_pNetAudioServer = new CITANetAudioServer( this );
 }
 
 bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort )
 {
-	// TODO: soket holen und initdata empfangen und dann Run();
 	return m_pNetAudioServer->Start( sAddress, iPort );
 }
 
@@ -59,9 +58,4 @@ void CITANetAudioStreamingServer::SetAutomaticUpdateRate()
 ITADatasource* CITANetAudioStreamingServer::GetInputStream() const
 {
 	return m_pInputStream;
-}
-
-bool CITANetAudioStreamingServer::LoopBody()
-{
-	return false;
 }
