@@ -86,7 +86,7 @@ int CITANetAudioStreamingServer::GetNetStreamNumberOfChannels() const
 
 double CITANetAudioStreamingServer::GetNetStreamSampleRate() const
 {
-	return m_dClientSampleRate;
+	return m_initData.dClientSampleRate;
 }
 
 void CITANetAudioStreamingServer::SetAutomaticUpdateRate()
