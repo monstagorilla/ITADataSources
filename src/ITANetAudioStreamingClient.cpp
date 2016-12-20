@@ -88,6 +88,8 @@ bool CITANetAudioStreamingClient::LoopBody()
 		m_pMessage->WriteAnswer();
 		*/
 		break;
+	case CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE :
+		break;
 	}
 }
 

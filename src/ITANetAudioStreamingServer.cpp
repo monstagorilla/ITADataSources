@@ -68,6 +68,10 @@ int CITANetAudioStreamingServer::GetNetworkPort() const
 {
 	return m_pNetAudioServer->GetNetworkPort();
 }
+bool CITANetAudioStreamingServer::LoopBody()
+{
+	return true;
+}
 
 void CITANetAudioStreamingServer::Stop() 
 {

@@ -59,6 +59,7 @@ public:
 	bool IsClientConnected() const;
 	std::string GetNetworkAddress() const;
 	int GetNetworkPort() const;
+	bool LoopBody();
 	void Stop();
 
 	void SetInputStream( ITADatasource* pInStream );
