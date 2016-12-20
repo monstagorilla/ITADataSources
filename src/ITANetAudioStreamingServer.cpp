@@ -1,5 +1,6 @@
 #include <ITANetAudioStreamingServer.h>
 #include <ITANetAudioServer.h>
+#include <ITANetAudioMessage.h>
 
 // ITA includes
 #include <ITADataSource.h>
@@ -9,7 +10,6 @@
 // Vista includes
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
-#include <VistaInterProcComm/IPNet/VistaTCPServer.h>
 #include <VistaInterProcComm/IPNet/VistaTCPSocket.h>
 #include <VistaBase/VistaTimeUtils.h>
 #include <VistaInterProcComm/IPNet/VistaIPAddress.h>
@@ -21,30 +21,37 @@
 CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	: m_pInputStream( NULL )
 	, m_iUpdateStrategy( AUTO )
-	, m_pSocket( NULL )
+	, m_pConnection( NULL )
 {
 	m_pNetAudioServer = new CITANetAudioServer();
-	// TODO: Init members
+	m_pMessage = new CITANetAudioMessage( VistaSerializingToolset::SWAPS_MULTIBYTE_VALUES );
 }
 
-bool CITANetAudioStreamingServer::Start(const std::string& sAddress, int iPort)
+bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort )
 {
 	// TODO: vorrückgabe noch anfangen zu senden (Samples)
-	if (m_pNetAudioServer->Start(sAddress, iPort))
+	if( m_pNetAudioServer->Start( sAddress, iPort ) )
 	{
-		m_pSocket = m_pNetAudioServer->GetSocket();
-		// TODO: Init neu mit Netmessage 
-		long nIncomingBytes = m_pSocket->WaitForIncomingData(0);
-		m_iClientRingBufferFreeSamples = m_iClientRingBufferFreeSamples;
+		m_pConnection = m_pNetAudioServer->GetConnection();
+		
+		m_pMessage->ResetMessage();
+		m_pMessage->SetConnection( m_pConnection );
+		m_pMessage->ReadMessage();
 
-		int iMessageID = 1;
-		m_pSocket->SendRaw(&iMessageID, sizeof(int));
+		int nMT = m_pMessage->GetMessageType();
+		assert( nMT == CITANetAudioProtocol::NP_CLIENT_OPEN );
+
+		CITANetAudioProtocol::StreamingParameters oClientParams = m_pMessage->ReadStreamingParameters();
+
+		m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_OPEN );
+		m_pMessage->WriteBool( true );
+		m_pMessage->WriteAnswer();
 
 		Run();
 
 		return true;
-		return true;
 	}
+
 	return false;
 }
 
@@ -65,7 +72,7 @@ int CITANetAudioStreamingServer::GetNetworkPort() const
 
 void CITANetAudioStreamingServer::Stop() 
 {
-	m_pNetAudioServer->Disconnect();
+	m_pNetAudioServer->Stop();
 }
 
 void CITANetAudioStreamingServer::SetInputStream( ITADatasource* pInStream )

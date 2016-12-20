@@ -22,12 +22,15 @@
 CITANetAudioServer::CITANetAudioServer()
 	: m_pServer( NULL )
 	, m_pSocket( NULL )
+	, m_pConnection( NULL )
 	, m_iServerPort( -1 )
 {
 };
 
 CITANetAudioServer::~CITANetAudioServer()
 {
+	delete m_pConnection;
+	delete m_pServer;
 }
 
 std::string CITANetAudioServer::GetServerAddress() const
@@ -51,28 +54,35 @@ bool CITANetAudioServer::Start(const std::string& sAddress, int iPort)
 
 	// blocking wait for connection
 	m_pSocket = m_pServer->GetNextClient();
-	if (m_pSocket != NULL)
-		return true;
-	return false;
+	if( !m_pSocket )
+		return false;
+	if( m_pSocket->GetIsConnected() )
+		m_pConnection = new VistaConnectionIP( m_pSocket );
+
+	if( !m_pConnection )
+		return false;
+
+	return true;
 }
 
-VistaTCPSocket* CITANetAudioServer::GetSocket() const
+VistaConnectionIP* CITANetAudioServer::GetConnection() const
 {
-	return m_pSocket;
+	return m_pConnection;
 }
 
 
-void CITANetAudioServer::Disconnect()
+void CITANetAudioServer::Stop()
 {
+	delete m_pConnection;
+	m_pConnection = NULL;
+
 	m_pSocket = NULL;
+
 	delete m_pServer;
 	m_pServer = NULL;
 }
 
 bool CITANetAudioServer::IsConnected() const
 {
-	if( !m_pSocket )
-		return false;
-
-	return m_pSocket->GetIsConnected();
+	return m_pConnection ? true : false;
 }
