@@ -88,6 +88,11 @@ void CITANetAudioStreamingServer::SetAutomaticUpdateRate()
 	m_iUpdateStrategy = AUTO;
 }
 
+bool CITANetAudioStreamingServer::LoopBody()
+{
+	return true;
+}
+
 ITADatasource* CITANetAudioStreamingServer::GetInputStream() const
 {
 	return m_pInputStream;
