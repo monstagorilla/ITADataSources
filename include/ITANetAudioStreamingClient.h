@@ -21,6 +21,8 @@
 
 #include <ITADataSourcesDefinitions.h>
 
+#include <ITANetAudioProtocol.h>
+
 #include <ITASampleFrame.h>
 
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
@@ -43,7 +45,7 @@ class CITANetAudioStream;
 class ITA_DATA_SOURCES_API CITANetAudioStreamingClient : public VistaThreadLoop
 {
 public:
-	CITANetAudioStreamingClient( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity );
+	CITANetAudioStreamingClient( CITANetAudioStream* pParent );
 	virtual ~CITANetAudioStreamingClient();
 
 	bool Connect( const std::string& sAddress, int iPort );
@@ -59,6 +61,9 @@ private:
 	CITANetAudioMessage* m_pMessage;
 
 	ITASampleFrame m_sfReceivingBuffer; //!< Buffer incoming data
+
+	CITANetAudioProtocol::StreamingParameters m_oClientParams;
+	CITANetAudioProtocol::StreamingParameters m_oServerParams;
 
 	friend class CITANetAudioClient;
 };

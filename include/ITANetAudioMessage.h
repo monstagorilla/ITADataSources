@@ -25,6 +25,7 @@
 #include <ITAException.h>
 #include <ITASampleBuffer.h>
 #include <ITASampleFrame.h>
+#include <ITANetAudioProtocol.h>
 
 // Vista includes
 #include <VistaInterProcComm/Connections/VistaByteBufferSerializer.h>
@@ -77,6 +78,7 @@ public:
 	void WriteString( const std::string& );
 	void WriteIntVector( const std::vector< int > );
 	void WriteFloatVector( const std::vector< float > );
+	void WriteStreamingParameters( const CITANetAudioProtocol::StreamingParameters &);
 
 	std::string ReadString();
 	int ReadInt();
@@ -86,8 +88,8 @@ public:
 	double ReadDouble();
 	std::vector< int > ReadIntVector();
 	std::vector< float > ReadFloatVector();
+	CITANetAudioProtocol::StreamingParameters ReadStreamingParameters();
 
-	void WriteClientOpen();
 
 private:
 	int m_nMessageType;

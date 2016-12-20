@@ -38,7 +38,7 @@ class CITANetAudioStreamingClient;
 class ITA_DATA_SOURCES_API CITANetAudioStream : public ITADatasource
 {
 public:
-	CITANetAudioStream( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity );
+	CITANetAudioStream( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity = 2048 );
 	virtual ~CITANetAudioStream();
 
 	bool Connect( const std::string& sAddress, int iPort );
@@ -53,7 +53,16 @@ public:
 	void IncrementBlockPointer();
 
 protected:
+	//! This method is called by the streaming client and pushes sampes into the ring buffer
+	/**
+	  * \param sfNewSamples Sample buffer (multi channel) with sample data
+	  * \param iNumSamples samples to be read from the sample frame (must be smaller or equal length)
+	  *
+	  * \return Number of free samples in ring buffer
+	  */
 	int Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples );
+
+	int GetRingbufferFreeSamples();
 
 private:
 	CITANetAudioStreamingClient* m_pNetAudioStreamingClient;

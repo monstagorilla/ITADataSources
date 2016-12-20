@@ -1,5 +1,4 @@
 #include <ITANetAudioMessage.h>
-#include <ITANetAudioProtocol.h>
 
 #include <ITAStringUtils.h>
 
@@ -377,7 +376,20 @@ std::vector<int> CITANetAudioMessage::ReadIntVector()
 	return viData;
 }
 
-void CITANetAudioMessage::WriteClientOpen()
+CITANetAudioProtocol::StreamingParameters CITANetAudioMessage::ReadStreamingParameters()
 {
-	SetMessageType( CITANetAudioProtocol::NP_CLIENT_OPEN );
+	CITANetAudioProtocol::StreamingParameters oParams;
+
+	oParams.iChannels = ReadInt();
+	oParams.dSampleRate = ReadDouble();
+	oParams.iBlockSize = ReadInt();
+
+	return oParams;
+}
+
+void CITANetAudioMessage::WriteStreamingParameters( const CITANetAudioProtocol::StreamingParameters & oParams )
+{
+	WriteInt( oParams.iChannels );
+	WriteDouble( oParams.dSampleRate );
+	WriteInt( oParams.iBlockSize );
 }
