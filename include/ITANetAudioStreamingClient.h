@@ -50,6 +50,7 @@ public:
 
 	bool Connect( const std::string& sAddress, int iPort );
 	bool GetIsConnected() const;
+	void Disconnect();
 
 	bool LoopBody();
 
@@ -59,11 +60,14 @@ private:
 
 	CITANetAudioProtocol* m_pProtocol;
 	CITANetAudioMessage* m_pMessage;
+	VistaConnectionIP* m_pConnection;
 
 	ITASampleFrame m_sfReceivingBuffer; //!< Buffer incoming data
 
 	CITANetAudioProtocol::StreamingParameters m_oClientParams;
 	CITANetAudioProtocol::StreamingParameters m_oServerParams;
+
+	bool m_bStopIndicated;
 
 	friend class CITANetAudioClient;
 };

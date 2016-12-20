@@ -12,7 +12,6 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	: m_sfOutputStreamBuffer( iChannels, iBufferSize, true )
 	, m_dSampleRate( dSamplingRate )
 	, m_sfRingBuffer( iChannels, iRingBufferCapacity, true )
-	, m_dSampleRate( dSamplingRate )
 	
 {
 	if( iBufferSize > iRingBufferCapacity )

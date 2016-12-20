@@ -1,15 +1,17 @@
-#include <ITANetAudioStreamingCLient.h>
+#include <ITANetAudioStreamingClient.h>
+
+#include <ITANetAudioClient.h>
+#include <ITANetAudioMessage.h>
 #include <ITANetAudioStream.h>
-#include <ITANetAudioProtocol.h>
 
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
 
 CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pParent )
-	: m_pParent( pParent )
+	: m_pStream( pParent )
 	, m_pConnection( NULL )
 	, m_bStopIndicated( false )
 {
-	m_pClient = new CITANetAudioClient( this );
+	m_pClient = new CITANetAudioClient();
 
 	m_oClientParams.iChannels = pParent->GetNumberOfChannels();
 	m_oClientParams.dSampleRate = pParent->GetSampleRate();
@@ -28,7 +30,7 @@ CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 
 bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPort )
 {
-	if( GetIsConnected )
+	if( GetIsConnected() )
 		return false;
 	
 	if( !m_pClient->Connect( sAddress, iPort ) )

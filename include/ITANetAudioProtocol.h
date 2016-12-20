@@ -76,6 +76,12 @@ public:
 			dSampleRate = 0.0f;
 			iBlockSize = 0;
 		};
+
+		inline bool operator==( const StreamingParameters& rhs )
+		{
+			if( ( iChannels == rhs.iChannels ) && ( dSampleRate == rhs.dSampleRate ) && ( iBlockSize == rhs.iBlockSize ) )
+				return true;
+		}
 	};
 };
 
