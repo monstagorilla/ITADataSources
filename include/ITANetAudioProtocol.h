@@ -63,6 +63,26 @@ public:
 
 	CITANetAudioProtocol();
 	virtual ~CITANetAudioProtocol();
+
+	struct StreamingParameters
+	{
+		int iChannels;
+		double dSampleRate;
+		int iBlockSize;
+
+		inline StreamingParameters()
+		{
+			iChannels = 0;
+			dSampleRate = 0.0f;
+			iBlockSize = 0;
+		};
+
+		inline bool operator==( const StreamingParameters& rhs )
+		{
+			if( ( iChannels == rhs.iChannels ) && ( dSampleRate == rhs.dSampleRate ) && ( iBlockSize == rhs.iBlockSize ) )
+				return true;
+		}
+	};
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_PROTOCOL

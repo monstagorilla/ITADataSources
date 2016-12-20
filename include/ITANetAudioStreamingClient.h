@@ -21,30 +21,36 @@
 
 #include <ITADataSourcesDefinitions.h>
 
-#include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
-#include <ITADataSource.h>
+#include <ITANetAudioProtocol.h>
+
 #include <ITASampleFrame.h>
+
+#include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 
 #include <string>
 #include <vector>
 
 class CITANetAudioClient;
+class CITANetAudioMessage;
+class CITANetAudioProtocol;
 class CITANetAudioStream;
 
 //! Network audio streaming client
 /**
  * Audio streaming for a signal source that is connected via TCP/IP.
+ * Implements the ITA network protocol for audio streaming in client side.
  *
  * \note not thread-safe
  */
 class ITA_DATA_SOURCES_API CITANetAudioStreamingClient : public VistaThreadLoop
 {
 public:
-	CITANetAudioStreamingClient( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity );
+	CITANetAudioStreamingClient( CITANetAudioStream* pParent );
 	virtual ~CITANetAudioStreamingClient();
 
 	bool Connect( const std::string& sAddress, int iPort );
 	bool GetIsConnected() const;
+	void Disconnect();
 
 	bool LoopBody();
 
@@ -52,7 +58,16 @@ private:
 	CITANetAudioClient* m_pClient;
 	CITANetAudioStream* m_pStream;
 
+	CITANetAudioProtocol* m_pProtocol;
+	CITANetAudioMessage* m_pMessage;
+	VistaConnectionIP* m_pConnection;
+
 	ITASampleFrame m_sfReceivingBuffer; //!< Buffer incoming data
+
+	CITANetAudioProtocol::StreamingParameters m_oClientParams;
+	CITANetAudioProtocol::StreamingParameters m_oServerParams;
+
+	bool m_bStopIndicated;
 
 	friend class CITANetAudioClient;
 };

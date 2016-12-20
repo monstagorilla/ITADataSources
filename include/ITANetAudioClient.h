@@ -16,51 +16,39 @@
  *
  */
 
-#ifndef INCLUDE_WATCHER_ITA_NET_AUDIO_CONNECTION
-#define INCLUDE_WATCHER_ITA_NET_AUDIO_CONNECTION
+#ifndef INCLUDE_WATCHER_ITA_NET_AUDIO_CLIENT
+#define INCLUDE_WATCHER_ITA_NET_AUDIO_CLIENT
 
 #include <ITADataSourcesDefinitions.h>
 
-#include <ITADataSource.h>
-#include <ITASampleFrame.h>
-
-#include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
-
 #include <string>
-#include <vector>
-
-class CITANetAudioMessage;
-class CITANetAudioProtocol;
-class CITANetAudioStream;
 
 class VistaConnectionIP;
 
-class CITANetAudioClient : public VistaThreadLoop
+//! A network audio client that connects to a network audio server
+/** 
+  * Use CITANetAudioStreamingClient to start an audio stream with the connection of this client.
+  *
+  */
+class CITANetAudioClient
 {
 public:
 
-	//! Create an network audio client that feeds into a network audio stream
+	//! Create an network audio client that connects to a network audio server
 	/**
 	  * \param pParent ITADataSource-compatible audio stream
 	  */
-	CITANetAudioClient( CITANetAudioStream* pParent );
+	CITANetAudioClient();
 	~CITANetAudioClient();
 
 	bool Connect( const std::string& sAddress, int iPort );
 	void Disconnect();
 	bool GetIsConnected() const;
 
-	bool LoopBody();
+	VistaConnectionIP* GetConnection() const;
 
 private:
-	CITANetAudioStream* m_pParent;
-
 	VistaConnectionIP* m_pConnection;
-	CITANetAudioProtocol* m_pProtocol;
-	CITANetAudioMessage* m_pMessage;
-
-	ITASampleFrame m_sfReceivingBuffer;
-	bool m_bStopIndicated;
 };
 
-#endif // INCLUDE_WATCHER_ITA_NET_AUDIO_CONNECTION
+#endif // INCLUDE_WATCHER_ITA_NET_AUDIO_CLIENT
