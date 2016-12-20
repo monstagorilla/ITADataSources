@@ -1,8 +1,9 @@
 #include <ITANetAudioStream.h>
 
+#include <ITANetAudioStreamingClient.h>
+
 // ITA includes
 #include <ITAException.h>
-#include <ITANetAudioStreamingClient.h>
 
 // STL
 #include <cmath>
@@ -11,6 +12,7 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	: m_sfOutputStreamBuffer( iChannels, iBufferSize, true )
 	, m_dSampleRate( dSamplingRate )
 	, m_sfRingBuffer( iChannels, iRingBufferCapacity, true )
+	, m_dSampleRate( dSamplingRate )
 	
 {
 	if( iBufferSize > iRingBufferCapacity )
