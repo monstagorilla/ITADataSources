@@ -23,7 +23,7 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	, m_sfRingBuffer( iChannels, iRingBufferCapacity, true )
 	
 {
-	m_pNetAudioProducer = new CITANetAudioClient( this );
+	m_pNetAudioProducer = new CITANetAudioClient();
 }
 
 CITANetAudioStream::~CITANetAudioStream()

@@ -21,17 +21,22 @@
 
 #include <ITADataSourcesDefinitions.h>
 
-#include <ITADataSource.h>
 #include <ITASampleFrame.h>
+
+#include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 
 #include <string>
 #include <vector>
 
 class CITANetAudioClient;
+class CITANetAudioMessage;
+class CITANetAudioProtocol;
+class CITANetAudioStream;
 
 //! Network audio streaming client
 /**
  * Audio streaming for a signal source that is connected via TCP/IP.
+ * Implements the ITA network protocol for audio streaming in client side.
  *
  * \note not thread-safe
  */
@@ -49,6 +54,9 @@ public:
 private:
 	CITANetAudioClient* m_pClient;
 	CITANetAudioStream* m_pStream;
+
+	CITANetAudioProtocol* m_pProtocol;
+	CITANetAudioMessage* m_pMessage;
 
 	ITASampleFrame m_sfReceivingBuffer; //!< Buffer incoming data
 
