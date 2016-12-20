@@ -20,6 +20,7 @@
 #define INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_SERVER
 
 #include <ITADataSourcesDefinitions.h>
+#include <VistaInterProcComm\Concurrency\VistaThreadLoop.h>
 
 #include <string>
 #include <vector>
@@ -36,7 +37,7 @@ class CITANetAudioServer;
  * \sa CITANetAudioStream
  * \note not thread-safe
  */
-class ITA_DATA_SOURCES_API CITANetAudioStreamingServer
+class ITA_DATA_SOURCES_API CITANetAudioStreamingServer : public VistaThreadLoop
 {
 public:
 
@@ -56,6 +57,7 @@ public:
 	int GetNetworkPort() const;
 	int Stop();
 
+	bool LoopBody();
 	void SetInputStream( ITADatasource* pInStream );
 	
 	int GetNetStreamBlocklength() const;
@@ -72,6 +74,7 @@ private:
 	CITANetAudioServer* m_pNetAudioServer;
 	ITASampleFrame m_sfTempTransmitBuffer;
 	ITADatasource* m_pInputStream;
+	VistaTCPSocket* m_pSocket;
 
 	int m_iUpdateStrategy;
 
