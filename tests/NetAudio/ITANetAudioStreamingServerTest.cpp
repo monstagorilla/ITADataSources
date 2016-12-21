@@ -10,7 +10,7 @@ using namespace std;
 static string g_sServerName = "localhost";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44.1e3;
-static int g_iBlockLength = 265;
+static int g_iBlockLength = 256;
 
 int main( int , char** )
 {

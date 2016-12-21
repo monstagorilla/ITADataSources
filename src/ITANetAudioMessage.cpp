@@ -102,7 +102,7 @@ void CITANetAudioMessage::ReadMessage()
 		int nReturn = m_pConnection->ReadInt32( nMessageSize );
 		
 		// we need at least the two protocol ints
-		assert( nMessageSize >= 3 * sizeof( VistaType::sint32 ) );
+		assert( nMessageSize >= 2 * sizeof( VistaType::sint32 ) );
 
 		if( nMessageSize > ( int ) m_vecIncomingBuffer.size() )
 			m_vecIncomingBuffer.resize( nMessageSize );

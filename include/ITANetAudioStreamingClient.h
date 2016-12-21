@@ -25,6 +25,7 @@
 
 #include <ITASampleFrame.h>
 
+#include <VistaInterProcComm/Concurrency/VistaThreadEvent.h>
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 
 #include <string>
@@ -54,6 +55,9 @@ public:
 
 	bool LoopBody();
 
+protected:
+	void TriggerBlockIncrement();
+
 private:
 	CITANetAudioClient* m_pClient;
 	CITANetAudioStream* m_pStream;
@@ -62,6 +66,8 @@ private:
 	CITANetAudioMessage* m_pMessage;
 	VistaConnectionIP* m_pConnection;
 
+	VistaThreadEvent m_oBlockIncrementEvent;
+
 	ITASampleFrame m_sfReceivingBuffer; //!< Buffer incoming data
 
 	CITANetAudioProtocol::StreamingParameters m_oClientParams;
@@ -69,7 +75,7 @@ private:
 
 	bool m_bStopIndicated;
 
-	friend class CITANetAudioClient;
+	friend class CITANetAudioStream;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_CLIENT
