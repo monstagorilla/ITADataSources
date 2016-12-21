@@ -13,9 +13,9 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 {
 	m_pClient = new CITANetAudioClient();
 
-	m_oClientParams.iChannels = pParent->GetNumberOfChannels();
-	m_oClientParams.dSampleRate = pParent->GetSampleRate();
-	m_oClientParams.iBlockSize = pParent->GetBlocklength();
+	m_oParams.iChannels = pParent->GetNumberOfChannels();
+	m_oParams.dSampleRate = pParent->GetSampleRate();
+	m_oParams.iBlockSize = pParent->GetBlocklength();
 
 	m_pMessage = new CITANetAudioMessage( VistaSerializingToolset::SWAPS_MULTIBYTE_VALUES );
 }
@@ -24,6 +24,8 @@ CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 {
 	if( m_pConnection )
 	{
+		m_pMessage->ResetMessage();
+		m_pMessage->SetConnection( m_pConnection );
 		m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_CLOSE );
 		m_pMessage->WriteAnswer();
 	}
@@ -79,9 +81,17 @@ bool CITANetAudioStreamingClient::LoopBody()
 	if( m_bStopIndicated )
 		return true;
 
-	// Receive message
-	m_pMessage->ReadMessage();
-	switch( m_pMessage->GetMessageType() )
+	// send freesamples
+	m_pMessage->ResetMessage();
+	m_pMessage->SetConnection(m_pConnection);
+	m_pMessage->SetMessageType(CITANetAudioProtocol::NP_CLIENT_WAITING_FOR_SAMPLES);
+	m_pMessage->WriteInt( m_pStream->GetRingbufferFreeSamples() );
+	m_pMessage->WriteMessage();
+	m_pMessage->ReadAnswer();
+
+
+
+	switch( m_pMessage->GetAnswerType() )
 	{
 	case CITANetAudioProtocol::NP_INVALID:
 		break;

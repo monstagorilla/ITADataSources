@@ -24,7 +24,6 @@ CITANetAudioServer::CITANetAudioServer()
 	, m_pSocket( NULL )
 	, m_pConnection( NULL )
 	, m_iServerPort( -1 )
-	, m_pConnection( NULL )
 {
 };
 

@@ -70,10 +70,6 @@ int CITANetAudioStreamingServer::GetNetworkPort() const
 {
 	return m_pNetAudioServer->GetNetworkPort();
 }
-bool CITANetAudioStreamingServer::LoopBody()
-{
-	return true;
-}
 
 void CITANetAudioStreamingServer::Stop() 
 {
@@ -118,16 +114,26 @@ bool CITANetAudioStreamingServer::LoopBody()
 	case CITANetAudioProtocol::NP_CLIENT_WAITING_FOR_SAMPLES:
 		if( m_pInputStream )
 		{
+			int iFreeSamples = m_pMessage->ReadInt();
+			if (iFreeSamples < m_pInputStream->GetBlocklength()) {
+				// zurückmelden und warten auf exeption
+				break;
+			}
+
 			for( int i = 0; i < m_pInputStream->GetNumberOfChannels(); i++ )
 			{
 				ITAStreamInfo oStreamInfo;
 				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
 				m_sfTempTransmitBuffer[ i ].write( pfData, m_pInputStream->GetBlocklength() );
 			}
+			m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
 		}
 
-		//m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
 		m_pMessage->WriteAnswer();
+
+		m_pInputStream->IncrementBlockPointer();
+		float fTimeOut = m_pInputStream->GetBlocklength() / m_pInputStream->GetSampleRate();
+		//VistaTimeUtils::Sleep( (int) ( fTimeOut * 1000 ) );
 		break;
 	}
 

@@ -78,7 +78,10 @@ public:
 	void WriteString( const std::string& );
 	void WriteIntVector( const std::vector< int > );
 	void WriteFloatVector( const std::vector< float > );
-	void WriteStreamingParameters( const CITANetAudioProtocol::StreamingParameters &);
+	void WriteStreamingParameters(const CITANetAudioProtocol::StreamingParameters &); 
+	void WriteRingBufferSize(const int);
+	void WriteRingBufferFree(const int);
+	void WriteSampleFrame(ITASampleFrame*);
 
 	std::string ReadString();
 	int ReadInt();
@@ -89,6 +92,9 @@ public:
 	std::vector< int > ReadIntVector();
 	std::vector< float > ReadFloatVector();
 	CITANetAudioProtocol::StreamingParameters ReadStreamingParameters();
+	int ReadRingBufferSize();
+	int ReadRingBufferFree();
+	void ReadSampleFrame(ITASampleFrame* pSampleFrame);
 
 
 private:

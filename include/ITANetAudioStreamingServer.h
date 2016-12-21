@@ -74,8 +74,6 @@ public:
 
 	void SetAutomaticUpdateRate();
 
-	bool LoopBody();
-
 protected:
 	int Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples );
 	ITADatasource* GetInputStream() const;
