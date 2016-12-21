@@ -24,35 +24,34 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	, m_pConnection( NULL )
 {
 	m_pNetAudioServer = new CITANetAudioServer();
-	m_pMessage = new CITANetAudioMessage( VistaSerializingToolset::SWAPS_MULTIBYTE_VALUES );
 }
 
 bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort )
 {
 	// TODO: vorrückgabe noch anfangen zu senden (Samples)
-	if( m_pNetAudioServer->Start( sAddress, iPort ) )
-	{
-		m_pConnection = m_pNetAudioServer->GetConnection();
-		
-		m_pMessage->ResetMessage();
-		m_pMessage->SetConnection( m_pConnection );
-		m_pMessage->ReadMessage();
+	if( !m_pNetAudioServer->Start( sAddress, iPort ) ) // blocking
+		return false;
 
-		int nMT = m_pMessage->GetMessageType();
-		assert( nMT == CITANetAudioProtocol::NP_CLIENT_OPEN );
+	m_pConnection = m_pNetAudioServer->GetConnection();
 
-		CITANetAudioProtocol::StreamingParameters oClientParams = m_pMessage->ReadStreamingParameters();
+	m_pMessage = new CITANetAudioMessage( m_pConnection->GetByteorderSwapFlag() );
+	m_pMessage->ResetMessage();
+	m_pMessage->SetConnection( m_pConnection );
+	m_pMessage->ReadMessage(); // blocking
 
-		m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_OPEN );
-		m_pMessage->WriteBool( true );
-		m_pMessage->WriteAnswer();
+	int nMT = m_pMessage->GetMessageType();
+	assert( nMT == CITANetAudioProtocol::NP_CLIENT_OPEN );
+	int i42 = m_pMessage->ReadInt();
 
-		Run();
+	//CITANetAudioProtocol::StreamingParameters oClientParams = m_pMessage->ReadStreamingParameters();
 
-		return true;
-	}
+	m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_OPEN );
+	m_pMessage->WriteInt( 2 * 42 );
+	m_pMessage->WriteAnswer();
 
-	return false;
+	Run();
+
+	return true;
 }
 
 bool CITANetAudioStreamingServer::IsClientConnected() const
