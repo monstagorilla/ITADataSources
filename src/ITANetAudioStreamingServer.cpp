@@ -114,17 +114,27 @@ bool CITANetAudioStreamingServer::LoopBody()
 	switch( m_pMessage->GetMessageType() )
 	{
 	case CITANetAudioProtocol::NP_CLIENT_WAITING_FOR_SAMPLES:
-		for( int i = 0; i < m_pInputStream->GetNumberOfChannels(); i++ )
+	{
+		int iFreeSamples = m_pMessage->ReadInt();
+		if( iFreeSamples >= m_pInputStream->GetBlocklength() )
 		{
-			ITAStreamInfo oStreamInfo;
-			const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
-			m_sfTempTransmitBuffer[ i ].write( pfData, m_pInputStream->GetBlocklength() );
+			for( int i = 0; i < m_pInputStream->GetNumberOfChannels(); i++ )
+			{
+				ITAStreamInfo oStreamInfo;
+				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
+				m_sfTempTransmitBuffer[ i ].write( pfData, m_pInputStream->GetBlocklength() );
+			}
+			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES );
+			//m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
 		}
-		
-		//m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
+		else
+		{
+			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_WAITING_FOR_TRIGGER );
+		}
+
 		m_pMessage->WriteAnswer();
 		break;
-
+	}
 	case CITANetAudioProtocol::NP_CLIENT_CLOSE:
 		m_pMessage->WriteAnswer();
 		m_pConnection = NULL;
