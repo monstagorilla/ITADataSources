@@ -49,7 +49,8 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 	m_pMessage->WriteInt( 2 * 42 );
 	m_pMessage->WriteAnswer();
 
-	Run();
+	if( m_pInputStream )
+		Run();
 
 	return true;
 }
@@ -76,7 +77,14 @@ void CITANetAudioStreamingServer::Stop()
 
 void CITANetAudioStreamingServer::SetInputStream( ITADatasource* pInStream )
 {
+	if( VistaThreadLoop::IsRunning() )
+		ITA_EXCEPT1( MODAL_EXCEPTION, "Streaming loop already running, can not change input stream" );
+
 	m_pInputStream = pInStream;
+	m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels(), m_pInputStream->GetBlocklength(), true );
+
+	if( m_pConnection )
+		Run();
 }
 
 int CITANetAudioStreamingServer::GetNetStreamBlocklength() const
@@ -96,6 +104,28 @@ void CITANetAudioStreamingServer::SetAutomaticUpdateRate()
 
 bool CITANetAudioStreamingServer::LoopBody()
 {
+	m_pMessage->ResetMessage();
+	m_pMessage->SetConnection( m_pConnection );
+	m_pMessage->ReadMessage(); // blocking
+
+	switch( m_pMessage->GetMessageType() )
+	{
+	case CITANetAudioProtocol::NP_CLIENT_WAITING_FOR_SAMPLES:
+		if( m_pInputStream )
+		{
+			for( int i = 0; i < m_pInputStream->GetNumberOfChannels(); i++ )
+			{
+				ITAStreamInfo oStreamInfo;
+				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
+				m_sfTempTransmitBuffer[ i ].write( pfData, m_pInputStream->GetBlocklength() );
+			}
+		}
+
+		//m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
+		m_pMessage->WriteAnswer();
+		break;
+	}
+
 	return true;
 }
 
