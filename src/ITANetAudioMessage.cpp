@@ -10,8 +10,8 @@
 static int S_nMessageIds = 0;
 
 CITANetAudioMessage::CITANetAudioMessage( VistaSerializingToolset::ByteOrderSwapBehavior bSwapBuffers )
-	: m_vecIncomingBuffer()
-	, m_oOutgoing()
+	: m_vecIncomingBuffer( 2048 )
+	, m_oOutgoing( 2048 )
 	, m_pConnection( NULL )
 {
 	m_oOutgoing.SetByteorderSwapFlag( bSwapBuffers );
@@ -37,7 +37,6 @@ void CITANetAudioMessage::ResetMessage()
 	m_oOutgoing.ClearBuffer();
 	m_oOutgoing.WriteInt32( 0 ); // size dummy
 	m_oOutgoing.WriteInt32( 0 ); // type dummy
-	m_oOutgoing.WriteInt32( 0 ); // exceptmode dummy
 	m_oOutgoing.WriteInt32( 0 ); // ID
 
 	m_oIncoming.SetBuffer( NULL, 0 );
@@ -82,19 +81,15 @@ void CITANetAudioMessage::WriteMessage()
 
 	try
 	{
-		int iSize = m_oOutgoing.GetBufferSize();
-		int nRet = m_pConnection->WriteRawBuffer( m_oOutgoing.GetBuffer(), iSize );
+		int iRawBufferSize = m_oOutgoing.GetBufferSize();
+		int nRet = m_pConnection->WriteRawBuffer( m_oOutgoing.GetBuffer(), iRawBufferSize );
+		m_pConnection->WaitForSendFinish();
 		if( nRet != m_oOutgoing.GetBufferSize() )
-		{
-			VistaExceptionBase ex( "ITANetAudioMessage::WriteMessage: Connection error", "CITANetAudioMessage", -1, -1 );
-			//throw( ex );
-		}
+			ITA_EXCEPT1( NETWORK_ERROR, "Could not write the expected number of bytes" );
 	}
 	catch( VistaExceptionBase& ex )
 	{
-		std::string sExceptionText = ex.GetExceptionText();
-		std::cerr << sExceptionText << std::endl;
-		//ITA_EXCEPT1(UNKNOWN, sExceptionText.c_str());
+		ITA_EXCEPT1( NETWORK_ERROR, ex.GetExceptionText() );
 	}
 }
 
@@ -114,7 +109,7 @@ void CITANetAudioMessage::ReadMessage()
 
 		nReturn = m_pConnection->ReadRawBuffer( &m_vecIncomingBuffer[ 0 ], nMessageSize );
 		if( nReturn != nMessageSize )
-			ITA_EXCEPT1( UNKNOWN, "Protokoll error, Received less bytes than expected" );
+			ITA_EXCEPT1( NETWORK_ERROR, "Protokoll error, Received less bytes than expected" );
 
 		m_oIncoming.SetBuffer( &m_vecIncomingBuffer[ 0 ], nReturn );
 
@@ -161,12 +156,15 @@ void CITANetAudioMessage::WriteAnswer()
 		VistaSerializingToolset::Swap4( &iSwapDummy );
 	memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
 
-	try	{
+	try
+	{
 		int nRet = m_pConnection->WriteRawBuffer( m_oOutgoing.GetBuffer(), m_oOutgoing.GetBufferSize() );
+		m_pConnection->WaitForSendFinish();
 		if( nRet != m_oOutgoing.GetBufferSize() )
 			ITA_EXCEPT1( UNKNOWN, "Could not write the expected number of bytes" );
 	}
-	catch( VistaExceptionBase& ex ) {
+	catch( VistaExceptionBase& ex )
+	{
 		ITA_EXCEPT1( UNKNOWN, ex.GetExceptionText() );
 	}
 }
@@ -186,7 +184,8 @@ void CITANetAudioMessage::ReadAnswer()
 			nReturn = -1; // Network connection error
 		}
 
-		if( nReturn != sizeof( VistaType::sint32 ) ) {
+		if( nReturn != sizeof( VistaType::sint32 ) )
+		{
 			ITA_EXCEPT1( UNKNOWN, "Protokoll error, Received less bytes than expected" );
 		}
 
@@ -196,6 +195,7 @@ void CITANetAudioMessage::ReadAnswer()
 		if( nMessageSize > ( int ) m_vecIncomingBuffer.size() )
 			m_vecIncomingBuffer.resize( nMessageSize );
 
+		// jst: hier nicht while( nReturn < nMessageSize) ReadRawBuffer??
 		nReturn = m_pConnection->ReadRawBuffer( &m_vecIncomingBuffer[ 0 ], nMessageSize );
 		if( nReturn != nMessageSize )
 			ITA_EXCEPT1( UNKNOWN, "Protokoll error, Received less bytes than expected" );
@@ -216,7 +216,6 @@ void CITANetAudioMessage::ReadAnswer()
 	try
 	{
 		m_nAnswerType = ReadInt(); // TODO: assert weg, dafür Kontrolle falls Server crasht<
-		ReadInt(); // protocol overhead - just read and ignore
 		int nMessageID = ReadInt();
 		assert( nMessageID == m_nMessageId );
 		m_nMessageId = nMessageID;
@@ -243,6 +242,11 @@ void CITANetAudioMessage::SetAnswerType( int nType )
 {
 	assert( m_nAnswerType == CITANetAudioProtocol::NP_INVALID ); // should only be set once
 	m_nAnswerType = nType;
+}
+
+int CITANetAudioMessage::GetAnswerType() const
+{
+	return m_nAnswerType;
 }
 
 int CITANetAudioMessage::GetIncomingMessageSize() const

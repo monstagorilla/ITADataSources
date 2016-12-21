@@ -21,6 +21,8 @@
 
 #include <ITADataSourcesDefinitions.h>
 
+#include <ITANetAudioProtocol.h>
+
 #include <string>
 #include <vector>
 
@@ -33,6 +35,8 @@ class ITADatasource;
 class CITANetAudioMessage;
 class CITANetAudioProtocol;
 class CITANetAudioServer;
+class CITANetAudioMessage;
+class VistaTCPSocket;
 
 //! Network audio sample server (for connecting a net audio stream)
 /**
@@ -70,6 +74,8 @@ public:
 
 	void SetAutomaticUpdateRate();
 
+	bool LoopBody();
+
 protected:
 	int Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples );
 	ITADatasource* GetInputStream() const;
@@ -78,12 +84,10 @@ private:
 	CITANetAudioServer* m_pNetAudioServer;
 	ITASampleFrame m_sfTempTransmitBuffer;
 	ITADatasource* m_pInputStream;
-
-	CITANetAudioProtocol* m_pProtocol;
-	CITANetAudioMessage* m_pMessage;
 	VistaConnectionIP* m_pConnection;
 
 	CITANetAudioProtocol::StreamingParameters m_oServerParams;
+	CITANetAudioMessage* m_pMessage;
 
 	int m_iUpdateStrategy;
 	int m_iClientRingBufferFreeSamples;

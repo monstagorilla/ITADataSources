@@ -25,13 +25,13 @@
 
 #include <ITASampleFrame.h>
 
-
 #include <string>
 #include <vector>
 
-class VistaTCPSocket;
 class CITANetAudioStreamingServer;
+class VistaConnectionIP;
 class VistaTCPServer;
+class VistaTCPSocket;
 
 //! Realizes server functionality for network audio streaming
 /**
@@ -46,10 +46,11 @@ public:
 
 	std::string GetServerAddress() const;
 	int GetNetworkPort() const;
-	bool Start(const std::string& sAddress, int iPort);
-	VistaConnectionIP* GetConnetion() const;
 
-	void Disconnect(); 
+	bool Start( const std::string& sAddress, int iPort );
+	void Stop();
+
+	VistaConnectionIP* GetConnection() const;
 	bool IsConnected() const; 
 
 

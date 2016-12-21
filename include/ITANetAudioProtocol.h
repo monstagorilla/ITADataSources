@@ -54,6 +54,7 @@ public:
 
 	static const int NP_CLIENT_OPEN = 100;
 	static const int NP_CLIENT_CLOSE = 101;
+	static const int NP_CLIENT_WAITING_FOR_SAMPLES = 102;
 
 	static const int NP_SERVER_CLOSE = 200;
 	static const int NP_SERVER_OPEN = 201;

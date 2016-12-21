@@ -13,16 +13,17 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 {
 	m_pClient = new CITANetAudioClient();
 
-	m_oParams.iChannels = pParent->GetNumberOfChannels();
-	m_oParams.dSampleRate = pParent->GetSampleRate();
-	m_oParams.iBlockSize = pParent->GetBlocklength();
+	m_oClientParams.iChannels = pParent->GetNumberOfChannels();
+	m_oClientParams.dSampleRate = pParent->GetSampleRate();
+	m_oClientParams.iBlockSize = pParent->GetBlocklength();
+
+	m_pMessage = new CITANetAudioMessage( VistaSerializingToolset::SWAPS_MULTIBYTE_VALUES );
 }
 
 CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 {
 	if( m_pConnection )
 	{
-		m_pMessage->ResetMessage();
 		m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_CLOSE );
 		m_pMessage->WriteAnswer();
 	}
@@ -38,19 +39,24 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 	
 	m_pConnection = m_pClient->GetConnection();
 
+	m_pMessage->ResetMessage();
 	m_pMessage->SetConnection( m_pConnection );
 
 	// Validate streaming parameters of server and client
-	m_pMessage->ResetMessage();
 	m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_OPEN );
-	m_pMessage->WriteStreamingParameters( m_oParams );
+	//m_pMessage->WriteStreamingParameters( m_oClientParams ); // Not yet
+	m_pMessage->WriteInt( 42 );
 	m_pMessage->WriteMessage();
 
 	m_pMessage->ReadAnswer();
-	// NOTE: Wieso speichern wir beie paras, nach einmal vergleichen, sollten doch sowieso beide gleich sein
+	assert( m_pMessage->GetAnswerType() == CITANetAudioProtocol::NP_SERVER_OPEN );
+	int i42 = m_pMessage->ReadInt();
+	
+	/* Not yet
 	CITANetAudioProtocol::StreamingParameters oServerParams = m_pMessage->ReadStreamingParameters();
 	if (!(oServerParams == m_oParams))
 		ITA_EXCEPT1( INVALID_PARAMETER, "Streaming parameters of network audio server and client do not match." );
+	*/
 
 	Run();
 
