@@ -89,7 +89,8 @@ bool CITANetAudioStreamingClient::LoopBody()
 
 	// Wait for answer of server
 	m_pMessage->ReadAnswer();
-	switch( m_pMessage->GetAnswerType() )
+	int iAnswerType = m_pMessage->GetAnswerType();
+	switch( iAnswerType )
 	{
 
 	case CITANetAudioProtocol::NP_INVALID:
@@ -102,8 +103,7 @@ bool CITANetAudioStreamingClient::LoopBody()
 		break;
 
 	case CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES:
-		// Receive samples and forward them to the stream ring buffer
-		int iFreeSamples = m_pMessage->ReadInt();
+		// Receive samples from net message and forward them to the stream ring buffer
 		
 		//int iNumSamples = m_pMessage->ReadSampleFrame( &m_sfReceivingBuffer );
 		//if( m_pStream->GetRingbufferFreeSamples() >= iNumSamples )
