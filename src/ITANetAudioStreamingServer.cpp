@@ -29,6 +29,9 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 
 bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort )
 {
+	if( !m_pInputStream )
+		ITA_EXCEPT1( MODAL_EXCEPTION, "Can not start server without a valid input stream" );
+
 	// TODO: vorr�ckgabe noch anfangen zu senden (Samples)
 	if( !m_pNetAudioServer->Start( sAddress, iPort ) ) // blocking
 		return false;
@@ -40,18 +43,20 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 	m_pMessage->SetConnection( m_pConnection );
 	m_pMessage->ReadMessage(); // blocking
 
-	int nMT = m_pMessage->GetMessageType();
-	assert( nMT == CITANetAudioProtocol::NP_CLIENT_OPEN );
-	int i42 = m_pMessage->ReadInt();
+	assert( m_pMessage->GetMessageType() == CITANetAudioProtocol::NP_CLIENT_OPEN );
+	CITANetAudioProtocol::StreamingParameters oClientParams = m_pMessage->ReadStreamingParameters();
 
-	//CITANetAudioProtocol::StreamingParameters oClientParams = m_pMessage->ReadStreamingParameters();
+	bool bOK = false;
+	if( m_pInputStream->GetNumberOfChannels() == oClientParams.iChannels &&
+		m_pInputStream->GetSampleRate() == oClientParams.dSampleRate &&
+		m_pInputStream->GetBlocklength() == oClientParams.iBlockSize )
+		bOK = true;
 
 	m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_OPEN );
-	m_pMessage->WriteInt( 2 * 42 );
+	m_pMessage->WriteBool( bOK );
 	m_pMessage->WriteAnswer();
 
-	if( m_pInputStream )
-		Run();
+	Run();
 
 	return true;
 }
@@ -84,8 +89,6 @@ void CITANetAudioStreamingServer::SetInputStream( ITADatasource* pInStream )
 	m_pInputStream = pInStream;
 	m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels(), m_pInputStream->GetBlocklength(), true );
 
-	if( m_pConnection )
-		Run();
 }
 
 int CITANetAudioStreamingServer::GetNetStreamBlocklength() const
@@ -112,7 +115,9 @@ bool CITANetAudioStreamingServer::LoopBody()
 	switch( m_pMessage->GetMessageType() )
 	{
 	case CITANetAudioProtocol::NP_CLIENT_WAITING_FOR_SAMPLES:
-		if( m_pInputStream )
+	{
+		int iFreeSamples = m_pMessage->ReadInt();
+		if( iFreeSamples >= m_pInputStream->GetBlocklength() )
 		{
 			int iFreeSamples = m_pMessage->ReadInt();
 			if (iFreeSamples < m_pInputStream->GetBlocklength()) {
@@ -126,7 +131,12 @@ bool CITANetAudioStreamingServer::LoopBody()
 				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
 				m_sfTempTransmitBuffer[ i ].write( pfData, m_pInputStream->GetBlocklength() );
 			}
-			m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
+			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES );
+			//m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
+		}
+		else
+		{
+			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_WAITING_FOR_TRIGGER );
 		}
 
 		m_pMessage->WriteAnswer();
@@ -135,6 +145,14 @@ bool CITANetAudioStreamingServer::LoopBody()
 		float fTimeOut = m_pInputStream->GetBlocklength() / m_pInputStream->GetSampleRate();
 		//VistaTimeUtils::Sleep( (int) ( fTimeOut * 1000 ) );
 		break;
+	}
+	case CITANetAudioProtocol::NP_CLIENT_CLOSE:
+		m_pMessage->WriteAnswer();
+		m_pConnection = NULL;
+		StopGently( true );
+		Stop();
+
+		return false;
 	}
 
 	return true;

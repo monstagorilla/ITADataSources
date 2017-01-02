@@ -1,4 +1,3 @@
-#include <ITANetAudioMessage.h>
 
 #include <ITAStringUtils.h>
 
@@ -215,7 +214,7 @@ void CITANetAudioMessage::ReadAnswer()
 
 	try
 	{
-		m_nAnswerType = ReadInt(); // TODO: assert weg, dafür Kontrolle falls Server crasht<
+		m_nAnswerType = ReadInt(); // TODO: assert weg, dafï¿½r Kontrolle falls Server crasht<
 		int nMessageID = ReadInt();
 		assert( nMessageID == m_nMessageId );
 		m_nMessageId = nMessageID;
@@ -396,54 +395,4 @@ void CITANetAudioMessage::WriteStreamingParameters( const CITANetAudioProtocol::
 	WriteInt( oParams.iChannels );
 	WriteDouble( oParams.dSampleRate );
 	WriteInt( oParams.iBlockSize );
-}
-
-int CITANetAudioMessage::ReadRingBufferSize()
-{
-	return ReadInt();
-}
-
-void CITANetAudioMessage::WriteRingBufferSize(const int iBufferSize)
-{
-	WriteInt(iBufferSize);
-}
-
-int CITANetAudioMessage::ReadRingBufferFree()
-{
-	return ReadInt();
-}
-
-void CITANetAudioMessage::WriteRingBufferFree(const int iBufferFree)
-{
-	WriteInt(iBufferFree);
-}
-
-void CITANetAudioMessage::ReadSampleFrame(ITASampleFrame* pSampleFrame)
-{
-	 
-	 int iChannels = ReadInt();
-	 int iSamples = ReadInt();
-	 if (pSampleFrame->channels() != iChannels || pSampleFrame->GetLength() != iSamples)
-		 pSampleFrame->init(iChannels, iSamples, false);
-	 for (int i = 0; i < iChannels; i++)
-	 {
-		 for (int j = 0; j < iSamples; j++)
-		 {
-			 (*pSampleFrame)[i][j] = ReadFloat();
-		 }
-	 }
-}
-
-void CITANetAudioMessage::WriteSampleFrame(ITASampleFrame* pSamples)
-{
-	WriteInt(pSamples->channels());
-	WriteInt(pSamples->GetLength());
-	for (int i = 0; i < pSamples->channels(); i++)
-	{
-		for (int j = 0; j < pSamples->GetLength(); j++)
-		{
-			WriteFloat((*pSamples)[i][j]);
-		}
-	}
-
 }

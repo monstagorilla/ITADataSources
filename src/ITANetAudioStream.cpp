@@ -56,6 +56,7 @@ void CITANetAudioStream::IncrementBlockPointer()
 {
 	// Increment read cursor by one audio block and wrap around if exceeding ring buffer
 	m_iReadCursor = ( m_iReadCursor + m_sfOutputStreamBuffer.GetLength() ) % m_sfRingBuffer.GetLength();
+	m_pNetAudioStreamingClient->TriggerBlockIncrement();
 }
 
 int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples )
@@ -80,7 +81,8 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 
 int CITANetAudioStream::GetRingbufferFreeSamples()
 {
-	ITA_EXCEPT0( NOT_IMPLEMENTED );
+	int iFreeSamples = ( m_iWriteCursor - m_iReadCursor + GetRingBufferSize() ) % GetRingBufferSize();
+	return iFreeSamples;
 }
 
 int CITANetAudioStream::GetRingBufferSize() const
