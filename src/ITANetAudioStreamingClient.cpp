@@ -49,7 +49,7 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 
 	// Validate streaming parameters of server and client
 	m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_OPEN );
-	m_pMessage->WriteStreamingParameters( m_oClientParams );
+	m_pMessage->WriteStreamingParameters( m_oParams );
 	m_pMessage->WriteMessage();
 
 	m_pMessage->ReadAnswer();
