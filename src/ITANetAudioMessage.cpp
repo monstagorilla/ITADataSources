@@ -1,4 +1,4 @@
-
+#include <ITANetAudioMessage.h>
 #include <ITAStringUtils.h>
 
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
