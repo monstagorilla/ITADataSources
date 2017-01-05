@@ -64,17 +64,6 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 	return true;
 }
 
-void CITANetAudioStreamingClient::Disconnect()
-{
-	m_bStopIndicated = true;
-	StopGently( true );
-
-	delete m_pConnection;
-	m_pConnection = NULL;
-
-	m_bStopIndicated = false;
-}
-
 bool CITANetAudioStreamingClient::LoopBody()
 {
 	if( m_bStopIndicated )
@@ -123,4 +112,15 @@ void CITANetAudioStreamingClient::TriggerBlockIncrement()
 bool CITANetAudioStreamingClient::GetIsConnected() const
 {
 	return m_pClient->GetIsConnected();
+}
+
+void CITANetAudioStreamingClient::Disconnect()
+{
+	m_bStopIndicated = true;
+	StopGently( true );
+
+	delete m_pConnection;
+	m_pConnection = NULL;
+
+	m_bStopIndicated = false;
 }
