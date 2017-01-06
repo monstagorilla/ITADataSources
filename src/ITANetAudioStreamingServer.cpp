@@ -119,9 +119,8 @@ bool CITANetAudioStreamingServer::LoopBody()
 		int iFreeSamples = m_pMessage->ReadInt();
 		if( iFreeSamples >= m_pInputStream->GetBlocklength() )
 		{
-			int iFreeSamples = m_pMessage->ReadInt();
 			if (iFreeSamples < m_pInputStream->GetBlocklength()) {
-				// zurückmelden und warten auf exeption
+				// zurueckmelden und warten auf exeption
 				break;
 			}
 
