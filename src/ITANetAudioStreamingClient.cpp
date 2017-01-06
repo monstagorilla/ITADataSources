@@ -99,9 +99,11 @@ bool CITANetAudioStreamingClient::LoopBody()
 	case CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES:
 		// Receive samples from net message and forward them to the stream ring buffer
 		
-		//int iNumSamples = m_pMessage->ReadSampleFrame( &m_sfReceivingBuffer );
-		//if( m_pStream->GetRingbufferFreeSamples() >= iNumSamples )
-		//	m_pStream->Transmit( m_sfReceivingBuffer, iNumSamples );
+		m_pMessage->ReadSampleFrame( &m_sfReceivingBuffer );
+		if (m_pStream->GetRingbufferFreeSamples() >= m_sfReceivingBuffer.GetLength())
+			m_pStream->Transmit(m_sfReceivingBuffer, m_sfReceivingBuffer.GetLength());
+		//else 
+			// Fehler
 		
 		break;
 	case CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE :

@@ -47,10 +47,15 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 	CITANetAudioProtocol::StreamingParameters oClientParams = m_pMessage->ReadStreamingParameters();
 
 	bool bOK = false;
-	if( m_pInputStream->GetNumberOfChannels() == oClientParams.iChannels &&
+	if (m_pInputStream->GetNumberOfChannels() == oClientParams.iChannels &&
 		m_pInputStream->GetSampleRate() == oClientParams.dSampleRate &&
-		m_pInputStream->GetBlocklength() == oClientParams.iBlockSize )
+		m_pInputStream->GetBlocklength() == oClientParams.iBlockSize)
+	{
 		bOK = true;
+		std::cout << " Alle Daten Stimmen: \nAnzahl Channel: " << oClientParams.iChannels << std::endl;
+		std::cout << "SampleRate: " << oClientParams.dSampleRate << std::endl;
+		std::cout << "Blockgroesse: " << oClientParams.iBlockSize << std::endl;
+	}
 
 	m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_OPEN );
 	m_pMessage->WriteBool( bOK );
@@ -117,13 +122,11 @@ bool CITANetAudioStreamingServer::LoopBody()
 	case CITANetAudioProtocol::NP_CLIENT_WAITING_FOR_SAMPLES:
 	{
 		int iFreeSamples = m_pMessage->ReadInt();
+		// std::cout << "Freie Samples: " << iFreeSamples << std::endl;
+		// std::cout << "Laenge InputStram: " << m_pInputStream->GetBlocklength() << std::endl;
 		if( iFreeSamples >= m_pInputStream->GetBlocklength() )
 		{
-			if (iFreeSamples < m_pInputStream->GetBlocklength()) {
-				// zurueckmelden und warten auf exeption
-				break;
-			}
-
+			// Send Samples
 			for( int i = 0; i < m_pInputStream->GetNumberOfChannels(); i++ )
 			{
 				ITAStreamInfo oStreamInfo;
@@ -131,18 +134,21 @@ bool CITANetAudioStreamingServer::LoopBody()
 				m_sfTempTransmitBuffer[ i ].write( pfData, m_pInputStream->GetBlocklength() );
 			}
 			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES );
-			//m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
+			m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
 		}
 		else
 		{
+			// Waiting for Trigger
 			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_WAITING_FOR_TRIGGER );
+			m_pMessage->WriteAnswer();
+			break;
 		}
 
 		m_pMessage->WriteAnswer();
 
 		m_pInputStream->IncrementBlockPointer();
 		float fTimeOut = m_pInputStream->GetBlocklength() / m_pInputStream->GetSampleRate();
-		//VistaTimeUtils::Sleep( (int) ( fTimeOut * 1000 ) );
+		//VistaTimeUtils::Sleep( (int) ( 1 * 100 ) );
 		break;
 	}
 	case CITANetAudioProtocol::NP_CLIENT_CLOSE:

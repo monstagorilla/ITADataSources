@@ -40,15 +40,22 @@ bool CITANetAudioStream::GetIsConnected() const
 const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* )
 {
 	// @todo: is connected?
-	int iCurrentWritePointer = m_iWriteCursor;
-	if (iCurrentWritePointer > m_iReadCursor) {
-		m_sfOutputStreamBuffer[uiChannel].cyclic_write(&m_sfRingBuffer[uiChannel], 
-			m_sfOutputStreamBuffer.GetLength(), m_iReadCursor, iCurrentWritePointer);
-	} else {
-		// diesen Block auf 0 setzen
-		m_sfOutputStreamBuffer[uiChannel].Zero();
+	m_sfOutputStreamBuffer[uiChannel].Zero();
+	if (this->GetIsConnected())
+	{
+
+		// todo restlichen kopieren und dann rein und raus faden
+		int iCurrentWritePointer = m_iWriteCursor;
+		if (iCurrentWritePointer > m_iReadCursor) {
+			m_sfRingBuffer[uiChannel].cyclic_read(m_sfOutputStreamBuffer[uiChannel].GetData(),
+				m_sfOutputStreamBuffer.GetLength(), m_iReadCursor);
+		}
+		else 
+		{
+			// Hallo
+			int a = 0;
+		}
 	}
-	
 	return m_sfOutputStreamBuffer[ uiChannel ].GetData();
 }
 
