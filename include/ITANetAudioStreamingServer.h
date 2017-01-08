@@ -26,10 +26,14 @@
 #include <string>
 #include <vector>
 
+#include <ITANetAudioProtocol.h>
+
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 #include <ITASampleFrame.h>
 
 class ITADatasource;
+class CITANetAudioMessage;
+class CITANetAudioProtocol;
 class CITANetAudioServer;
 class CITANetAudioMessage;
 class VistaTCPSocket;
@@ -59,6 +63,7 @@ public:
 	bool IsClientConnected() const;
 	std::string GetNetworkAddress() const;
 	int GetNetworkPort() const;
+	bool LoopBody();
 	void Stop();
 
 	void SetInputStream( ITADatasource* pInStream );
@@ -68,8 +73,6 @@ public:
 	double GetNetStreamSampleRate() const;
 
 	void SetAutomaticUpdateRate();
-
-	bool LoopBody();
 
 protected:
 	int Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples );
@@ -81,6 +84,7 @@ private:
 	ITADatasource* m_pInputStream;
 	VistaConnectionIP* m_pConnection;
 
+	CITANetAudioProtocol::StreamingParameters m_oServerParams;
 	CITANetAudioMessage* m_pMessage;
 
 	int m_iUpdateStrategy;

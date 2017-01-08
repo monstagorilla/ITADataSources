@@ -31,6 +31,7 @@ CITANetAudioServer::~CITANetAudioServer()
 {
 	delete m_pConnection;
 	delete m_pServer;
+	delete m_pSocket;
 }
 
 std::string CITANetAudioServer::GetServerAddress() const

@@ -23,7 +23,7 @@ int main( int , char** )
 	oStreamingServer.Start( g_sServerName, g_iServerPort );
 
 	int iKey;
-	cin >> iKey;
+	std::cin >> iKey;
 	
 	return 0;
 }

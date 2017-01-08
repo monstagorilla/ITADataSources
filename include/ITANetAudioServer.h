@@ -21,6 +21,8 @@
 
 #include <ITADataSourcesDefinitions.h>
 
+#include <ITANetAudioProtocol.h>
+
 #include <ITASampleFrame.h>
 
 #include <string>
