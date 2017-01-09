@@ -39,22 +39,13 @@ bool CITANetAudioStream::GetIsConnected() const
 
 const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* )
 {
-	// @todo: is connected?
 	m_sfOutputStreamBuffer[uiChannel].Zero();
 	if (this->GetIsConnected())
 	{
-
 		// todo restlichen kopieren und dann rein und raus faden
 		int iCurrentWritePointer = m_iWriteCursor;
-		if (iCurrentWritePointer > m_iReadCursor) {
-			m_sfRingBuffer[uiChannel].cyclic_read(m_sfOutputStreamBuffer[uiChannel].GetData(),
-				m_sfOutputStreamBuffer.GetLength(), m_iReadCursor);
-		}
-		else 
-		{
-			// Hallo
-			int a = 0;
-		}
+		m_sfRingBuffer[uiChannel].cyclic_read(m_sfOutputStreamBuffer[uiChannel].GetData(),
+			m_sfOutputStreamBuffer.GetLength(), m_iReadCursor);
 	}
 	return m_sfOutputStreamBuffer[ uiChannel ].GetData();
 }
@@ -63,7 +54,7 @@ void CITANetAudioStream::IncrementBlockPointer()
 {
 	// Increment read cursor by one audio block and wrap around if exceeding ring buffer
 	m_iReadCursor = ( m_iReadCursor + m_sfOutputStreamBuffer.GetLength() ) % m_sfRingBuffer.GetLength();
-	m_pNetAudioStreamingClient->TriggerBlockIncrement();
+	m_pNetAudioStreamingClient->TriggerBlockIncrement( );
 }
 
 int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples )
@@ -75,7 +66,7 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 		iCurrentReadCursor, m_iWriteCursor);
 
 	// set write curser
-	m_iWriteCursor = ( m_iWriteCursor + iNumSamples ) % m_sfRingBuffer.GetLength();
+	m_iWriteCursor = ( m_iWriteCursor + iNumSamples ) % m_sfRingBuffer.GetLength( );
 
 	// return free BufferSize
 	if (iCurrentReadCursor > m_iWriteCursor) {

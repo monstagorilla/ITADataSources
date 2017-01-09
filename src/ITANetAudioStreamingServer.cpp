@@ -52,10 +52,15 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 		m_pInputStream->GetBlocklength() == oClientParams.iBlockSize)
 	{
 		bOK = true;
-		std::cout << " Alle Daten Stimmen: \nAnzahl Channel: " << oClientParams.iChannels << std::endl;
-		std::cout << "SampleRate: " << oClientParams.dSampleRate << std::endl;
-		std::cout << "Blockgroesse: " << oClientParams.iBlockSize << std::endl;
 	}
+
+	std::cout << " Client Data: \nAnzahl Channel: " << oClientParams.iChannels << std::endl;
+	std::cout << "SampleRate: " << oClientParams.dSampleRate << std::endl;
+	std::cout << "Blockgroesse: " << oClientParams.iBlockSize << std::endl;
+
+	std::cout << " Server Data: \nAnzahl Channel: " << m_pInputStream->GetNumberOfChannels() << std::endl;
+	std::cout << "SampleRate: " << m_pInputStream->GetSampleRate() << std::endl;
+	std::cout << "Blockgroesse: " << m_pInputStream->GetBlocklength() << std::endl;
 
 	m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_OPEN );
 	m_pMessage->WriteBool( bOK );
@@ -130,9 +135,13 @@ bool CITANetAudioStreamingServer::LoopBody()
 			for( int i = 0; i < m_pInputStream->GetNumberOfChannels(); i++ )
 			{
 				ITAStreamInfo oStreamInfo;
+				oStreamInfo.nSamples = m_sfTempTransmitBuffer.GetLength();
 				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
-				m_sfTempTransmitBuffer[ i ].write( pfData, m_pInputStream->GetBlocklength() );
+				//std::cout << *pfData << std::endl;
+				if (pfData != 0) 
+					m_sfTempTransmitBuffer[i].write(pfData, m_sfTempTransmitBuffer.GetLength());
 			}
+			m_pInputStream->IncrementBlockPointer();
 			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES );
 			m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
 		}
