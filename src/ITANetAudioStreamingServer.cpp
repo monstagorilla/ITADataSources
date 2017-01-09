@@ -144,6 +144,8 @@ bool CITANetAudioStreamingServer::LoopBody()
 			m_pInputStream->IncrementBlockPointer();
 			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES );
 			m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
+			m_pMessage->WriteAnswer();
+			m_pInputStream->IncrementBlockPointer();
 		}
 		else
 		{
@@ -153,9 +155,7 @@ bool CITANetAudioStreamingServer::LoopBody()
 			break;
 		}
 
-		m_pMessage->WriteAnswer();
-
-		m_pInputStream->IncrementBlockPointer();
+		
 		float fTimeOut = m_pInputStream->GetBlocklength() / m_pInputStream->GetSampleRate();
 		//VistaTimeUtils::Sleep( (int) ( 1 * 100 ) );
 		break;

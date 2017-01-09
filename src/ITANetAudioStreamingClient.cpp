@@ -12,6 +12,8 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	, m_pConnection( NULL )
 	, m_bStopIndicated( false )
 {
+	m_pStreamProbe = new ITAStreamProbe( pParent, "output.wav" );
+
 	m_pClient = new CITANetAudioClient();
 
 	m_oParams.iChannels = pParent->GetNumberOfChannels();
@@ -100,8 +102,12 @@ bool CITANetAudioStreamingClient::LoopBody()
 		// Receive samples from net message and forward them to the stream ring buffer
 		
 		m_pMessage->ReadSampleFrame( &m_sfReceivingBuffer );
-		if (m_pStream->GetRingbufferFreeSamples() >= m_sfReceivingBuffer.GetLength())
-			m_pStream->Transmit(m_sfReceivingBuffer, m_sfReceivingBuffer.GetLength());
+		if ( m_pStream->GetRingbufferFreeSamples( ) >= m_sfReceivingBuffer.GetLength( ) )
+		{
+			m_pStream->Transmit( m_sfReceivingBuffer, m_sfReceivingBuffer.GetLength( ) );
+
+		}
+			
 		//else 
 			// Fehler
 		

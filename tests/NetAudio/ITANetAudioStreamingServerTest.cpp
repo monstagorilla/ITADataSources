@@ -16,7 +16,7 @@ static int g_iBlockLength = 256;
 int main( int , char** )
 {
 	ITAStreamFunctionGenerator oGenerator( 1, g_dSampleRate, g_iBlockLength, ITAStreamFunctionGenerator::SINE, 456.78f, 0.81f, true );
-	ITAFileDatasource oDatei("Gershwin.wav", g_iBlockLength);
+	ITAFileDatasource oDatei("Gershwin-mono.wav", g_iBlockLength);
 	CITANetAudioStreamingServer oStreamingServer;
 	oStreamingServer.SetInputStream(&oDatei);
 
