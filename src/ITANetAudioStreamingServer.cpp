@@ -122,13 +122,12 @@ bool CITANetAudioStreamingServer::LoopBody()
 	m_pMessage->SetConnection( m_pConnection );
 	m_pMessage->ReadMessage(); // blocking
 
-	switch( m_pMessage->GetMessageType() )
+	int iMsgType = m_pMessage->GetMessageType();
+	switch( iMsgType )
 	{
 	case CITANetAudioProtocol::NP_CLIENT_WAITING_FOR_SAMPLES:
 	{
 		int iFreeSamples = m_pMessage->ReadInt();
-		// std::cout << "Freie Samples: " << iFreeSamples << std::endl;
-		// std::cout << "Laenge InputStram: " << m_pInputStream->GetBlocklength() << std::endl;
 		if( iFreeSamples >= m_pInputStream->GetBlocklength() )
 		{
 			// Send Samples
@@ -137,36 +136,44 @@ bool CITANetAudioStreamingServer::LoopBody()
 				ITAStreamInfo oStreamInfo;
 				oStreamInfo.nSamples = m_sfTempTransmitBuffer.GetLength();
 				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
-				//std::cout << *pfData << std::endl;
-				if (pfData != 0) 
-					m_sfTempTransmitBuffer[i].write(pfData, m_sfTempTransmitBuffer.GetLength());
+				if( pfData != 0 )
+					m_sfTempTransmitBuffer[ i ].write( pfData, m_sfTempTransmitBuffer.GetLength() );
 			}
 			m_pInputStream->IncrementBlockPointer();
 			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES );
 			m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
 			m_pMessage->WriteAnswer();
-			m_pInputStream->IncrementBlockPointer();
+			std::cout << "Transmitted " << m_pInputStream->GetBlocklength() << " samples, because there where " << iFreeSamples << " free samples on client side" << std::endl;
 		}
 		else
 		{
+			std::cout << "Could not transmitt, because there where only " << iFreeSamples << " free samples on client side" << std::endl;
+
 			// Waiting for Trigger
 			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_WAITING_FOR_TRIGGER );
 			m_pMessage->WriteAnswer();
 			break;
 		}
 
-		
+
 		float fTimeOut = m_pInputStream->GetBlocklength() / m_pInputStream->GetSampleRate();
 		//VistaTimeUtils::Sleep( (int) ( 1 * 100 ) );
 		break;
 	}
 	case CITANetAudioProtocol::NP_CLIENT_CLOSE:
+	{
 		m_pMessage->WriteAnswer();
 		m_pConnection = NULL;
 		StopGently( true );
 		Stop();
 
 		return false;
+	}
+	default:
+	{
+		std::cout << "Unkown protocol type: " << iMsgType << std::endl;
+		break;
+	}
 	}
 
 	return true;
