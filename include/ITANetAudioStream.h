@@ -26,6 +26,10 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
+#include <fstream>
+using namespace std;
+
 
 class CITANetAudioStreamingClient;
 
@@ -95,6 +99,7 @@ private:
 	int m_iStreamingStatus; //!< Current streaming status
 
 	friend class CITANetAudioStreamingClient;
+	ofstream outputFile;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAM
