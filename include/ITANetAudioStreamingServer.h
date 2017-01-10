@@ -25,11 +25,15 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
+#include <fstream>
 
 #include <ITANetAudioProtocol.h>
 
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 #include <ITASampleFrame.h>
+
+using namespace std;
 
 class ITADatasource;
 class CITANetAudioMessage;
@@ -91,6 +95,8 @@ private:
 	int m_iClientRingBufferFreeSamples;
 
 	friend class CITANetAudioServer;
+
+	ofstream outputFile;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_SERVER
