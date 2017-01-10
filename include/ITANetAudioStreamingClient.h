@@ -24,6 +24,7 @@
 #include <ITANetAudioProtocol.h>
 
 #include <ITASampleFrame.h>
+#include <ITAStreamProbe.h>
 
 #include <VistaInterProcComm/Concurrency/VistaThreadEvent.h>
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
@@ -61,6 +62,7 @@ protected:
 private:
 	CITANetAudioClient* m_pClient;
 	CITANetAudioStream* m_pStream;
+	ITAStreamProbe* m_pStreamProbe;
 
 	CITANetAudioProtocol* m_pProtocol;
 	CITANetAudioMessage* m_pMessage;

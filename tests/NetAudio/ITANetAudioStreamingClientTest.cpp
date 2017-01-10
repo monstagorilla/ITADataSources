@@ -5,22 +5,25 @@
 #include <ITAPortaudioInterface.h>
 #include <ITAStreamMultiplier1N.h>
 #include <ITAException.h>
+#include <ITAFileDatasource.h>
+#include <ITAStreamProbe.h>
 
 using namespace std;
 
 static string g_sServerName = "localhost";
 static int g_iServerPort = 12480;
-static double g_dSampleRate = 44.1e3;
+static double g_dSampleRate = 44100;
 static int g_iBufferSize = 256;
 
 int main( int , char** )
 {
-	CITANetAudioStream oNetAudioStream( 1, g_dSampleRate, g_iBufferSize, 4 * g_iBufferSize );
-	ITAStreamMultiplier1N oMultiplier( &oNetAudioStream, 2 );
+	CITANetAudioStream oNetAudioStream( 2, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
+	ITAStreamProbe oProbe( &oNetAudioStream, "out_gutentag.wav" );
+	//ITAStreamMultiplier1N oMultiplier( &oProbe, 2 );
 
 	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBufferSize );
 	ITAPA.Initialize();
-	ITAPA.SetPlaybackDatasource( &oMultiplier );
+	ITAPA.SetPlaybackDatasource( &oProbe );
 	ITAPA.Open();
 	ITAPA.Start(); 
 
@@ -55,6 +58,8 @@ int main( int , char** )
 	ITAPA.Stop();
 	ITAPA.Close();
 	ITAPA.Finalize();
+	
+	
 
 	return 0;
 }
