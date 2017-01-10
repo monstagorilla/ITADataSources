@@ -96,7 +96,7 @@ bool CITANetAudioStreamingClient::LoopBody()
 
 	case CITANetAudioProtocol::NP_SERVER_WAITING_FOR_TRIGGER:
 		// Wait until block increment is triggered by audio context (more free samples in ring buffer)
-		std::cout << "Will wait for block increment" << std::endl;
+		//std::cout << "Will wait for block increment" << std::endl;
 		m_oBlockIncrementEvent.WaitForEvent( true );
 		break;
 
@@ -104,7 +104,7 @@ bool CITANetAudioStreamingClient::LoopBody()
 		// Receive samples from net message and forward them to the stream ring buffer
 
 		m_pMessage->ReadSampleFrame( &m_sfReceivingBuffer );
-		std::cout << "Receiving " << m_sfReceivingBuffer.GetLength() << " samples from streaming server" << std::endl;
+		//std::cout << "Receiving " << m_sfReceivingBuffer.GetLength() << " samples from streaming server" << std::endl;
 		if ( m_pStream->GetRingBufferFreeSamples( ) >= m_sfReceivingBuffer.GetLength( ) )
 			m_pStream->Transmit( m_sfReceivingBuffer, m_sfReceivingBuffer.GetLength( ) );
 		//else 

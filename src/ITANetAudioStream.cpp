@@ -64,36 +64,42 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 		iCurrentWriteCursor += GetRingBufferSize(); // Write pointer always ahead, so unwrap first
 
 	int iReadableSamples = iCurrentWriteCursor - m_iReadCursor;
-	if( iReadableSamples > int( GetBlocklength() ) ) // samples can be cyclic-copied safely from ring buffer
-		m_sfRingBuffer[ uiChannel ].cyclic_read( sbOutputStreamBuffer.GetData(), sbOutputStreamBuffer.GetLength(), m_iReadCursor );
-
-	if( iReadableSamples > 0 && iReadableSamples < int( GetBlocklength() ) )
+	if ( iReadableSamples > int( GetBlocklength( ) ) ) // samples can be cyclic-copied safely from ring buffer
+	{
+		m_sfRingBuffer[ uiChannel ].cyclic_read( sbOutputStreamBuffer.GetData( ), sbOutputStreamBuffer.GetLength( ), m_iReadCursor );
+		pfBlockPointer = sbOutputStreamBuffer.GetData( );
+	}
+	else if( iReadableSamples > 0)
 	{
 		// @todo: fade with ITAFade
-		std::cerr << "Should fade right now, but skipping samples." << std::endl;
+		//std::cerr << "Should fade right now, but skipping samples." << std::endl;
 	}
-
 	return pfBlockPointer;
 }
 
 void CITANetAudioStream::IncrementBlockPointer()
 {
 	// Increment read cursor by one audio block and wrap around if exceeding ring buffer
-	if( GetRingBufferFreeSamples() >= int( GetBlocklength() ) )
+	if ( ( GetRingBufferSize() - GetRingBufferFreeSamples( )) >= int( GetBlocklength( ) ) )
 	{
 		m_iReadCursor = ( m_iReadCursor + m_sfOutputStreamBuffer.GetLength() ) % m_sfRingBuffer.GetLength();
 		m_iStreamingStatus = STREAMING;
-		outputFile << "incRead ";
+		//outputFile << "incRead ";
+	}
+	else if ( GetIsRingBufferEmpty( ) )
+	{
+		//outputFile << "buffer empty ";
 	}
 	else
 	{
 		m_iStreamingStatus = BUFFER_UNDERRUN;
 		m_iReadCursor = m_iWriteCursor;
-		outputFile << "BufferOverrun ";
+		//outputFile << "BufferOverrun ";
 	}
-	outputFile << "\tRead: " << m_iReadCursor;
-	outputFile << "\tWrite : " << m_iWriteCursor;
-	outputFile << "\tFreeSamples: " << GetRingBufferFreeSamples ()<< endl;
+	m_bRingBufferFull = false;
+	//outputFile << "\tRead: " << m_iReadCursor;
+	//outputFile << "\tWrite : " << m_iWriteCursor;
+	//outputFile << "\tFreeSamples: " << GetRingBufferFreeSamples ()<< endl;
 	m_pNetAudioStreamingClient->TriggerBlockIncrement();
 }
 
@@ -109,10 +115,11 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	if( GetRingBufferFreeSamples() < iNumSamples )
 	{
 		// @todo: only partly write
-		std::cerr << "BUFFER_OVERRUN! Would partly write samples because ring buffer will be full then." << std::endl;
+		//std::cerr << "BUFFER_OVERRUN! Would partly write samples because ring buffer will be full then." << std::endl;
 		
 		m_iWriteCursor = m_iReadCursor;
-		outputFile << " incSomeWrite: ";
+		m_bRingBufferFull = false;
+		//outputFile << " incSomeWrite: ";
 	}
 	else
 	{
@@ -120,13 +127,13 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 		m_sfRingBuffer.cyclic_write( sfNewSamples, iNumSamples, 0, iCurrentWriteCursor );
 
 		// set write curser
-		m_iWriteCursor += ( m_iWriteCursor + iNumSamples );
-		m_iWriteCursor %= GetRingBufferSize( );
-		outputFile << " IncWrite: ";
+		m_iWriteCursor = ( m_iWriteCursor + iNumSamples ) % GetRingBufferSize( );
+		m_bRingBufferFull = true;
+		//outputFile << " IncWrite: ";
 	}
-	outputFile << "\tRead: " << m_iReadCursor;
-	outputFile << "\tWrite : " << m_iWriteCursor;
-	outputFile << "\tFreeSamples: " << GetRingBufferFreeSamples( ) << endl;
+	//outputFile << "\tRead: " << m_iReadCursor;
+	//outputFile << "\tWrite : " << m_iWriteCursor;
+	//outputFile << "\tFreeSamples: " << GetRingBufferFreeSamples( ) << endl;
 	
 	return GetRingBufferFreeSamples();
 }

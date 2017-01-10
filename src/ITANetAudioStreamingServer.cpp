@@ -143,11 +143,11 @@ bool CITANetAudioStreamingServer::LoopBody()
 			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES );
 			m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
 			m_pMessage->WriteAnswer();
-			std::cout << "Transmitted " << m_pInputStream->GetBlocklength() << " samples, because there where " << iFreeSamples << " free samples on client side" << std::endl;
+			//std::cout << "Transmitted " << m_pInputStream->GetBlocklength() << " samples, because there where " << iFreeSamples << " free samples on client side" << std::endl;
 		}
 		else
 		{
-			std::cout << "Could not transmitt, because there where only " << iFreeSamples << " free samples on client side" << std::endl;
+			//std::cout << "Could not transmitt, because there where only " << iFreeSamples << " free samples on client side" << std::endl;
 
 			// Waiting for Trigger
 			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_WAITING_FOR_TRIGGER );
