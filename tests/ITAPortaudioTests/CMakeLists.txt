@@ -1,16 +1,10 @@
 cmake_minimum_required( VERSION 2.8 )
 
-if( NOT ITADATASOURCES_COMMON_BUILD )
-
-	project( ITADataSourcesTest )
-	list( APPEND CMAKE_MODULE_PATH "$ENV{VISTA_CMAKE_COMMON}" )
-	include( VistaCommon )
-	
-endif()
+project( ITADataSourcesTest )
+list( APPEND CMAKE_MODULE_PATH "$ENV{VISTA_CMAKE_COMMON}" )
+include( VistaCommon )
 
 vista_use_package( ITADataSources REQUIRED FIND_DEPENDENCIES )
-
-add_definitions( -DITA_DATA_SOURCES_DLL )
 
 
 add_executable( ITAPortaudioInterfaceRecorder ITAPortaudioInterfaceRecorder.cpp )
