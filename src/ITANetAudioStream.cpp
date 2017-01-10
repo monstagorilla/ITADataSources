@@ -17,6 +17,7 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	, m_iStreamingStatus( INVALID )
 	
 {
+	m_bRingBufferFull = false;
 	if( iBufferSize > iRingBufferCapacity )
 		ITA_EXCEPT1( INVALID_PARAMETER, "Ring buffer capacity can not be smaller than buffer size." );
 
@@ -115,9 +116,8 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	if( iCurrentWriteCursor < iCurrentReadCursor )
 		iCurrentWriteCursor += GetRingBufferSize(); // Unwrap, because write cursor always ahead
 
-	if ( m_iWriteCursor == m_iReadCursor )
+	if ( ( m_iWriteCursor == m_iReadCursor ) && m_bRingBufferFull )
 	{
-		m_bRingBufferFull = true;
 		outputFile << " BuffFull: ";
 	}
 	else if( GetRingBufferFreeSamples() < iNumSamples )
