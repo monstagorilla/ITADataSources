@@ -17,13 +17,13 @@ static int g_iBufferSize = 256;
 
 int main( int , char** )
 {
-	CITANetAudioStream oNetAudioStream( 1, g_dSampleRate, g_iBufferSize, 3 * g_iBufferSize );
-	ITAStreamProbe oProbe( &oNetAudioStream, "output.wav" );
-	ITAStreamMultiplier1N oMultiplier( &oProbe, 2 );
+	CITANetAudioStream oNetAudioStream( 2, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
+	ITAStreamProbe oProbe( &oNetAudioStream, "out_gutentag.wav" );
+	//ITAStreamMultiplier1N oMultiplier( &oProbe, 2 );
 
 	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBufferSize );
 	ITAPA.Initialize();
-	ITAPA.SetPlaybackDatasource( &oMultiplier );
+	ITAPA.SetPlaybackDatasource( &oProbe );
 	ITAPA.Open();
 	ITAPA.Start(); 
 
