@@ -32,7 +32,6 @@ using namespace std;
 
 
 class CITANetAudioStreamingClient;
-class ITABufferedAudiofileWriter;
 
 //! Network audio stream
 /**
@@ -96,8 +95,6 @@ private:
 	int m_iWriteCursor; //!< Cursor where samples will be fed into ring buffer from net audio producer (always ahead)
 	bool m_bRingBufferFull; //!< Indicator if ring buffer is full (and read cursor equals write cursor)
 	ITASampleFrame m_sfRingBuffer; //!< Buffer incoming data
-
-	ITABufferedAudiofileWriter* m_pfNetStreamSampleWriter;
 
 	int m_iStreamingStatus; //!< Current streaming status
 

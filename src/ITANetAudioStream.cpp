@@ -3,7 +3,6 @@
 #include <ITANetAudioStreamingClient.h>
 
 // ITA includes
-#include <ITABufferedAudiofileWriter.h>
 #include <ITAException.h>
 
 // STL
@@ -27,27 +26,12 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 
 	m_iStreamingStatus = STOPPED;
 	outputFile.open( "program3data.txt" );
-
-	ITAAudiofileProperties props;
-	props.dSampleRate = dSamplingRate;
-	props.eDomain = ITADomain::ITA_TIME_DOMAIN;
-	props.eQuantization = ITAQuantization::ITA_FLOAT;
-	props.iChannels = iChannels;
-	props.sComment = "NetAudio transmitted stream";
-	m_pfNetStreamSampleWriter = ITABufferedAudiofileWriter::create( "NetStreamTransmition.wav", props );
-
-	// nachher weg!
-	m_sfRingBuffer.zero();
-	ITASampleFrame sfLangShort( "lang_short.wav" );
-	m_sfRingBuffer.write( sfLangShort, iRingBufferCapacity );
-	m_bRingBufferFull = true;
 }
 
 CITANetAudioStream::~CITANetAudioStream()
 {
 	delete m_pNetAudioStreamingClient; 
 	outputFile.close( );
-	delete m_pfNetStreamSampleWriter;
 }
 
 bool CITANetAudioStream::Connect( const std::string& sAddress, int iPort )
@@ -95,13 +79,6 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 
 void CITANetAudioStream::IncrementBlockPointer()
 {
-	if( !GetIsConnected() )
-		return;
-
-	m_iReadCursor = ( m_iReadCursor + m_sfOutputStreamBuffer.GetLength() ) % m_sfRingBuffer.GetLength();
-	m_iWriteCursor = ( m_iReadCursor + 2*m_sfOutputStreamBuffer.GetLength() ) % m_sfRingBuffer.GetLength();
-	return;
-
 	// Increment read cursor by one audio block and wrap around if exceeding ring buffer
 	if ( ( GetRingBufferSize() - GetRingBufferFreeSamples( )) >= int( GetBlocklength( ) ) )
 	{
@@ -140,26 +117,23 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 		// @todo: only partly write
 		//std::cerr << "BUFFER_OVERRUN! Would partly write samples because ring buffer will be full then." << std::endl;
 		
-		//m_iWriteCursor = m_iReadCursor;
+		m_iWriteCursor = m_iReadCursor;
 		m_bRingBufferFull = false;
 		//outputFile << " incSomeWrite: ";
 	}
 	else
 	{
 		// write samples into ring buffer
-		//m_sfRingBuffer.cyclic_write( sfNewSamples, iNumSamples, 0, iCurrentWriteCursor );
+		m_sfRingBuffer.cyclic_write( sfNewSamples, iNumSamples, 0, iCurrentWriteCursor );
 
 		// set write curser
-		//m_iWriteCursor = ( m_iWriteCursor + iNumSamples ) % GetRingBufferSize( );
+		m_iWriteCursor = ( m_iWriteCursor + iNumSamples ) % GetRingBufferSize( );
 		m_bRingBufferFull = true;
 		//outputFile << " IncWrite: ";
 	}
 	//outputFile << "\tRead: " << m_iReadCursor;
 	//outputFile << "\tWrite : " << m_iWriteCursor;
 	//outputFile << "\tFreeSamples: " << GetRingBufferFreeSamples( ) << endl;
-
-	const ITASampleFrame* pNewSamples = &sfNewSamples;
-	m_pfNetStreamSampleWriter->write( pNewSamples );
 	
 	return GetRingBufferFreeSamples();
 }
