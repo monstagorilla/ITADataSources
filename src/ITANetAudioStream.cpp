@@ -4,10 +4,33 @@
 
 // ITA includes
 #include <ITAException.h>
+#include <ITADataLog.h>
+#include <ITAStreamInfo.h>
+#include <ITAClock.h>
+#include <iomanip> 
 
 // STL
 #include <cmath>
 #include <iostream>
+struct ITAStreamLog : public ITALogDataBase {
+	
+	virtual std::ostream& outputDesc( std::ostream& os ) const {
+		os << "BlockId " << "\tTimeStamp" << "\tStreamingStatus" << std::endl;
+		return os;
+	};
+	virtual std::ostream& outputData( std::ostream& os ) const {
+		os << uiBlockId << "\t" << std::setprecision(12) << dTimecode << "\t" << iStreamingStatus << std::endl;
+		return os;
+	};
+
+	unsigned int uiBlockId;
+	int iStreamingStatus;
+	double dTimecode;
+
+};
+class ITABufferedDataLoggerImpl : public ITABufferedDataLogger<ITAStreamLog> {
+public :
+};
 
 CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity )
 	: m_sfOutputStreamBuffer( iChannels, iBufferSize, true )
@@ -17,6 +40,7 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	, m_iStreamingStatus( INVALID )
 	
 {
+
 	m_bRingBufferFull = false;
 	if( iBufferSize > iRingBufferCapacity )
 		ITA_EXCEPT1( INVALID_PARAMETER, "Ring buffer capacity can not be smaller than buffer size." );
@@ -27,12 +51,15 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 
 	m_iStreamingStatus = STOPPED;
 	outputFile.open( "program3data.txt" );
+	m_pStreamLogger = new ITABufferedDataLoggerImpl( );
+	m_pStreamLogger->setOutputFile( "NetAudioStream.log" );
 }
 
 CITANetAudioStream::~CITANetAudioStream()
 {
 	delete m_pNetAudioStreamingClient; 
 	outputFile.close( );
+	delete m_pStreamLogger;
 }
 
 bool CITANetAudioStream::Connect( const std::string& sAddress, int iPort )
@@ -48,7 +75,7 @@ bool CITANetAudioStream::GetIsConnected() const
 	return m_pNetAudioStreamingClient->GetIsConnected();
 }
 
-const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* )
+const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pInfo )
 {
 	outputFile << "GBP ";
 	if ( !GetIsConnected( ) )
@@ -72,14 +99,22 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 			// todo fading
 		
 	}
-
+	if ( uiChannel == 0 )
+	{
+		ITAStreamLog oLog;
+		oLog.iStreamingStatus = m_iStreamingStatus;
+		oLog.dTimecode = ITAClock::getDefaultClock( )->getTime( );
+		oLog.uiBlockId = pInfo->nSamples / GetBlocklength();
+		m_pStreamLogger->log( oLog );
+	}
 	return m_sfOutputStreamBuffer[uiChannel].GetData();
 }
 
 void CITANetAudioStream::IncrementBlockPointer()
 {
 	// Increment read cursor by one audio block and wrap around if exceeding ring buffer
-
+	// TODo hier logitem
+	ITAStreamLog oLog;
 	int iSavedSample = GetRingBufferSize( ) - GetRingBufferFreeSamples( );
 
 	if ( iSavedSample >= int( GetBlocklength( ) ) )
@@ -104,6 +139,7 @@ void CITANetAudioStream::IncrementBlockPointer()
 	outputFile << "\tRead: " << m_iReadCursor;
 	outputFile << "\tWrite : " << m_iWriteCursor;
 	outputFile << "\tFreeSamples: " << GetRingBufferFreeSamples ()<< endl;
+	
 	m_pNetAudioStreamingClient->TriggerBlockIncrement();
 }
 
