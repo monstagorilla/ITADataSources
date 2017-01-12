@@ -25,6 +25,8 @@
 //#include <asiosys.h>
 #include <common/asio.h>
 
+#include <string>
+
 #define ITASIO_API ITA_DATA_SOURCES_API
 
 /*
@@ -201,7 +203,11 @@ ITASIO_API ASIOError ITAsioInitializeDriver(long lDriverNr);
  *
  * \return ASE_OK wenn kein Fehler auftrat
  */
-ITASIO_API ASIOError ITAsioInitializeDriver(const char* pszDriverName);
+ITASIO_API ASIOError ITAsioInitializeDriver( const char* pszDriverName );
+inline ASIOError ITAsioInitializeDriver( const std::string& sDriverName )
+{
+	return ITAsioInitializeDriver( sDriverName.c_str() );
+};
 
 //! ASIO-Treiber freigeben
 /**
