@@ -14,7 +14,7 @@
 #include <iostream>
 struct ITAStreamLog : public ITALogDataBase {
 
-	virtual std::ostream& outputDesc( std::ostream& os ) const {
+	static std::ostream& outputDesc( std::ostream& os ) {
 		os << "BlockId " << "\tTimeStamp" << "\tStreamingStatus" << std::endl;
 		return os;
 	};
@@ -31,7 +31,7 @@ struct ITAStreamLog : public ITALogDataBase {
 };
 struct ITANetLog : public ITALogDataBase {
 
-	virtual std::ostream& outputDesc( std::ostream& os ) const {
+	static std::ostream& outputDesc( std::ostream& os ) {
 		os << "BlockId " << "\tTimeStamp" << "\tBufferstatus" << std::endl;
 		return os;
 	};
