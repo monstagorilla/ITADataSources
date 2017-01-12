@@ -25,7 +25,6 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	, m_pConnection( NULL )
 {
 	m_pNetAudioServer = new CITANetAudioServer( );
-	outputFile.open( "ServerLog.txt" );
 }
 
 bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort )
@@ -90,8 +89,6 @@ int CITANetAudioStreamingServer::GetNetworkPort() const
 void CITANetAudioStreamingServer::Stop() 
 {
 	m_pNetAudioServer->Stop();
-
-	outputFile.close( );
 }
 
 void CITANetAudioStreamingServer::SetInputStream( ITADatasource* pInStream )
@@ -132,11 +129,9 @@ bool CITANetAudioStreamingServer::LoopBody()
 	{
 		int iFreeSamples = m_pMessage->ReadInt();
 
-		outputFile << "freeSamples " << iFreeSamples;
 		if( iFreeSamples >= m_pInputStream->GetBlocklength() )
 		{
 			// Send Samples
-			outputFile << "SendSamples" << endl;
 			for( int i = 0; i < m_pInputStream->GetNumberOfChannels(); i++ )
 			{
 				ITAStreamInfo oStreamInfo;
@@ -153,7 +148,6 @@ bool CITANetAudioStreamingServer::LoopBody()
 		}
 		else
 		{
-			outputFile << "Waiting" << endl;
 			//std::cout << "Could not transmitt, because there where only " << iFreeSamples << " free samples on client side" << std::endl;
 
 			// Waiting for Trigger

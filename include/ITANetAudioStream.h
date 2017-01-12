@@ -32,7 +32,8 @@ using namespace std;
 
 
 class CITANetAudioStreamingClient;
-class ITABufferedDataLoggerImpl;
+class ITABufferedDataLoggerImplStream;
+class ITABufferedDataLoggerImplNet;
 
 //! Network audio stream
 /**
@@ -100,8 +101,9 @@ private:
 	int m_iStreamingStatus; //!< Current streaming status
 
 	friend class CITANetAudioStreamingClient;
-	ofstream outputFile;
-	ITABufferedDataLoggerImpl* m_pStreamLogger;
+	ITABufferedDataLoggerImplStream* m_pStreamLogger;
+	ITABufferedDataLoggerImplNet* m_pNetLogger;
+	int iID;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAM

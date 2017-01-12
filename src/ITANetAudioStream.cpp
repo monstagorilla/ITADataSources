@@ -13,23 +13,44 @@
 #include <cmath>
 #include <iostream>
 struct ITAStreamLog : public ITALogDataBase {
-	
+
 	virtual std::ostream& outputDesc( std::ostream& os ) const {
 		os << "BlockId " << "\tTimeStamp" << "\tStreamingStatus" << std::endl;
 		return os;
 	};
 	virtual std::ostream& outputData( std::ostream& os ) const {
-		os << uiBlockId << "\t" << std::setprecision(12) << dTimecode << "\t" << iStreamingStatus << std::endl;
+		os << "StreamLog\t" << uiBlockId << "\t" << std::setprecision( 12 ) << dTimecode << "\t" << iStreamingStatus << "\t" << iFreeSamples << std::endl;
 		return os;
 	};
 
 	unsigned int uiBlockId;
 	int iStreamingStatus;
 	double dTimecode;
+	int iFreeSamples;
 
 };
-class ITABufferedDataLoggerImpl : public ITABufferedDataLogger<ITAStreamLog> {
-public :
+struct ITANetLog : public ITALogDataBase {
+
+	virtual std::ostream& outputDesc( std::ostream& os ) const {
+		os << "BlockId " << "\tTimeStamp" << "\tBufferstatus" << std::endl;
+		return os;
+	};
+	virtual std::ostream& outputData( std::ostream& os ) const {
+		os << "NetLog\t"<< uiBlockId << "\t" << std::setprecision( 12 ) << dTimecode << "\t" << iBufferStatus << "\t" << iFreeSamples << std::endl;
+		return os;
+	};
+
+	unsigned int uiBlockId;
+	int iBufferStatus;
+	double dTimecode;
+	int iFreeSamples;
+
+};
+class ITABufferedDataLoggerImplStream : public ITABufferedDataLogger<ITAStreamLog> {
+public:
+};
+class ITABufferedDataLoggerImplNet : public ITABufferedDataLogger<ITANetLog> {
+public:
 };
 
 CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity )
@@ -40,7 +61,6 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	, m_iStreamingStatus( INVALID )
 	
 {
-
 	m_bRingBufferFull = false;
 	if( iBufferSize > iRingBufferCapacity )
 		ITA_EXCEPT1( INVALID_PARAMETER, "Ring buffer capacity can not be smaller than buffer size." );
@@ -50,16 +70,19 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	m_iWriteCursor = 0; // always ahead, i.e. iWriteCursor >= iReadCursor if unwrapped
 
 	m_iStreamingStatus = STOPPED;
-	outputFile.open( "program3data.txt" );
-	m_pStreamLogger = new ITABufferedDataLoggerImpl( );
+	// Logging
+	m_pStreamLogger = new ITABufferedDataLoggerImplStream( );
 	m_pStreamLogger->setOutputFile( "NetAudioStream.log" );
+	m_pNetLogger = new ITABufferedDataLoggerImplNet( );
+	m_pNetLogger->setOutputFile( "NetAudioNet.log" );
+	iID = 0;
 }
 
 CITANetAudioStream::~CITANetAudioStream()
 {
 	delete m_pNetAudioStreamingClient; 
-	outputFile.close( );
 	delete m_pStreamLogger;
+	delete m_pNetLogger;
 }
 
 bool CITANetAudioStream::Connect( const std::string& sAddress, int iPort )
@@ -77,7 +100,6 @@ bool CITANetAudioStream::GetIsConnected() const
 
 const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pInfo )
 {
-	outputFile << "GBP ";
 	if ( !GetIsConnected( ) )
 	{
 		m_sfOutputStreamBuffer[ uiChannel ].Zero( );
@@ -86,13 +108,11 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 
 	if ( GetIsRingBufferEmpty( ) )
 	{
-		outputFile << "ZERO ";
 		m_sfOutputStreamBuffer[ uiChannel ].Zero( );
 	}
 	// Es ist mindestens ein Block da
 	else
 	{
-		outputFile << "Norm ";
 		// Es ist mindestens ein Block da
 		m_sfRingBuffer[ uiChannel ].cyclic_read( m_sfOutputStreamBuffer[ uiChannel ].GetData( ), m_sfOutputStreamBuffer.GetLength( ), m_iReadCursor );
 		// weniger als ein Block
@@ -104,7 +124,9 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 		ITAStreamLog oLog;
 		oLog.iStreamingStatus = m_iStreamingStatus;
 		oLog.dTimecode = ITAClock::getDefaultClock( )->getTime( );
-		oLog.uiBlockId = pInfo->nSamples / GetBlocklength();
+		iID++;
+		oLog.uiBlockId = iID;
+		oLog.iFreeSamples = GetRingBufferFreeSamples( );
 		m_pStreamLogger->log( oLog );
 	}
 	return m_sfOutputStreamBuffer[uiChannel].GetData();
@@ -113,8 +135,6 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 void CITANetAudioStream::IncrementBlockPointer()
 {
 	// Increment read cursor by one audio block and wrap around if exceeding ring buffer
-	// TODo hier logitem
-	ITAStreamLog oLog;
 	int iSavedSample = GetRingBufferSize( ) - GetRingBufferFreeSamples( );
 
 	if ( iSavedSample >= int( GetBlocklength( ) ) )
@@ -122,23 +142,17 @@ void CITANetAudioStream::IncrementBlockPointer()
 		//es wurden Samples abgespielt
 		m_iReadCursor = ( m_iReadCursor + m_sfOutputStreamBuffer.GetLength() ) % m_sfRingBuffer.GetLength();
 		m_iStreamingStatus = STREAMING;
-		outputFile << "incRead ";
 	}
 	else if ( GetIsRingBufferEmpty( ) )
 	{
 		m_iStreamingStatus = STOPPED;
-		outputFile << "buffer empty ";
 	}
 	else
 	{
 		m_iStreamingStatus = BUFFER_UNDERRUN;
 		m_iReadCursor = m_iWriteCursor;
-		outputFile << "BufferOverrun ";
 	}
 	m_bRingBufferFull = false;
-	outputFile << "\tRead: " << m_iReadCursor;
-	outputFile << "\tWrite : " << m_iWriteCursor;
-	outputFile << "\tFreeSamples: " << GetRingBufferFreeSamples ()<< endl;
 	
 	m_pNetAudioStreamingClient->TriggerBlockIncrement();
 }
@@ -149,12 +163,14 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	int iCurrentReadCursor = m_iReadCursor;
 	int iCurrentWriteCursor = m_iWriteCursor;
 
+	ITANetLog oLog;
 	if( iCurrentWriteCursor < iCurrentReadCursor )
 		iCurrentWriteCursor += GetRingBufferSize(); // Unwrap, because write cursor always ahead
 
 	if ( ( m_iWriteCursor == m_iReadCursor ) && m_bRingBufferFull )
 	{
-		outputFile << " BuffFull: ";
+		// BufferFull
+		oLog.iBufferStatus = 1;
 	}
 	else if( GetRingBufferFreeSamples() < iNumSamples )
 	{
@@ -162,23 +178,29 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 		//std::cerr << "BUFFER_OVERRUN! Would partly write samples because ring buffer will be full then." << std::endl;
 		
 		m_iWriteCursor = m_iReadCursor;
-		outputFile << " incSomeWrite: ";
+		oLog.iBufferStatus = 2;
 	}
 	else
 	{
 		// write samples into ring buffer
 		m_sfRingBuffer.cyclic_write( sfNewSamples, iNumSamples, 0, iCurrentWriteCursor );
 		m_bRingBufferFull = false;
+		oLog.iBufferStatus = 1;
 
 		// set write curser
 		m_iWriteCursor = ( m_iWriteCursor + iNumSamples ) % GetRingBufferSize( );
 		if ( m_iWriteCursor == m_iReadCursor )
+		{
 			m_bRingBufferFull = true;
-		outputFile << " IncWrite: ";
+			oLog.iBufferStatus = 1;
+		}
 	}
-	outputFile << "\tRead: " << m_iReadCursor;
-	outputFile << "\tWrite : " << m_iWriteCursor;
-	outputFile << "\tFreeSamples: " << GetRingBufferFreeSamples( ) << endl;
+
+	oLog.dTimecode = ITAClock::getDefaultClock( )->getTime( );
+	iID++;
+	oLog.uiBlockId = iID;
+	oLog.iFreeSamples = GetRingBufferFreeSamples( );
+	m_pNetLogger->log( oLog );
 	
 	return GetRingBufferFreeSamples();
 }
