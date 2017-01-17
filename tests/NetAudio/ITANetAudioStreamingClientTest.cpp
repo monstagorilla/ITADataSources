@@ -13,7 +13,7 @@ using namespace std;
 static string g_sServerName = "localhost";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44100;
-static int g_iBufferSize = 256;
+static int g_iBufferSize = 1024;
 
 int main( int , char** )
 {
