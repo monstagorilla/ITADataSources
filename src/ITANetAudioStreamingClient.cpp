@@ -80,7 +80,10 @@ bool CITANetAudioStreamingClient::LoopBody()
 	m_pMessage->ResetMessage();
 	m_pMessage->SetConnection( m_pConnection );
 	m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_WAITING_FOR_SAMPLES );
-	m_pMessage->WriteInt( m_pStream->GetRingBufferFreeSamples() );
+	int iFreeSamplesUntilAllowedReached = m_pStream->GetAllowedLatencySamples() - m_pStream->GetRingBufferAvailableSamples();
+	if( iFreeSamplesUntilAllowedReached < 0 )
+		iFreeSamplesUntilAllowedReached = 0;
+	m_pMessage->WriteInt( iFreeSamplesUntilAllowedReached );
 	m_pMessage->WriteMessage();
 
 	// Wait for answer of server

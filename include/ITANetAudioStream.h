@@ -84,6 +84,22 @@ public:
 	  */
 	bool GetIsConnected() const;
 
+	//! Set allowed latency (s)
+	/**
+	  * Sets the latency that will be used for reading and writing from ring buffer.
+	  * New samples will be requested and send if the latency / ring buffer samples
+	  * is lower than the target latency.
+	  */
+	void SetAllowedLatencySeconds( float fLatencySeconds );
+	void SetAllowedLatencySamples( int iLatencySamples );
+	float GetAllowedLatencySeconds() const;
+	int GetAllowedLatencySamples() const;
+
+	float GetMinimumLatencySeconds() const;
+	float GetMaximumLatencySeconds() const;
+	int GetMinimumLatencySamples() const;
+	int GetMaximumLatencySamples() const;
+
 	//! Returns (static) size of ring buffer
 	/**
 	  * @return Number of maximum samples that can be hold by internal ring buffer
@@ -165,8 +181,10 @@ private:
 	int m_iWriteCursor; //!< Cursor where samples will be fed into ring buffer from net audio producer (always ahead)
 	bool m_bRingBufferFull; //!< Indicator if ring buffer is full (and read cursor equals write cursor)
 	ITASampleFrame m_sfRingBuffer; //!< Ring buffer
+	int m_iTargetSampleLatency; //!< Maximum allowed samples / target sample latency
 
 	int m_iStreamingStatus; //!< Current streaming status
+	double m_dLastStreamingTimeCode;
 
 	ITABufferedDataLoggerImplStream* m_pStreamLogger; //!< Logging for the audio stream
 	ITABufferedDataLoggerImplNet* m_pNetLogger; //!< Logging for the network stream
