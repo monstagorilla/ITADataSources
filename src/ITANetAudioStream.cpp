@@ -12,30 +12,49 @@
 // STL
 #include <cmath>
 #include <iostream>
-struct ITAStreamLog : public ITALogDataBase {
 
-	static std::ostream& outputDesc( std::ostream& os ) {
-		os << "BlockId " << "\tTimeStamp" << "\tStreamingStatus" << std::endl;
+
+//! Audio streaming log item
+struct ITAStreamLog : public ITALogDataBase
+{
+	inline static std::ostream& outputDesc( std::ostream& os )
+	{
+		os << "BlockId";
+		os << "\t" << "TimeCode";
+		os << "\t" << "StreamingStatus";
+		os << "\t" << "FreeSamples";
+		os << std::endl;
 		return os;
 	};
-	virtual std::ostream& outputData( std::ostream& os ) const {
-		os << "StreamLog\t" << uiBlockId << "\t" << std::setprecision( 12 ) << dTimecode << "\t" << iStreamingStatus << "\t" << iFreeSamples << std::endl;
+
+	inline std::ostream& outputData( std::ostream& os ) const
+	{
+		os << uiBlockId;
+		os << "\t" << std::setprecision( 12 ) << dTimecode;
+		os << "\t" << iStreamingStatus;
+		os << "\t" << iFreeSamples;
+		os << std::endl;
 		return os;
 	};
 
-	unsigned int uiBlockId;
-	int iStreamingStatus;
+	unsigned int uiBlockId; //!< Block identifier (audio streaming)
+	int iStreamingStatus; //!< ... usw
 	double dTimecode;
 	int iFreeSamples;
 
 };
-struct ITANetLog : public ITALogDataBase {
 
-	static std::ostream& outputDesc( std::ostream& os ) {
+//! Network streaming log item
+struct ITANetLog : public ITALogDataBase
+{
+	inline static std::ostream& outputDesc( std::ostream& os )
+	{
 		os << "BlockId " << "\tTimeStamp" << "\tBufferstatus" << std::endl;
 		return os;
 	};
-	virtual std::ostream& outputData( std::ostream& os ) const {
+	
+	inline std::ostream& outputData( std::ostream& os ) const
+	{
 		os << "NetLog\t"<< uiBlockId << "\t" << std::setprecision( 12 ) << dTimecode << "\t" << iBufferStatus << "\t" << iFreeSamples << std::endl;
 		return os;
 	};
@@ -46,12 +65,10 @@ struct ITANetLog : public ITALogDataBase {
 	int iFreeSamples;
 
 };
-class ITABufferedDataLoggerImplStream : public ITABufferedDataLogger<ITAStreamLog> {
-public:
-};
-class ITABufferedDataLoggerImplNet : public ITABufferedDataLogger<ITANetLog> {
-public:
-};
+
+class ITABufferedDataLoggerImplStream : public ITABufferedDataLogger < ITAStreamLog > {};
+class ITABufferedDataLoggerImplNet : public ITABufferedDataLogger < ITANetLog > {};
+
 
 CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity )
 	: m_sfOutputStreamBuffer( iChannels, iBufferSize, true )
@@ -70,12 +87,15 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	m_iWriteCursor = 0; // always ahead, i.e. iWriteCursor >= iReadCursor if unwrapped
 
 	m_iStreamingStatus = STOPPED;
+
 	// Logging
-	m_pStreamLogger = new ITABufferedDataLoggerImplStream( );
-	m_pStreamLogger->setOutputFile( "NetAudioStream.log" );
-	m_pNetLogger = new ITABufferedDataLoggerImplNet( );
-	m_pNetLogger->setOutputFile( "NetAudioNet.log" );
-	iID = 0;
+	m_pStreamLogger = new ITABufferedDataLoggerImplStream();
+	m_pStreamLogger->setOutputFile( "NetAudioLogStream.txt" );
+	iAudioStreamingBlockID = 0;
+
+	m_pNetLogger = new ITABufferedDataLoggerImplNet();
+	m_pNetLogger->setOutputFile( "NetAudioLogNet.txt" );
+	iNetStreamingBlockID = 0;
 }
 
 CITANetAudioStream::~CITANetAudioStream()
@@ -87,10 +107,7 @@ CITANetAudioStream::~CITANetAudioStream()
 
 bool CITANetAudioStream::Connect( const std::string& sAddress, int iPort )
 {
-	bool bConnected = m_pNetAudioStreamingClient->Connect( sAddress, iPort );
-	if( bConnected )
-		m_iStreamingStatus = CONNECTED;
-	return bConnected;
+	return m_pNetAudioStreamingClient->Connect( sAddress, iPort );
 }
 
 bool CITANetAudioStream::GetIsConnected() const
@@ -100,35 +117,44 @@ bool CITANetAudioStream::GetIsConnected() const
 
 const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pInfo )
 {
-	if ( !GetIsConnected( ) )
-	{
-		m_sfOutputStreamBuffer[ uiChannel ].Zero( );
-		return m_sfOutputStreamBuffer[ uiChannel ].GetData( );
-	}
-
-	if ( GetIsRingBufferEmpty( ) )
+	if( !GetIsConnected() )
 	{
 		m_sfOutputStreamBuffer[ uiChannel ].Zero( );
 	}
-	// Es ist mindestens ein Block da
 	else
 	{
-		// Es ist mindestens ein Block da
-		m_sfRingBuffer[ uiChannel ].cyclic_read( m_sfOutputStreamBuffer[ uiChannel ].GetData( ), m_sfOutputStreamBuffer.GetLength( ), m_iReadCursor );
-		// weniger als ein Block
-			// todo fading
-		
+		if( GetIsRingBufferEmpty() )
+		{
+			m_sfOutputStreamBuffer[ uiChannel ].Zero();
+			m_iStreamingStatus = BUFFER_UNDERRUN;
+		}
+		else
+		{
+			if( GetRingBufferAvailableSamples() < GetBlocklength() )
+			{
+				// @todo: fade out
+				m_sfRingBuffer[ uiChannel ].Zero();
+				m_iStreamingStatus = BUFFER_UNDERRUN;
+			}
+			else
+			{
+				// Normal behaviour (if everything is OK with ring buffer status)
+				m_sfRingBuffer[ uiChannel ].cyclic_read( m_sfOutputStreamBuffer[ uiChannel ].GetData(), GetBlocklength(), m_iReadCursor );
+				m_iStreamingStatus = STREAMING;
+			}
+		}		
 	}
+
 	if ( uiChannel == 0 )
 	{
 		ITAStreamLog oLog;
 		oLog.iStreamingStatus = m_iStreamingStatus;
 		oLog.dTimecode = ITAClock::getDefaultClock( )->getTime( );
-		iID++;
-		oLog.uiBlockId = iID;
+		oLog.uiBlockId = ++iAudioStreamingBlockID;
 		oLog.iFreeSamples = GetRingBufferFreeSamples( );
 		m_pStreamLogger->log( oLog );
 	}
+
 	return m_sfOutputStreamBuffer[uiChannel].GetData();
 }
 
@@ -145,11 +171,11 @@ void CITANetAudioStream::IncrementBlockPointer()
 	}
 	else if ( GetIsRingBufferEmpty( ) )
 	{
-		m_iStreamingStatus = STOPPED;
+		m_iStreamingStatus = BUFFER_UNDERRUN;
 	}
 	else
 	{
-		m_iStreamingStatus = BUFFER_UNDERRUN;
+		m_iStreamingStatus = BUFFER_OVERRUN;
 		m_iReadCursor = m_iWriteCursor;
 	}
 	m_bRingBufferFull = false;
@@ -197,12 +223,18 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	}
 
 	oLog.dTimecode = ITAClock::getDefaultClock( )->getTime( );
-	iID++;
-	oLog.uiBlockId = iID;
+	iAudioStreamingBlockID++;
+	oLog.uiBlockId = iAudioStreamingBlockID;
 	oLog.iFreeSamples = GetRingBufferFreeSamples( );
 	m_pNetLogger->log( oLog );
 	
 	return GetRingBufferFreeSamples();
+}
+
+
+int CITANetAudioStream::GetRingBufferAvailableSamples() const
+{
+	return GetRingBufferSize() - GetRingBufferFreeSamples();
 }
 
 int CITANetAudioStream::GetRingBufferFreeSamples() const
