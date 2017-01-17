@@ -1,1 +1,1 @@
-Copyright 2015-2016 Institute of Technical Acoustics, RWTH Aachen University. Any usage and distribution is prohibited, unless explicitly granted by the authors.
+Copyright 2015-2017 Institute of Technical Acoustics, RWTH Aachen University. Any usage and distribution is prohibited, unless explicitly granted by the authors.

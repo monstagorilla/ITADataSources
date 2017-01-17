@@ -1,13 +1,8 @@
 cmake_minimum_required( VERSION 2.9 )
 
-
-if( NOT ITADATASOURCES_COMMON_BUILD )
-
-	project( ITADataSourcesTest )
-	list( APPEND CMAKE_MODULE_PATH "$ENV{VISTA_CMAKE_COMMON}" )
-	include( VistaCommon )
-	
-endif()
+project( ITADataSourcesTest )
+list( APPEND CMAKE_MODULE_PATH "$ENV{VISTA_CMAKE_COMMON}" )
+include( VistaCommon )
 
 vista_use_package( VistaCoreLibs REQUIRED COMPONENTS VistaInterProcComm FIND_DEPENDENCIES )
 vista_use_package( ITABase REQUIRED FIND_DEPENDENCIES )
