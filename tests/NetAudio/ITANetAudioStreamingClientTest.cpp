@@ -7,18 +7,37 @@
 #include <ITAException.h>
 #include <ITAFileDatasource.h>
 #include <ITAStreamProbe.h>
+#include <ITAStreamPatchbay.h>
 
 using namespace std;
 
-static string g_sServerName = "localhost";
+static string g_sServerName = "137.226.61.163";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44100;
 static int g_iBufferSize = 1024;
 
 int main( int , char** )
 {
-	CITANetAudioStream oNetAudioStream( 1, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
-	ITAStreamProbe oProbe( &oNetAudioStream, "out_gutentag.wav" );
+	CITANetAudioStream oNetAudioStream( 12, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
+	
+	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBufferSize );
+	oPatchbay.AddInput( &oNetAudioStream );
+	ITADatasource* pOutput;
+
+	oPatchbay.AddOutput( 1 );
+	/*
+	for ( int i = 0; i < oNetAudioStream.GetNumberOfChannels( ); i++ )
+	{
+		if ( i % 2 == 0 )
+			oPatchbay.ConnectChannels( 0, i, 0, 0 );
+		else
+			oPatchbay.ConnectChannels( 0, i, 0, 1 );
+	
+	*/
+	oPatchbay.ConnectChannels( 0, 0, 0, 0, 1.0f );
+	pOutput = oPatchbay.GetOutputDatasource( 0 );
+	
+	ITAStreamProbe oProbe( pOutput, "output.wav" );
 	ITAStreamMultiplier1N oMultiplier( &oProbe, 2 );
 
 	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBufferSize );
@@ -45,7 +64,7 @@ int main( int , char** )
 	cout << "Connected." << endl;
 
 	// Playback
-	float fSeconds = 100.0f;
+	float fSeconds = 10.0f;
 	cout << "Playback started, waiting " << fSeconds << " seconds" << endl;
 	ITAPA.Sleep( fSeconds ); // blocking
 	cout << "Done." << endl;
@@ -59,7 +78,5 @@ int main( int , char** )
 	ITAPA.Close();
 	ITAPA.Finalize();
 	
-	
-
 	return 0;
 }
