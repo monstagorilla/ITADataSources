@@ -1,6 +1,6 @@
 NetAudioLogNet = readtable( 'NetAudioLogNet.txt' );
 NetAudioLogStream = readtable( 'NetAudioLogStream.txt' );
 
-plot( NetAudioLogNet.WorldTimeStamp, [ NetAudioLogNet.NumSamplesTransmitted/1024 NetAudioLogNet.FreeSamples/1024 ] )
+plot( NetAudioLogNet.WorldTimeStamp, NetAudioLogNet.FreeSamples/NetAudioLogNet.NumSamplesTransmitted )
 hold on
-plot( NetAudioLogStream.WorldTimeStamp, NetAudioLogStream.FreeSamples/1024 )
+plot( NetAudioLogStream.WorldTimeStamp, NetAudioLogStream.FreeSamples/NetAudioLogNet.NumSamplesTransmitted )

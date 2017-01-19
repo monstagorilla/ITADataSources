@@ -18,7 +18,7 @@ static int g_iBufferSize = 1024;
 
 int main( int , char** )
 {
-	CITANetAudioStream oNetAudioStream( 20, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
+	CITANetAudioStream oNetAudioStream( 12, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
 	
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBufferSize );
 	oPatchbay.AddInput( &oNetAudioStream );
@@ -78,8 +78,5 @@ int main( int , char** )
 	ITAPA.Close();
 	ITAPA.Finalize();
 	
-	int iKey;
-	std::cin >> iKey;
-
 	return 0;
 }
