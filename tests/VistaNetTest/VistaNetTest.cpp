@@ -95,7 +95,7 @@ int main( int , char** )
 
 	cout << "[ Client ] Connection is buffering: " << ( oConnection.GetIsBuffering() ? "yes" : "no" ) << endl;
 
-	size_t l = 152633239; // > MTU?
+	size_t l = 1523633239; // > MTU?
 	vector< char > vdData( l + 4 );
 	int* piDataSize = ( int* ) &vdData[0];
 	*piDataSize = unsigned int( l ); // Send data size as first block
