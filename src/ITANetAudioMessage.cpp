@@ -5,6 +5,8 @@
 #include <VistaBase/VistaExceptionBase.h>
 
 #include <cassert>
+#include <iostream>
+#include <iomanip>
 
 static int S_nMessageIds = 0;
 
@@ -44,6 +46,10 @@ void CITANetAudioMessage::ResetMessage()
 	m_nAnswerType = CITANetAudioProtocol::NP_INVALID;
 
 	m_pConnection = NULL;
+
+#ifdef NET_AUDIO_SHOW_TRAFFIC
+	std::cout << "CITANetAudioMessage [Preparing] (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
+#endif
 }
 
 void CITANetAudioMessage::SetConnection(VistaConnectionIP* pConn)
@@ -78,58 +84,61 @@ void CITANetAudioMessage::WriteMessage()
 		VistaSerializingToolset::Swap4(&iSwapDummy);
 	memcpy(pBuffer, &iSwapDummy, sizeof(VistaType::sint32));
 
-	try
+#ifdef NET_AUDIO_SHOW_TRAFFIC
+	std::cout << "CITANetAudioMessage [  Writing] " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
+#endif
+
+	//try
 	{
 		int iRawBufferSize = m_oOutgoing.GetBufferSize();
-		int nRet = m_pConnection->WriteRawBuffer(m_oOutgoing.GetBuffer(), iRawBufferSize);
+		int nRet = m_pConnection->WriteRawBuffer( m_oOutgoing.GetBuffer(), iRawBufferSize );
+		std::cout << "CITANetAudioMessage [  Writing] " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ") RAW BUFFER DONE" << std::endl;
 		m_pConnection->WaitForSendFinish();
 		if (nRet != m_oOutgoing.GetBufferSize())
 			ITA_EXCEPT1(NETWORK_ERROR, "Could not write the expected number of bytes");
 	}
-	catch (VistaExceptionBase& ex)
-	{
-		ITA_EXCEPT1(NETWORK_ERROR, ex.GetExceptionText());
-	}
+
+#ifdef NET_AUDIO_SHOW_TRAFFIC
+	std::cout << "CITANetAudioMessage [  Writing] " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ") OK" << std::endl;
+#endif
 }
 
 
 void CITANetAudioMessage::ReadMessage()
 {
-	try
-	{
-		VistaType::sint32 nMessageSize;
-		int nReturn = m_pConnection->ReadInt32(nMessageSize);
+	std::cout << "CITANetAudioMessage [ Reading] init" << std::endl;
+	
+	VistaType::sint32 nMessageSize;
+	int nReturn = m_pConnection->ReadInt32( nMessageSize );
+	std::cout << "CITANetAudioMessage [ Reading] size " << nMessageSize << std::endl;
 
-		// we need at least the two protocol ints
-		assert(nMessageSize >= 2 * sizeof(VistaType::sint32));
+	// we need at least the two protocol ints
+	assert(nMessageSize >= 2 * sizeof(VistaType::sint32));
 
-		if (nMessageSize > (int)m_vecIncomingBuffer.size())
-			m_vecIncomingBuffer.resize(nMessageSize);
+	if (nMessageSize > (int)m_vecIncomingBuffer.size())
+		m_vecIncomingBuffer.resize(nMessageSize);
 
-		nReturn = m_pConnection->ReadRawBuffer(&m_vecIncomingBuffer[0], nMessageSize);
-		if (nReturn != nMessageSize)
-			ITA_EXCEPT1(NETWORK_ERROR, "Protokoll error, Received less bytes than expected");
+	nReturn = m_pConnection->ReadRawBuffer(&m_vecIncomingBuffer[0], nMessageSize);
+	m_oIncoming.SetBuffer(&m_vecIncomingBuffer[0], nReturn);
 
-		m_oIncoming.SetBuffer(&m_vecIncomingBuffer[0], nReturn);
-
-		// DEBUG: std::cout << "Remainign Size after Mesage Read: " << m_pConnection->PendingDataSize() << std::endl;
-	}
-	catch (VistaExceptionBase& ex)
-	{
-		ITA_EXCEPT1(UNKNOWN, ex.GetExceptionText());
-	}
-	catch (ITAException& ex)
-	{
-		ex;
-	}
 
 	m_nMessageType = ReadInt();
 	m_nMessageId = ReadInt();
-}
 
+#ifdef NET_AUDIO_SHOW_TRAFFIC
+	std::cout << "CITANetAudioMessage [ Reading] " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
+#endif
+}
 
 void CITANetAudioMessage::WriteAnswer()
 {
+
+#ifdef NET_AUDIO_SHOW_TRAFFIC
+	std::cout << "CITANetAudioMessage [ Answering] to " << m_nMessageType << " with " << m_nAnswerType << " (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
+#endif
+
+	assert( m_nAnswerType != CITANetAudioProtocol::NP_INVALID );
+
 	VistaType::byte* pBuffer = (VistaType::byte*)m_oOutgoing.GetBuffer();
 	VistaType::sint32 iSwapDummy;
 
@@ -155,38 +164,28 @@ void CITANetAudioMessage::WriteAnswer()
 		VistaSerializingToolset::Swap4(&iSwapDummy);
 	memcpy(pBuffer, &iSwapDummy, sizeof(VistaType::sint32));
 
-	try
 	{
 		int nRet = m_pConnection->WriteRawBuffer(m_oOutgoing.GetBuffer(), m_oOutgoing.GetBufferSize());
 		m_pConnection->WaitForSendFinish();
 		if (nRet != m_oOutgoing.GetBufferSize())
 			ITA_EXCEPT1(UNKNOWN, "Could not write the expected number of bytes");
 	}
-	catch (VistaExceptionBase& ex)
-	{
-		ITA_EXCEPT1(UNKNOWN, ex.GetExceptionText());
-	}
 }
 
 void CITANetAudioMessage::ReadAnswer()
 {
-	try
+#ifdef NET_AUDIO_SHOW_TRAFFIC
+	std::cout << "CITANetAudioMessage [ Reading] yet unkown answer from message " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ") OK" << std::endl;
+#endif
+
+	//try
 	{
 		VistaType::sint32 nMessageSize;
 		int nReturn;
-		try
-		{
-			nReturn = m_pConnection->ReadInt32(nMessageSize);
-		}
-		catch (...)
-		{
-			nReturn = -1; // Network connection error
-		}
-
+		nReturn = m_pConnection->ReadInt32(nMessageSize);
+		
 		if (nReturn != sizeof(VistaType::sint32))
-		{
-			ITA_EXCEPT1(UNKNOWN, "Protokoll error, Received less bytes than expected");
-		}
+			ITA_EXCEPT1(UNKNOWN, "Protokoll error, was expecting 4 bytes to read message size, but received " + std::to_string( nReturn ) );
 
 		// we need at least the two protocol types
 		assert(nMessageSize >= 2 * sizeof(VistaType::sint32));
@@ -201,28 +200,16 @@ void CITANetAudioMessage::ReadAnswer()
 
 		m_oIncoming.SetBuffer(&m_vecIncomingBuffer[0], nReturn);
 	}
-	catch (VistaExceptionBase& ex)
+	//catch (VistaExceptionBase& ex)
 	{
 		// Probable connection loss
-		return;
-		ITA_EXCEPT1(UNKNOWN, ex.GetExceptionText());
-	}
-	catch (ITAException& ex)
-	{
-		std::string sErrorText = ex.ToString();
+		//ITA_EXCEPT1( UNKNOWN, ex.GetExceptionText() );
 	}
 
-	try
-	{
-		m_nAnswerType = ReadInt(); // TODO: assert weg, daf�r Kontrolle falls Server crasht<
-		int nMessageID = ReadInt();
-		assert(nMessageID == m_nMessageId);
-		m_nMessageId = nMessageID;
-	}
-	catch (ITAException& ex)
-	{
-		std::cerr << "ITANetAudioMessage: Protocol error: " << ex << std::endl;
-	}
+	m_nAnswerType = ReadInt();
+	int nMessageID = ReadInt();
+	assert(nMessageID == m_nMessageId);
+	m_nMessageId = nMessageID;
 }
 
 

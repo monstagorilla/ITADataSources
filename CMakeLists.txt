@@ -14,16 +14,29 @@ vista_use_package( Portaudio QUIET )
 vista_use_package( JACK QUIET )
 
 
-if( NOT DEFINED ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
-	set( ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO ${VASIO_FOUND} CACHE BOOL "Build with ASIO support" )
+if( NOT DEFINED ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO )
+	set( ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO ${VASIO_FOUND} CACHE BOOL "Build with ASIO support" )
 endif( )
 
-if( NOT DEFINED ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
-	set( ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO ${VPORTAUDIO_FOUND} CACHE BOOL "Build with Portaudio support" )
+if( NOT DEFINED ITA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO )
+	set( ITA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO ${VPORTAUDIO_FOUND} CACHE BOOL "Build with Portaudio support" )
 endif( )
 
-if( NOT DEFINED ITA_DATA_SOURCE_WITH_INTEGRATED_JACK )
-	set( ITA_DATA_SOURCE_WITH_INTEGRATED_JACK ${VJACK_FOUND} CACHE BOOL "Build with JACK2 support" )
+if( NOT DEFINED ITA_DATA_SOURCES_WITH_INTEGRATED_JACK )
+	set( ITA_DATA_SOURCES_WITH_INTEGRATED_JACK ${VJACK_FOUND} CACHE BOOL "Build with JACK2 support" )
+endif( )
+
+if( NOT DEFINED ITA_DATA_SOURCES_WITH_NET_AUDIO )
+	set( ITA_DATA_SOURCES_WITH_NET_AUDIO ON CACHE BOOL "Build with NetAudio support" )
+endif( )
+
+if( NOT DEFINED ITA_DATA_SOURCES_NET_AUDIO_SHOW_TRAFFIC )
+	set( ITA_DATA_SOURCES_NET_AUDIO_SHOW_TRAFFIC OFF CACHE BOOL "Show a lot of traffic information with NetAudio (debugging only)" )
+	mark_as_advanced( ITA_DATA_SOURCES_NET_AUDIO_SHOW_TRAFFIC )
+endif( )
+
+if( ITA_DATA_SOURCES_NET_AUDIO_SHOW_TRAFFIC )
+	add_definitions( -DNET_AUDIO_SHOW_TRAFFIC )
 endif( )
 
 
@@ -40,14 +53,6 @@ set( ITADataSourcesHeader
 	"include/ITADataSourcesDefinitions.h"
 	"include/ITAFileDataSink.h"
 	"include/ITAFileDataSource.h"
-	"include/ITANetAudioClient.h"
-	"include/ITANetAudioMessage.h"
-	"include/ITANetAudioProtocol.h"
-	"include/ITANetAudioServer.h"
-	"include/ITANetAudioStream.h"
-	"include/ITANetAudioStreamingClient.h"
-	"include/ITANetAudioStreamingServer.h"
-	"include/ITANetAudioStreamingClient.h"
 	"include/ITAPeakDetector.h"
 	"include/ITARMSDetector.h"
 	"include/ITAStreamAmplifier.h"
@@ -67,13 +72,6 @@ set( ITADataSourcesSources
 	"src/ITADataSourceRealization.cpp"	
 	"src/ITAFileDataSink.cpp"
 	"src/ITAFileDataSource.cpp"
-	"src/ITANetAudioClient.cpp"
-	"src/ITANetAudioMessage.cpp"
-	"src/ITANetAudioProtocol.cpp"
-	"src/ITANetAudioStream.cpp"
-	"src/ITANetAudioStreamingClient.cpp"
-	"src/ITANetAudioStreamingServer.cpp"
-	"src/ITANetAudioServer.cpp"
 	"src/ITAPeakDetector.cpp"
 	"src/ITARMSDetector.cpp"
 	"src/ITAStreamAmplifier.cpp"
@@ -94,27 +92,49 @@ if( WIN32 )
 	list( APPEND ITADataSourcesSources "src/ITAStreamPump.cpp" "src/ITADataSourceUtils.cpp" )
 endif( )
 
-if( VASIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_ASIO )
+if( VASIO_FOUND AND ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO )
 	list( APPEND ITADataSourcesHeader "include/ITAAsioInterface.h" )
 	list( APPEND ITADataSourcesSources "src/ITAAsioInterface.cpp" )
 	add_definitions( -DIEEE754_64FLOAT=1 )
 endif( )
 
-if( VPORTAUDIO_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_PORTAUDIO )
+if( VPORTAUDIO_FOUND AND ITA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO )
 	list( APPEND ITADataSourcesHeader "include/ITAPortaudioInterface.h" )
 	list( APPEND ITADataSourcesSources "src/ITAPortaudioInterface.cpp" )
 endif( )
 
-if( VJACK_FOUND AND ITA_DATA_SOURCE_WITH_INTEGRATED_JACK )
+if( VJACK_FOUND AND ITA_DATA_SOURCES_WITH_INTEGRATED_JACK )
 	list( APPEND ITADataSourcesHeader "include/ITAJACKInterface.h" )
 	list( APPEND ITADataSourcesSources "src/ITAJACKInterface.cpp" )
 endif( )
 
+if( ITA_DATA_SOURCES_WITH_NET_AUDIO )
+	list( APPEND ITADataSourcesHeader
+		"include/ITANetAudioClient.h"
+		"include/ITANetAudioMessage.h"
+		"include/ITANetAudioProtocol.h"
+		"include/ITANetAudioServer.h"
+		"include/ITANetAudioStream.h"
+		"include/ITANetAudioStreamingClient.h"
+		"include/ITANetAudioStreamingServer.h"
+		"include/ITANetAudioStreamingClient.h"
+		)
+	list( APPEND ITADataSourcesSources
+		"src/ITANetAudioClient.cpp"
+		"src/ITANetAudioMessage.cpp"
+		"src/ITANetAudioProtocol.cpp"
+		"src/ITANetAudioStream.cpp"
+		"src/ITANetAudioStreamingClient.cpp"
+		"src/ITANetAudioStreamingServer.cpp"
+		"src/ITANetAudioServer.cpp"
+		)	
+endif( )
 
 # compiler settings
 if( ITA_VISTA_BUILD_STATIC )
 	add_definitions( -DVISTABASE_STATIC -DVISTAMATH_STATIC -DVISTAASPECTS_STATIC -DVISTATOOLS_STATIC -DVISTAINTERPROCCOMM_STATIC )
 endif( )
+
 if( BUILD_SHARED_LIBS )
 	add_definitions( -DITA_DATA_SOURCES_EXPORT )
 else( )

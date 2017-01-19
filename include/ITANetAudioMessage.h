@@ -42,6 +42,8 @@ class VistaConnectionIP;
  * Messages consist of a message part and an answer part, each read or written
  * separately. Messages have a two-int-header (SIZE, MSGTYPE), and
  * answers have a two-int header (SIZE; ANSWERTYPE)
+ *
+ * @todo move to src folder
  */
 class ITA_DATA_SOURCES_API CITANetAudioMessage
 {
