@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef INCLUDE_WATCHER_ITA_DATA_SOURCE_UTILS
-#define INCLUDE_WATCHER_ITA_DATA_SOURCE_UTILS
+#ifndef INCLUDE_WATCHER_ITA_DATA_SOURCES_UTILS
+#define INCLUDE_WATCHER_ITA_DATA_SOURCES_UTILS
 
 #include <ITADataSourcesDefinitions.h>
 
@@ -82,4 +82,4 @@ ITA_DATA_SOURCES_API void WriteFromDatasourceToFile(ITADatasource* pSource,
 							   bool bDisplayProgress=false);
 
 
-#endif // INCLUDE_WATCHER_ITA_DATA_SOURCE_UTILS
+#endif // INCLUDE_WATCHER_ITA_DATA_SOURCES_UTILS

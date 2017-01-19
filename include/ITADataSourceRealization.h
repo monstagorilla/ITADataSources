@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef INCLUDE_WATCHER_ITA_DATA_SOURCE_REALIZATION
-#define INCLUDE_WATCHER_ITA_DATA_SOURCE_REALIZATION
+#ifndef INCLUDE_WATCHER_ITA_DATA_SOURCES_REALIZATION
+#define INCLUDE_WATCHER_ITA_DATA_SOURCES_REALIZATION
 
 #include <ITADataSourcesDefinitions.h>
 
@@ -200,4 +200,4 @@ public:
 	virtual void HandleProcessStream(ITADatasourceRealization* pSender, const ITAStreamInfo* pStreamInfo);
 };
 
-#endif // INCLUDE_WATCHER_ITA_DATA_SOURCE_REALIZATION
+#endif // INCLUDE_WATCHER_ITA_DATA_SOURCES_REALIZATION

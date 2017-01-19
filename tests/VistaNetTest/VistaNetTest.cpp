@@ -31,35 +31,40 @@ public:
 
 	bool LoopBody()
 	{
+		cout << "[ Server ] Waiting for connections" << endl;
 		VistaTCPSocket* pSocket = m_pServer->GetNextClient();
-
 		VistaTimeUtils::Sleep( 100 ); // Sync couts
+		cout << "[ Server ] Connected." << endl;
 
 		size_t nGetReceiveBufferSize = pSocket->GetReceiveBufferSize();
 
 		long nIncomingBytes = pSocket->WaitForIncomingData( 0 );
-		cout << "Server incoming bytes: " << nIncomingBytes << " bytes" << endl;
+		cout << "[ Server ] " << nIncomingBytes << " incoming bytes" << endl;
 
-		if( nGetReceiveBufferSize == nIncomingBytes )
-			cout << "Warning: payload as long as receiver buffer size ... problem will occur!" << endl;
+		// Two-step receiving
+		int iPayloadDataSize;
+		int iIncomingBytes = pSocket->ReceiveRaw( &iPayloadDataSize, sizeof( int ) );
+		cout << "[ Server ] Expecting " << iPayloadDataSize << " bytes to come." << endl;
 		
-		char* buf = new char[ nIncomingBytes ];
+		vector< char > vdIncomingData( iPayloadDataSize );
+		int iBytesReceivedTotal = pSocket->ReceiveRaw( &vdIncomingData[ 0 ], iPayloadDataSize );
+		cout << "[ Server ] Received " << iBytesReceivedTotal << " bytes, so far." << endl;
 
-		long nIncomingBytes2 = pSocket->WaitForIncomingData( 0 );
-		int iBytesReceived = pSocket->ReceiveRaw( buf, nIncomingBytes );
+		while( iPayloadDataSize != iBytesReceivedTotal )
+		{
+			int iBytesReceived = pSocket->ReceiveRaw( &vdIncomingData[ iBytesReceivedTotal ], iPayloadDataSize );
+			iBytesReceivedTotal += iBytesReceived;
+			cout << "[ Server ] Further " << iBytesReceived << " bytes incoming" << endl;
+		}
 		
-		vector< char > vdIncomingData( iBytesReceived );
-		for( size_t i=0; i < vdIncomingData.size(); i++ )
-			vdIncomingData[i] = buf[ i ];
+		assert( vdIncomingData[ 0 ] == 1 );
+		assert( vdIncomingData[ vdIncomingData.size() - 2 ] == -1 );
 
-		delete[] buf;	
-
-		assert( vdIncomingData[0] == 1 );
-		assert( vdIncomingData[ vdIncomingData.size() -2 ] == -1 );
-
+		cout << "[ Server ] Received all data and content appears valid!" << endl;
+		
 		VistaTimeUtils::Sleep( 200 );
 
-		cout << "Server sending acknowledge flag" << endl;
+		cout << "[ Server ] Sending acknowledge flag" << endl;
 		bool bAck = false;
 		pSocket->SendRaw( &bAck, 1 );
 
@@ -75,34 +80,37 @@ int main( int , char** )
 
 	CServer oServer;
 
+	VistaTimeUtils::Sleep( 100 ); // Sync couts
 	VistaConnectionIP oConnection( VistaConnectionIP::CT_TCP, g_sServerName, g_iServerPort);
-	if( oConnection.GetIsConnected() )
+	if( !oConnection.GetIsConnected() )
 	{
-		cout << "Connection established" << endl;
-		VistaTimeUtils::Sleep( 500 );
-		cout << "Client sending data" << endl;
-		VistaTimeUtils::Sleep( 500 );
-
-		cout << "Connection is buffering: " << ( oConnection.GetIsBuffering() ? "yes" : "no" ) << endl;
-
-		size_t l = 10000; // > MTU?
-		vector< char > vdData( l );
-		vdData[ 0 ] = 1; // First entry one
-		vdData[ vdData.size() - 2 ] = -1; // Last entry -1
-		void* pData = (void*) &vdData[0];
-		oConnection.Send( pData, int( vdData.size() ) ); // SendRaw?
-
-		bool bAck;
-		oConnection.ReadBool( bAck );
-		cout << "Client received acknowledge flag '" << bAck << "'" << endl;
-
-		oConnection.Close( false );
-	}
-	else
-	{
-		cerr << "Connection failed" << endl;
+		cerr << "[ Client ] Connection failed" << endl;
 		return 255;
 	}
+
+	cout << "[ Client ] Connection established" << endl;
+	VistaTimeUtils::Sleep( 500 );
+	cout << "[ Client ] Client sending data" << endl;
+	VistaTimeUtils::Sleep( 500 );
+
+	cout << "[ Client ] Connection is buffering: " << ( oConnection.GetIsBuffering() ? "yes" : "no" ) << endl;
+
+	size_t l = 152633239; // > MTU?
+	vector< char > vdData( l + 4 );
+	int* piDataSize = ( int* ) &vdData[0];
+	*piDataSize = unsigned int( l ); // Send data size as first block
+	vdData[ 1 * sizeof( int ) + 0 ] = 1; // First entry one (just for fun)
+	vdData[ vdData.size() - 2 ] = -1; // Second last entry -1 (just for fun)
+	void* pData = (void*) &vdData[0];
+	oConnection.Send( pData, int( vdData.size() ) ); // SendRaw?
+
+	bool bAck;
+	oConnection.ReadBool( bAck );
+
+	VistaTimeUtils::Sleep( 100 ); // cout sync
+	cout << "[ Client ] Received acknowledge flag '" << bAck << "', closing." << endl;
+
+	oConnection.Close( false );
 
 	return 0;
 }
