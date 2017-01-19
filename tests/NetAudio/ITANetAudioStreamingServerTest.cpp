@@ -4,6 +4,7 @@
 #include <ITANetAudioStreamingServer.h>
 #include <ITANetAudioServer.h>
 #include <ITAStreamFunctionGenerator.h>
+#include <ITAStreamMultiplier1N.h>
 #include <ITAFileDatasource.h>
 
 using namespace std;
@@ -17,8 +18,9 @@ int main( int , char** )
 {
 	ITAStreamFunctionGenerator oGenerator( 2, g_dSampleRate, g_iBlockLength, ITAStreamFunctionGenerator::SINE, 456.78f, 0.81f, true );
 	ITAFileDatasource oDatei("gershwin-mono.wav", g_iBlockLength);
+	ITAStreamMultiplier1N oMuliplier( &oDatei, 10 );
 	CITANetAudioStreamingServer oStreamingServer;
-	oStreamingServer.SetInputStream(&oDatei);
+	oStreamingServer.SetInputStream( &oMuliplier );
 
 	cout << "Starting server and waiting for connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
 	oStreamingServer.Start( g_sServerName, g_iServerPort );

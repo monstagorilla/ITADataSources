@@ -7,6 +7,7 @@
 #include <ITAException.h>
 #include <ITAFileDatasource.h>
 #include <ITAStreamProbe.h>
+#include <ITAStreamPatchbay.h>
 
 using namespace std;
 
@@ -17,13 +18,28 @@ static int g_iBufferSize = 1024;
 
 int main( int , char** )
 {
-	CITANetAudioStream oNetAudioStream( 1, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
+	CITANetAudioStream oNetAudioStream( 10, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
 	ITAStreamProbe oProbe( &oNetAudioStream, "out_gutentag.wav" );
-	ITAStreamMultiplier1N oMultiplier( &oProbe, 2 );
+	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBufferSize );
+	oPatchbay.AddInput( &oProbe );
+	ITADatasource* pOutput;
+	oPatchbay.AddOutput( 1 );
+	for ( int n = 0; n<1; n++ )
+	{
+		if ( oProbe.GetNumberOfChannels( ) > 1 )
+			oPatchbay.ConnectChannels( 0, n % ( oProbe.GetNumberOfChannels( ) - 1 ), 0, n );
+		else
+			oPatchbay.ConnectChannels( 0, 0, 0, n );
+	}
+	pOutput = oPatchbay.GetOutputDatasource( 0 );
+	std::cout << "NumOutChannel " << pOutput->GetNumberOfChannels() << std::endl;
+	
+	
+	//ITAStreamMultiplier1N oMultiplier( &oProbe, 2 );
 
 	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBufferSize );
 	ITAPA.Initialize();
-	ITAPA.SetPlaybackDatasource( &oMultiplier );
+	ITAPA.SetPlaybackDatasource( pOutput );
 	ITAPA.Open();
 	ITAPA.Start(); 
 
