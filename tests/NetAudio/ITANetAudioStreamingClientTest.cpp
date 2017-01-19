@@ -18,28 +18,31 @@ static int g_iBufferSize = 1024;
 
 int main( int , char** )
 {
-	CITANetAudioStream oNetAudioStream( 10, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
-	ITAStreamProbe oProbe( &oNetAudioStream, "out_gutentag.wav" );
+	CITANetAudioStream oNetAudioStream( 20, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
+	
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBufferSize );
-	oPatchbay.AddInput( &oProbe );
+	oPatchbay.AddInput( &oNetAudioStream );
 	ITADatasource* pOutput;
+
 	oPatchbay.AddOutput( 1 );
-	for ( int n = 0; n<1; n++ )
+	/*
+	for ( int i = 0; i < oNetAudioStream.GetNumberOfChannels( ); i++ )
 	{
-		if ( oProbe.GetNumberOfChannels( ) > 1 )
-			oPatchbay.ConnectChannels( 0, n % ( oProbe.GetNumberOfChannels( ) - 1 ), 0, n );
+		if ( i % 2 == 0 )
+			oPatchbay.ConnectChannels( 0, i, 0, 0 );
 		else
-			oPatchbay.ConnectChannels( 0, 0, 0, n );
-	}
+			oPatchbay.ConnectChannels( 0, i, 0, 1 );
+	
+	*/
+	oPatchbay.ConnectChannels( 0, 0, 0, 0, 1.0f );
 	pOutput = oPatchbay.GetOutputDatasource( 0 );
-	std::cout << "NumOutChannel " << pOutput->GetNumberOfChannels() << std::endl;
 	
-	
-	ITAStreamMultiplier1N oMultiplier( pOutput, 2 );
+	ITAStreamProbe oProbe( pOutput, "output.wav" );
+	ITAStreamMultiplier1N oMultiplier( &oProbe, 2 );
 
 	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBufferSize );
 	ITAPA.Initialize();
-	ITAPA.SetPlaybackDatasource(&oMultiplier);
+	ITAPA.SetPlaybackDatasource( &oMultiplier );
 	ITAPA.Open();
 	ITAPA.Start(); 
 
@@ -61,7 +64,7 @@ int main( int , char** )
 	cout << "Connected." << endl;
 
 	// Playback
-	float fSeconds = 100.0f;
+	float fSeconds = 10.0f;
 	cout << "Playback started, waiting " << fSeconds << " seconds" << endl;
 	ITAPA.Sleep( fSeconds ); // blocking
 	cout << "Done." << endl;
@@ -75,7 +78,8 @@ int main( int , char** )
 	ITAPA.Close();
 	ITAPA.Finalize();
 	
-	
+	int iKey;
+	std::cin >> iKey;
 
 	return 0;
 }
