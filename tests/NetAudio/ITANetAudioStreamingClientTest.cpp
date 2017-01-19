@@ -45,7 +45,7 @@ int main( int , char** )
 	cout << "Connected." << endl;
 
 	// Playback
-	float fSeconds = 10.0f;
+	float fSeconds = 100.0f;
 	cout << "Playback started, waiting " << fSeconds << " seconds" << endl;
 	ITAPA.Sleep( fSeconds ); // blocking
 	cout << "Done." << endl;

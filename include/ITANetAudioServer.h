@@ -37,6 +37,8 @@ class VistaTCPSocket;
 /**
   * Can be connected to an ITADataSource as a streaming source
   * or to a user-implemented sample producer, i.e. an audio sythesizer.
+  *
+  * @todo: move to src folder
   */
 class ITA_DATA_SOURCES_API CITANetAudioServer
 {
