@@ -90,7 +90,7 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	, m_bRingBufferFull( false )
 	, m_iStreamingStatus( INVALID )
 	, m_dLastStreamingTimeCode( 0.0f )
-	, m_iTargetSampleLatency( iBufferSize )
+	, m_iTargetSampleLatency( 5*iBufferSize )
 {
 	m_bRingBufferFull = false;
 	if( iBufferSize > iRingBufferCapacity )

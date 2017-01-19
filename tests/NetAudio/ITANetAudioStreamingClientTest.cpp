@@ -11,7 +11,7 @@
 
 using namespace std;
 
-static string g_sServerName = "localhost";
+static string g_sServerName = "137.226.61.163";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44100;
 static int g_iBufferSize = 1024;
@@ -35,11 +35,11 @@ int main( int , char** )
 	std::cout << "NumOutChannel " << pOutput->GetNumberOfChannels() << std::endl;
 	
 	
-	//ITAStreamMultiplier1N oMultiplier( &oProbe, 2 );
+	ITAStreamMultiplier1N oMultiplier( pOutput, 2 );
 
 	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBufferSize );
 	ITAPA.Initialize();
-	ITAPA.SetPlaybackDatasource( pOutput );
+	ITAPA.SetPlaybackDatasource(&oMultiplier);
 	ITAPA.Open();
 	ITAPA.Start(); 
 
