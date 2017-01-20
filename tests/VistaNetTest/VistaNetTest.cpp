@@ -36,6 +36,7 @@ public:
 		VistaTimeUtils::Sleep( 100 ); // Sync couts
 
 		size_t nGetReceiveBufferSize = pSocket->GetReceiveBufferSize();
+		cout << "[ Server ] " << nGetReceiveBufferSize << " receive buffer size" << endl;
 
 		long nIncomingBytes = pSocket->WaitForIncomingData( 0 );
 		cout << "Server incoming bytes: " << nIncomingBytes << " bytes" << endl;
