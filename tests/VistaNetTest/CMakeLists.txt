@@ -17,7 +17,6 @@ vista_create_default_info_file( ITAVistaNetTest )
 
 set_property( TARGET ITAVistaNetTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/VistaNet" )
 
-
 add_executable( ITAVistaNetClient VistaNetClient.cpp )
 target_link_libraries( ITAVistaNetClient ${VISTA_USE_PACKAGE_LIBRARIES} )
 
@@ -40,4 +39,3 @@ vista_install( ITAVistaNetServer )
 vista_create_default_info_file( ITAVistaNetServer )
 
 set_property( TARGET ITAVistaNetServer PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/VistaNet" )
-
