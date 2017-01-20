@@ -46,3 +46,12 @@ vista_install( ITANetAudioStreamingClientTest )
 vista_create_default_info_file( ITANetAudioStreamingClientTest )
 
 set_property( TARGET ITANetAudioStreamingClientTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+
+add_executable( ITANetAudioTest ITANetAudioTest.cpp )
+target_link_libraries( ITANetAudioTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+
+vista_configure_app( ITANetAudioTest )
+vista_install( ITANetAudioTest )
+vista_create_default_info_file( ITANetAudioTest )
+
+set_property( TARGET ITANetAudioTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
