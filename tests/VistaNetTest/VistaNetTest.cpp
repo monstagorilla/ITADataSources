@@ -109,7 +109,7 @@ int main( int , char** )
 		vdData[ 1 * sizeof( int ) + 0 ] = 1; // First entry one (just for fun)
 		vdData[ vdData.size() - 2 ] = -1; // Second last entry -1 (just for fun)
 		void* pData = ( void* ) &vdData[ 0 ];
-		oConnection.Send( pData, int( vdData.size() ) ); // SendRaw?
+		oConnection.Send( pData, int( vdData.size() ) );
 
 		bool bAck;
 		oConnection.ReadBool( bAck );
