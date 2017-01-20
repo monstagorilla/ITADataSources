@@ -9,9 +9,10 @@
 
 using namespace std;
 
-static string g_sServerName = "localhost";
-static int g_iServerPort = 12480;
-static int g_iRepetitions = 10;
+static const string g_sServerName = "localhost";
+static const int g_iServerPort = 12480;
+static const int g_iRepetitions = 5;
+static const size_t g_lDataSize = 152733239;
 
 
 class CServer : public VistaThread
@@ -57,7 +58,8 @@ public:
 			int iBytesReceivedTotal = 0;
 			while( iPayloadDataSize != iBytesReceivedTotal )
 			{
-				int iBytesReceived = pSocket->ReceiveRaw( &vdIncomingData[ iBytesReceivedTotal ], iPayloadDataSize );
+				long nIncomingBytes = pSocket->WaitForIncomingData( 0 );
+				int iBytesReceived = pSocket->ReceiveRaw( &vdIncomingData[ iBytesReceivedTotal ], nIncomingBytes );
 				iBytesReceivedTotal += iBytesReceived;
 				vstr::out() << "[ Server ] " << setw( 3 ) << std::floor( iBytesReceivedTotal / float( iPayloadDataSize ) * 100.0f ) << "% transmitted" << endl;
 			}
@@ -101,10 +103,9 @@ int main( int , char** )
 	while( i++ <= g_iRepetitions )
 	{
 		vstr::out() << "[ Client ] Client sending data now." << endl;
-		size_t l = 1523633239; // > MTU?
-		vector< char > vdData( l + 4 );
+		vector< char > vdData( g_lDataSize + 4 );
 		int* piDataSize = ( int* ) &vdData[ 0 ];
-		*piDataSize = unsigned int( l ); // Send data size as first block
+		*piDataSize = unsigned int( g_lDataSize ); // Send data size as first block
 		vdData[ 1 * sizeof( int ) + 0 ] = 1; // First entry one (just for fun)
 		vdData[ vdData.size() - 2 ] = -1; // Second last entry -1 (just for fun)
 		void* pData = ( void* ) &vdData[ 0 ];
