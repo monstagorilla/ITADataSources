@@ -40,7 +40,9 @@ class CITANetAudioStream;
 //! Network audio streaming client
 /**
  * Audio streaming for a signal source that is connected via TCP/IP.
- * Implements the ITA network protocol for audio streaming in client side.
+ * Implements the ITA network protocol for audio streaming on client side.
+ *
+ * @todo: move to src folder
  *
  * \note not thread-safe
  */

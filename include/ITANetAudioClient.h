@@ -28,6 +28,7 @@ class VistaConnectionIP;
 //! A network audio client that connects to a network audio server
 /** 
   * Use CITANetAudioStreamingClient to start an audio stream with the connection of this client.
+  * This class is basically a helper around Vista TCP/IP network functionality.
   *
   */
 class CITANetAudioClient

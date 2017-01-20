@@ -7,8 +7,6 @@ include( VistaCommon )
 
 vista_use_package( ITADataSources REQUIRED FIND_DEPENDENCIES )
 
-add_definitions( -DITA_DATA_SOURCES_DLL )
-
 
 add_executable( ListDevices ListDevices.cpp )
 target_link_libraries( ListDevices ${VISTA_USE_PACKAGE_LIBRARIES} )
