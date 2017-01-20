@@ -88,7 +88,7 @@ void CITANetAudioMessage::WriteMessage()
 	std::cout << "CITANetAudioMessage [  Writing] " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
 #endif
 
-	//try
+	try
 	{
 		int iRawBufferSize = m_oOutgoing.GetBufferSize();
 		int nRet = m_pConnection->Send( m_oOutgoing.GetBuffer(), iRawBufferSize );
