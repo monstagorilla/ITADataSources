@@ -13,12 +13,13 @@ static string g_sServerName = "localhost";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44100;
 static int g_iBlockLength = 1024;
+static int g_iChannels = 20;
 
 int main( int , char** )
 {
-	ITAStreamFunctionGenerator oGenerator( 2, g_dSampleRate, g_iBlockLength, ITAStreamFunctionGenerator::SINE, 456.78f, 0.81f, true );
-	ITAFileDatasource oDatei("gershwin-mono.wav", g_iBlockLength);
-	ITAStreamMultiplier1N oMuliplier( &oDatei, 10 );
+	//ITAStreamFunctionGenerator oGenerator( 2, g_dSampleRate, g_iBlockLength, ITAStreamFunctionGenerator::SINE, 456.78f, 0.81f, true );
+	ITAFileDatasource oFile("gershwin-mono.wav", g_iBlockLength);
+	ITAStreamMultiplier1N oMuliplier( &oFile, g_iChannels );
 	CITANetAudioStreamingServer oStreamingServer;
 	oStreamingServer.SetInputStream( &oMuliplier );
 

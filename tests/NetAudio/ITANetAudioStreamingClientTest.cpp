@@ -11,14 +11,16 @@
 
 using namespace std;
 
-static string g_sServerName = "137.226.61.163";
+//static string g_sServerName = "137.226.61.163";
+static string g_sServerName = "localhost";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44100;
 static int g_iBufferSize = 1024;
+static int g_iChannels = 20;
 
 int main( int , char** )
 {
-	CITANetAudioStream oNetAudioStream( 12, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
+	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
 	
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBufferSize );
 	oPatchbay.AddInput( &oNetAudioStream );
@@ -36,6 +38,7 @@ int main( int , char** )
 	*/
 	oPatchbay.ConnectChannels( 0, 0, 0, 0, 1.0f );
 	pOutput = oPatchbay.GetOutputDatasource( 0 );
+	oPatchbay.SetOutputMuted( 0, true );
 	
 	ITAStreamProbe oProbe( pOutput, "output.wav" );
 	ITAStreamMultiplier1N oMultiplier( &oProbe, 2 );

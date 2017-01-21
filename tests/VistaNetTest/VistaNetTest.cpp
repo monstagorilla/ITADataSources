@@ -1,75 +1,85 @@
 #include <cassert>
-#include <iostream>
 #include <string>
 
-#include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
+#include <VistaInterProcComm/Concurrency/VistaThread.h>
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
 #include <VistaInterProcComm/IPNet/VistaTCPServer.h>
 #include <VistaInterProcComm/IPNet/VistaTCPSocket.h>
-#include <VistaBase/VistaTimeUtils.h>
+#include <VistaBase/VistaStreamUtils.h>
 
 using namespace std;
 
-static string g_sServerName = "localhost";
-static int g_iServerPort = 12480;
+static const string g_sServerName = "localhost";
+static const int g_iServerPort = 12480;
+static const int g_iRepetitions = 5;
+static const size_t g_lDataSize = 152733239;
 
 
-class CServer : public VistaThreadLoop
+class CServer : public VistaThread
 {
 public:
 	CServer()
 	{
 		m_pServer = new VistaTCPServer( g_sServerName, g_iServerPort, 1 );
-
 		Run();
-	}
+	};
 
 	~CServer()
 	{
 		delete m_pServer;
-	}
+	};
 
-	bool LoopBody()
+	void ThreadBody()
 	{
 		cout << "[ Server ] Waiting for connections" << endl;
 		VistaTCPSocket* pSocket = m_pServer->GetNextClient();
-		VistaTimeUtils::Sleep( 100 ); // Sync couts
-		cout << "[ Server ] Connected." << endl;
+		vstr::out() << "[ Server ] Connected." << endl;
 
 		size_t nGetReceiveBufferSize = pSocket->GetReceiveBufferSize();
+		vstr::out() << "[ Server ] " << nGetReceiveBufferSize << " receive buffer size" << endl;
 
-		long nIncomingBytes = pSocket->WaitForIncomingData( 0 );
-		cout << "[ Server ] " << nIncomingBytes << " incoming bytes" << endl;
+		vector< char > vdIncomingData;
 
-		// Two-step receiving
-		int iPayloadDataSize;
-		int iIncomingBytes = pSocket->ReceiveRaw( &iPayloadDataSize, sizeof( int ) );
-		cout << "[ Server ] Expecting " << iPayloadDataSize << " bytes to come." << endl;
-		
-		vector< char > vdIncomingData( iPayloadDataSize );
-		int iBytesReceivedTotal = pSocket->ReceiveRaw( &vdIncomingData[ 0 ], iPayloadDataSize );
-		cout << "[ Server ] Received " << iBytesReceivedTotal << " bytes, so far." << endl;
-
-		while( iPayloadDataSize != iBytesReceivedTotal )
+		bool bRepeat = true;
+		while( bRepeat )
 		{
-			int iBytesReceived = pSocket->ReceiveRaw( &vdIncomingData[ iBytesReceivedTotal ], iPayloadDataSize );
-			iBytesReceivedTotal += iBytesReceived;
-			cout << "[ Server ] Further " << iBytesReceived << " bytes incoming" << endl;
+			long nIncomingBytes = pSocket->WaitForIncomingData( 0 );
+			vstr::out() << "[ Server ] " << nIncomingBytes << " incoming bytes" << endl;
+
+			// Two-step receiving
+			int iPayloadDataSize;
+			int iBytesRead = pSocket->ReceiveRaw( &iPayloadDataSize, sizeof( int ) );
+			assert( iBytesRead == sizeof( int ) );
+			vstr::out() << "[ Server ] Expecting " << iPayloadDataSize << " bytes to come." << endl;
+
+			if( iPayloadDataSize > vdIncomingData.size() )
+				vdIncomingData.resize( iPayloadDataSize );
+
+			int iBytesReceivedTotal = 0;
+			while( iPayloadDataSize != iBytesReceivedTotal )
+			{
+				long nIncomingBytes = pSocket->WaitForIncomingData( 0 );
+				int iBytesReceived = pSocket->ReceiveRaw( &vdIncomingData[ iBytesReceivedTotal ], nIncomingBytes );
+				iBytesReceivedTotal += iBytesReceived;
+				vstr::out() << "[ Server ] " << setw( 3 ) << std::floor( iBytesReceivedTotal / float( iPayloadDataSize ) * 100.0f ) << "% transmitted" << endl;
+			}
+
+			assert( vdIncomingData[ 0 ] == 1 );
+			assert( vdIncomingData[ vdIncomingData.size() - 2 ] == -1 );
+
+			vstr::out() << "[ Server ] Received all data and content appears valid!" << endl;
+
+			vstr::out() << "[ Server ] Sending acknowledge flag" << endl;
+			bool bTransmissionDone = true;
+			pSocket->SendRaw( &bTransmissionDone, sizeof( bool ) );
+			iBytesRead = pSocket->ReceiveRaw( &bRepeat, sizeof( bool ) );
+
+			if( bRepeat )
+				vstr::out() << "[ Server ] Repeating" << endl;
 		}
-		
-		assert( vdIncomingData[ 0 ] == 1 );
-		assert( vdIncomingData[ vdIncomingData.size() - 2 ] == -1 );
 
-		cout << "[ Server ] Received all data and content appears valid!" << endl;
-		
-		VistaTimeUtils::Sleep( 200 );
-
-		cout << "[ Server ] Sending acknowledge flag" << endl;
-		bool bAck = false;
-		pSocket->SendRaw( &bAck, 1 );
-
-		return false;
-	}
+		vstr::out() << "[ Server ] Closing." << endl;
+	};
 
 private:
 	VistaTCPServer* m_pServer;
@@ -77,38 +87,41 @@ private:
 
 int main( int , char** )
 {
-
 	CServer oServer;
 
-	VistaTimeUtils::Sleep( 100 ); // Sync couts
 	VistaConnectionIP oConnection( VistaConnectionIP::CT_TCP, g_sServerName, g_iServerPort);
 	if( !oConnection.GetIsConnected() )
 	{
-		cerr << "[ Client ] Connection failed" << endl;
+		vstr::out() << "[ Client ] Connection failed" << endl;
 		return 255;
 	}
 
-	cout << "[ Client ] Connection established" << endl;
-	VistaTimeUtils::Sleep( 500 );
-	cout << "[ Client ] Client sending data" << endl;
-	VistaTimeUtils::Sleep( 500 );
+	vstr::out() << "[ Client ] Connection established" << endl;
+	vstr::out() << "[ Client ] Connection is buffering: " << ( oConnection.GetIsBuffering() ? "yes" : "no" ) << endl;
 
-	cout << "[ Client ] Connection is buffering: " << ( oConnection.GetIsBuffering() ? "yes" : "no" ) << endl;
+	int i = 0;
+	while( i++ <= g_iRepetitions )
+	{
+		vstr::out() << "[ Client ] Client sending data now." << endl;
+		vector< char > vdData( g_lDataSize + 4 );
+		int* piDataSize = ( int* ) &vdData[ 0 ];
+		*piDataSize = unsigned int( g_lDataSize ); // Send data size as first block
+		vdData[ 1 * sizeof( int ) + 0 ] = 1; // First entry one (just for fun)
+		vdData[ vdData.size() - 2 ] = -1; // Second last entry -1 (just for fun)
+		void* pData = ( void* ) &vdData[ 0 ];
+		oConnection.Send( pData, int( vdData.size() ) );
 
-	size_t l = 1523633239; // > MTU?
-	vector< char > vdData( l + 4 );
-	int* piDataSize = ( int* ) &vdData[0];
-	*piDataSize = unsigned int( l ); // Send data size as first block
-	vdData[ 1 * sizeof( int ) + 0 ] = 1; // First entry one (just for fun)
-	vdData[ vdData.size() - 2 ] = -1; // Second last entry -1 (just for fun)
-	void* pData = (void*) &vdData[0];
-	oConnection.Send( pData, int( vdData.size() ) ); // SendRaw?
+		bool bAck;
+		oConnection.ReadBool( bAck );
 
-	bool bAck;
-	oConnection.ReadBool( bAck );
+		if( !bAck )
+			vstr::out() << "[ Client ] Received negative acknowledge flag" << endl;
+		else
+			vstr::out() << "[ Client ] Received positive acknowledge flag" << endl;
 
-	VistaTimeUtils::Sleep( 100 ); // cout sync
-	cout << "[ Client ] Received acknowledge flag '" << bAck << "', closing." << endl;
+		bool bRepeat = ( i <= g_iRepetitions );
+		oConnection.Send( &bRepeat, sizeof( bool ) );
+	}
 
 	oConnection.Close( false );
 

@@ -40,8 +40,8 @@ class VistaConnectionIP;
 //! Network audio messages
 /*
  * Messages consist of a message part and an answer part, each read or written
- * separately. Messages have a two-int-header (SIZE, MSGTYPE), and
- * answers have a two-int header (SIZE; ANSWERTYPE)
+ * separately. Messages have a three-int-header (SIZE, MSGTYPE, ID), and
+ * answers have a three-int header (SIZE, ANSWERTYPE, ID)
  *
  * @todo move to src folder
  */
@@ -103,9 +103,9 @@ private:
 	int m_nMessageType;
 	int m_nMessageId;
 	int m_nAnswerType;
-	VistaByteBufferSerializer m_oOutgoing;
-	VistaByteBufferDeSerializer m_oIncoming;
-	std::vector< VistaType::byte > m_vecIncomingBuffer;
+	VistaByteBufferSerializer m_oOutgoing; //!< Serialization buffer for messages
+	VistaByteBufferDeSerializer m_oIncoming; //!< Deserialization buffer for messages
+	std::vector< VistaType::byte > m_vecIncomingBuffer; // Net IO buffer
 
 	VistaConnectionIP* m_pConnection;
 };
