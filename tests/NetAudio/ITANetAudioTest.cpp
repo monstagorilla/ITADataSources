@@ -48,7 +48,7 @@ public:
 
 	void ThreadBody( )
 	{
-		vstr::out() << "[ Server ] Starting net audio server and waiting for client connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
+		vstr::out() << "[ NetAudioTestServer ] Starting net audio server and waiting for client connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
 		pStreamingServer->Start( g_sServerName, g_iServerPort );		
 	};
 
@@ -80,10 +80,10 @@ int main( int, char** )
 	ITAPA.Open();
 	ITAPA.Start();
 
-	vstr::out() << "[ Client ] Waiting 1 second (net audio stream not connected and playing back zeros)" << endl;
+	vstr::out() << "[ NetAudioTestClient ] Waiting 1 second (net audio stream not connected and playing back zeros)" << endl;
 	ITAPA.Sleep( 1.0f );
 
-	vstr::out() << "[ Client ] Will now connect to net audio server '" << g_sServerName << "' on port " << g_iServerPort << endl;
+	vstr::out() << "[ NetAudioTestClient ] Will now connect to net audio server '" << g_sServerName << "' on port " << g_iServerPort << endl;
 	try
 	{
 		if ( !oNetAudioStream.Connect( g_sServerName, g_iServerPort ) )
@@ -91,20 +91,20 @@ int main( int, char** )
 	}
 	catch ( ITAException e )
 	{
-		vstr::warn() << "[ Client ] Connection failed." << endl;
+		vstr::warn() << "[ NetAudioTestClient ] Connection failed." << endl;
 		vstr::err() << e << endl;
 		return 255;
 	}
-	vstr::out() << "[ Client ] Connected." << endl;
+	vstr::out() << "[ NetAudioTestClient ] Connected." << endl;
 
 	// Playback
 	float fSeconds = 5.0f;
-	vstr::out() << "[ Client ] Playback started, waiting " << fSeconds << " seconds" << endl;
+	vstr::out() << "[ NetAudioTestClient ] Playback started, waiting " << fSeconds << " seconds" << endl;
 	ITAPA.Sleep( fSeconds ); // blocking
-	vstr::out() << "[ Client ] Done." << endl;
+	vstr::out() << "[ NetAudioTestClient ] Done." << endl;
 
-	vstr::out() << "[ Client ] Will now disconnect from net audio server '" << g_sServerName << "' and port " << g_iServerPort << endl;
-	vstr::out() << "[ Client ] Closing in 1 second (net audio stream not connected and playing back zeros)" << endl;
+	vstr::out() << "[ NetAudioTestClient ] Will now disconnect from net audio server '" << g_sServerName << "' and port " << g_iServerPort << endl;
+	vstr::out() << "[ NetAudioTestClient ] Closing in 1 second (net audio stream not connected and playing back zeros)" << endl;
 	ITAPA.Sleep( 1.0f );
 
 	ITAPA.Stop( );

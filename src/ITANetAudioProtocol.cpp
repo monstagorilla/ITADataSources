@@ -1,11 +1,3 @@
 #include <ITANetAudioProtocol.h>
 
-CITANetAudioProtocol::CITANetAudioProtocol()
-{
-
-}
-
-CITANetAudioProtocol::~CITANetAudioProtocol()
-{
-
-}
+// @todo remove (all inline implemented)

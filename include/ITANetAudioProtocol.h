@@ -63,9 +63,9 @@ public:
 	static const int NP_SERVER_WAITING_FOR_TRIGGER = 221;
 	static const int NP_SERVER_SEND_SAMPLES = 222;
 
-	CITANetAudioProtocol();
-	virtual ~CITANetAudioProtocol();
-
+	inline CITANetAudioProtocol() {};
+	inline ~CITANetAudioProtocol() {};
+	
 	struct StreamingParameters
 	{
 		int iChannels;

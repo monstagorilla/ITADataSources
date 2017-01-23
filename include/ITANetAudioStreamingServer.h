@@ -33,8 +33,6 @@
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 #include <ITASampleFrame.h>
 
-using namespace std;
-
 class ITADatasource;
 class CITANetAudioMessage;
 class CITANetAudioProtocol;
@@ -79,7 +77,6 @@ public:
 	void SetAutomaticUpdateRate();
 
 protected:
-	int Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples );
 	ITADatasource* GetInputStream() const;
 
 private:
@@ -95,8 +92,6 @@ private:
 	int m_iClientRingBufferFreeSamples;
 
 	friend class CITANetAudioServer;
-
-	ofstream outputFile;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_SERVER
