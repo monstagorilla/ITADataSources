@@ -34,6 +34,8 @@ public:
 		pStreamingServer->SetInputStream( pMuliplier );
 
 		cout << "[ Server ] Starting server and waiting for connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
+
+		pStreamingServer->SetInputStream( pMuliplier );
 	};
 	~CServer( )
 	{
@@ -44,9 +46,9 @@ public:
 	};
 	void ThreadBody( )
 	{
-		
-		pStreamingServer->SetInputStream( pMuliplier );
 		pStreamingServer->Start( g_sServerName, g_iServerPort );
+
+		
 	};
 private:
 	ITAStreamFunctionGenerator *pGenerator;
