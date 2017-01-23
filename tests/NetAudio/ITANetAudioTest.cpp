@@ -13,117 +13,103 @@
 #include <ITAStreamProbe.h>
 #include <ITAStreamPatchbay.h>
 
+#include <VistaBase/VistaStreamUtils.h>
+
 using namespace std;
 
-static string g_sServerName = "localhost";
-static int g_iServerPort = 12480;
-static double g_dSampleRate = 44100;
-static int g_iBlockLength = 1024;
-static int g_iChannels = 2;
+const static string g_sServerName = "localhost";
+const static string g_sInputFilePath = "gershwin-mono.wav";
+const static int g_iServerPort = 12480;
+const static double g_dSampleRate = 44100;
+const static int g_iBlockLength = 1024;
+const static int g_iChannels = 2;
 
 class CServer : public VistaThread
 {
 public:
-	CServer( )
+	inline CServer( const string& sInputFilePath )
 	{
-		pGenerator = new ITAStreamFunctionGenerator( 2, g_dSampleRate, g_iBlockLength, ITAStreamFunctionGenerator::SINE, 456.78f, 0.81f, true );
-		pDatei = new ITAFileDatasource( "gershwin-mono.wav", g_iBlockLength );
-		pMuliplier = new ITAStreamMultiplier1N( pDatei, g_iChannels );
+		pInputFile = new ITAFileDatasource( sInputFilePath, g_iBlockLength );
+		assert( pInputFile->GetNumberOfChannels() == 1 );
+		pMuliplier = new ITAStreamMultiplier1N( pInputFile, g_iChannels );
 		pStreamingServer = new CITANetAudioStreamingServer;
 
 		pStreamingServer->SetInputStream( pMuliplier );
 
-		cout << "[ Server ] Starting server and waiting for connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
-
-		pStreamingServer->SetInputStream( pMuliplier );
+		Run();
 	};
-	~CServer( )
+
+	inline ~CServer( )
 	{
-		delete pGenerator;
-		delete pDatei;
+		delete pInputFile;
 		delete pMuliplier;
 		delete pStreamingServer;
 	};
+
 	void ThreadBody( )
 	{
-		pStreamingServer->Start( g_sServerName, g_iServerPort );
-
-		
+		vstr::out() << "[ Server ] Starting net audio server and waiting for client connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
+		pStreamingServer->Start( g_sServerName, g_iServerPort );		
 	};
+
 private:
-	ITAStreamFunctionGenerator *pGenerator;
-	ITAFileDatasource* pDatei;
+	ITAFileDatasource* pInputFile;
 	ITAStreamMultiplier1N* pMuliplier;
 	CITANetAudioStreamingServer* pStreamingServer;
 };
 
 int main( int, char** )
 {
-	// Server-Kram
-	CServer oServer;
+	// Sample server (forked away into a thread)
+	CServer oServer( g_sInputFilePath );
 
-	// Client-Kram
+	// Client dumping received stream and mixing down to two channels
 	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBlockLength, 100 * g_iBlockLength );
+	ITAStreamProbe oProbe( &oNetAudioStream, "ITANetAudioTest.stream.wav" );
 
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBlockLength );
-	oPatchbay.AddInput( &oNetAudioStream );
-	ITADatasource* pOutput;
+	oPatchbay.AddInput( &oProbe );
+	int iOutputID = oPatchbay.AddOutput( 2 );
 
-	oPatchbay.AddOutput( 1 );
-	/*
-	for ( int i = 0; i < oNetAudioStream.GetNumberOfChannels( ); i++ )
-	{
-	if ( i % 2 == 0 )
-	oPatchbay.ConnectChannels( 0, i, 0, 0 );
-	else
-	oPatchbay.ConnectChannels( 0, i, 0, 1 );
-
-	*/
-	oPatchbay.ConnectChannels( 0, 0, 0, 0, 1.0f );
-	pOutput = oPatchbay.GetOutputDatasource( 0 );
-
-	ITAStreamProbe oProbe( pOutput, "output.wav" );
-	ITAStreamMultiplier1N oMultiplier( &oProbe, 2 );
-
+	for ( unsigned int i = 0; i < oNetAudioStream.GetNumberOfChannels( ); i++ )
+		oPatchbay.ConnectChannels( 0, i, 0, i % 1 );
+	
 	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBlockLength );
-	ITAPA.Initialize( );
-	ITAPA.SetPlaybackDatasource( &oMultiplier );
-	ITAPA.Open( );
-	ITAPA.Start( );
+	ITAPA.Initialize();
+	ITAPA.SetPlaybackDatasource( oPatchbay.GetOutputDatasource( iOutputID ) );
+	ITAPA.Open();
+	ITAPA.Start();
 
-	cout << "[ Client ] Waiting 3 seconds (net audio stream not connected and returning zeros)" << endl;
-	ITAPA.Sleep( 3.0f );
+	vstr::out() << "[ Client ] Waiting 1 second (net audio stream not connected and playing back zeros)" << endl;
+	ITAPA.Sleep( 1.0f );
 
-	cout << "[ Client ] Will now connect to '" << g_sServerName << "' on port " << g_iServerPort << endl;
+	vstr::out() << "[ Client ] Will now connect to net audio server '" << g_sServerName << "' on port " << g_iServerPort << endl;
 	try
 	{
 		if ( !oNetAudioStream.Connect( g_sServerName, g_iServerPort ) )
-			ITA_EXCEPT1( INVALID_PARAMETER, "Could not connect to server" );
+			ITA_EXCEPT1( INVALID_PARAMETER, "Could not connect to net audio server" );
 	}
 	catch ( ITAException e )
 	{
-		cout << "[ Client ] Connection failed." << endl;
-		cerr << e << endl;
+		vstr::warn() << "[ Client ] Connection failed." << endl;
+		vstr::err() << e << endl;
 		return 255;
 	}
-	cout << "[ Client ] Connected." << endl;
+	vstr::out() << "[ Client ] Connected." << endl;
 
 	// Playback
-	float fSeconds = 10.0f;
-	cout << "[ Client ] Playback started, waiting " << fSeconds << " seconds" << endl;
+	float fSeconds = 5.0f;
+	vstr::out() << "[ Client ] Playback started, waiting " << fSeconds << " seconds" << endl;
 	ITAPA.Sleep( fSeconds ); // blocking
-	cout << "[ Client ] Done." << endl;
+	vstr::out() << "[ Client ] Done." << endl;
 
-
-	cout << "[ Client ] Will now disconnect from '" << g_sServerName << "' and port " << g_iServerPort << endl;
-	cout << "[ Client ] Closing in 3 seconds (net audio stream not connected and returning zeros)" << endl;
-	ITAPA.Sleep( 3.0f );
+	vstr::out() << "[ Client ] Will now disconnect from net audio server '" << g_sServerName << "' and port " << g_iServerPort << endl;
+	vstr::out() << "[ Client ] Closing in 1 second (net audio stream not connected and playing back zeros)" << endl;
+	ITAPA.Sleep( 1.0f );
 
 	ITAPA.Stop( );
 	ITAPA.Close( );
 	ITAPA.Finalize( );
-
-
 
 	return 0;
 }

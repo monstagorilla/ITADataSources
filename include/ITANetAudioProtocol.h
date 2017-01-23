@@ -83,7 +83,9 @@ public:
 		{
 			if( ( iChannels == rhs.iChannels ) && ( dSampleRate == rhs.dSampleRate ) && ( iBlockSize == rhs.iBlockSize ) )
 				return true;
-		}
+			else
+				return false;
+		};
 	};
 };
 

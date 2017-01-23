@@ -31,7 +31,7 @@ public:
 
 	void ThreadBody()
 	{
-		cout << "[ Server ] Waiting for connections" << endl;
+		vstr::out() << "[ Server ] Waiting for connections" << endl;
 		VistaTCPSocket* pSocket = m_pServer->GetNextClient();
 		vstr::out() << "[ Server ] Connected." << endl;
 

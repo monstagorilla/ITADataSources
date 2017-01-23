@@ -64,7 +64,6 @@ protected:
 private:
 	CITANetAudioClient* m_pClient;
 	CITANetAudioStream* m_pStream;
-	ITAStreamProbe* m_pStreamProbe;
 
 	CITANetAudioProtocol* m_pProtocol;
 	CITANetAudioMessage* m_pMessage;

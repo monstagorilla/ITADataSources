@@ -5,6 +5,7 @@
 #include <ITANetAudioStream.h>
 
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
+#include <VistaBase/VistaStreamUtils.h>
 
 CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pParent )
 	: m_oBlockIncrementEvent( VistaThreadEvent::WAITABLE_EVENT )
@@ -12,8 +13,6 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	, m_pConnection( NULL )
 	, m_bStopIndicated( false )
 {
-	m_pStreamProbe = new ITAStreamProbe( pParent, "output.wav" );
-
 	m_pClient = new CITANetAudioClient();
 
 	m_oParams.iChannels = pParent->GetNumberOfChannels();
@@ -57,11 +56,6 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 	assert( m_pMessage->GetAnswerType() == CITANetAudioProtocol::NP_SERVER_OPEN );
 	bool bOK = m_pMessage->ReadBool();
 	
-	/* Not yet
-	CITANetAudioProtocol::StreamingParameters oServerParams = m_pMessage->ReadStreamingParameters();
-	if (!(oServerParams == m_oParams))
-		ITA_EXCEPT1( INVALID_PARAMETER, "Streaming parameters of network audio server and client do not match." );
-	*/
 	if( !bOK )
 		ITA_EXCEPT1( INVALID_PARAMETER, "Streaming server declined connection, detected streaming parameter mismatch." );
 
@@ -93,7 +87,7 @@ bool CITANetAudioStreamingClient::LoopBody()
 
 	case CITANetAudioProtocol::NP_INVALID:
 		// Something went wrong
-		std::cerr << "Received invalid message type" << std::endl;
+		vstr::err() << "Received invalid message type" << std::endl;
 		break;
 
 	case CITANetAudioProtocol::NP_SERVER_WAITING_FOR_TRIGGER:

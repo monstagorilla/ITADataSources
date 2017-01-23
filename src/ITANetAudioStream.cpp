@@ -9,11 +9,12 @@
 #include <ITAClock.h>
 #include <iomanip> 
 
-// STL
+// Vista includes
+#include <VistaBase/VistaStreamUtils.h>
+
+// STL includes
 #include <cmath>
 #include <iostream>
-
-#define NET_AUDIO_SHOW_TRAFFIC 0;
 
 //! Audio streaming log item
 struct ITAStreamLog : public ITALogDataBase
@@ -190,7 +191,7 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 			m_sfOutputStreamBuffer[ uiChannel ].Zero();
 			m_iStreamingStatus = BUFFER_UNDERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
-			std::cout << "[ Stream ] Buffer underrun" << std::endl;
+			vstr::out() << "[ Stream ] Buffer underrun" << std::endl;
 #endif
 		}
 		else
@@ -201,7 +202,7 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 				m_sfRingBuffer[ uiChannel ].Zero();
 				m_iStreamingStatus = BUFFER_UNDERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
-				std::cout << "[ Stream ] Buffer underrun" << std::endl;
+				vstr::out() << "[ Stream ] Buffer underrun" << std::endl;
 #endif
 			}
 			else
@@ -210,7 +211,7 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 				m_sfRingBuffer[ uiChannel ].cyclic_read( m_sfOutputStreamBuffer[ uiChannel ].GetData(), GetBlocklength(), m_iReadCursor );
 				m_iStreamingStatus = STREAMING;
 #if NET_AUDIO_SHOW_TRAFFIC
-				std::cout << "[ Stream ] Streaming" << std::endl;
+				vstr::out() << "[ Stream ] Streaming" << std::endl;
 #endif
 			}
 		}		
@@ -233,21 +234,21 @@ void CITANetAudioStream::IncrementBlockPointer()
 		m_iReadCursor = ( m_iReadCursor + m_sfOutputStreamBuffer.GetLength() ) % m_sfRingBuffer.GetLength();
 		m_iStreamingStatus = STREAMING;
 #if NET_AUDIO_SHOW_TRAFFIC
-		std::cout << "[ Stream ] Streaming" << std::endl;
+		vstr::out() << "[ Stream ] Streaming" << std::endl;
 #endif
 	}
 	else if ( GetIsRingBufferEmpty( ) )
 	{
 		m_iStreamingStatus = BUFFER_UNDERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
-		std::cout << "[ Stream ] Buffer underrun" << std::endl;
+		vstr::out() << "[ Stream ] Buffer underrun" << std::endl;
 #endif
 	}
 	else
 	{
 		m_iStreamingStatus = BUFFER_OVERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
-		std::cout << "[ Stream ] Buffer overrun" << std::endl;
+		vstr::out() << "[ Stream ] Buffer overrun" << std::endl;
 #endif
 		m_iReadCursor = m_iWriteCursor;
 	}
@@ -279,7 +280,7 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 		// BufferFull
 		oLog.iBufferStatus = 1;
 #if NET_AUDIO_SHOW_TRAFFIC
-		std::cout << "[ NetAudio ] Buffer overrun" << std::endl;
+		vstr::out() << "[ NetAudio ] Buffer overrun" << std::endl;
 #endif
 	}
 	else if( GetRingBufferFreeSamples() < iNumSamples )
@@ -297,7 +298,7 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 		m_bRingBufferFull = false;
 		oLog.iBufferStatus = 1;
 #if NET_AUDIO_SHOW_TRAFFIC
-		std::cout << "[ NetAudio ] Buffer write" << std::endl;
+		vstr::out() << "[ NetAudio ] Buffer write" << std::endl;
 #endif
 
 		// set write curser
@@ -307,7 +308,7 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 			m_bRingBufferFull = true;
 			oLog.iBufferStatus = 1;
 #if NET_AUDIO_SHOW_TRAFFIC
-			std::cout << "[ NetAudio ] Buffer overrun" << std::endl;
+			vstr::out() << "[ NetAudio ] Buffer overrun" << std::endl;
 #endif
 		}
 	}
@@ -320,7 +321,6 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	
 	return GetRingBufferFreeSamples();
 }
-
 
 int CITANetAudioStream::GetRingBufferAvailableSamples() const
 {

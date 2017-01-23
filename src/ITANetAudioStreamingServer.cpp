@@ -14,6 +14,7 @@
 #include <VistaInterProcComm/IPNet/VistaTCPSocket.h>
 #include <VistaBase/VistaTimeUtils.h>
 #include <VistaInterProcComm/IPNet/VistaIPAddress.h>
+#include <VistaBase/VistaStreamUtils.h>
 
 // STL
 #include <cmath>
@@ -32,7 +33,6 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 	if( !m_pInputStream )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "Can not start server without a valid input stream" );
 
-	// TODO: vorr�ckgabe noch anfangen zu senden (Samples)
 	if( !m_pNetAudioServer->Start( sAddress, iPort ) ) // blocking
 		return false;
 
@@ -47,28 +47,26 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 	CITANetAudioProtocol::StreamingParameters oClientParams = m_pMessage->ReadStreamingParameters();
 
 	bool bOK = false;
-	if (m_pInputStream->GetNumberOfChannels() == oClientParams.iChannels &&
-		m_pInputStream->GetSampleRate() == oClientParams.dSampleRate &&
-		m_pInputStream->GetBlocklength() == oClientParams.iBlockSize)
+	if( m_oServerParams == oClientParams )
 	{
 		bOK = true;
+#ifdef NET_AUDIO_SHOW_TRAFFIC
+		vstr::out() << "Server and client parameters matched. Will resume with streaming" << std::endl;
 	}
-
-	std::cout << " Client Data: \nAnzahl Channel: " << oClientParams.iChannels << std::endl;
-	std::cout << "SampleRate: " << oClientParams.dSampleRate << std::endl;
-	std::cout << "Blockgroesse: " << oClientParams.iBlockSize << std::endl;
-
-	std::cout << " Server Data: \nAnzahl Channel: " << m_pInputStream->GetNumberOfChannels() << std::endl;
-	std::cout << "SampleRate: " << m_pInputStream->GetSampleRate() << std::endl;
-	std::cout << "Blockgroesse: " << m_pInputStream->GetBlocklength() << std::endl;
+	else
+	{
+		vstr::out() << "Server and client parameters mismatch detected. Will notify client and stop." << std::endl;
+#endif
+	}
 
 	m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_OPEN );
 	m_pMessage->WriteBool( bOK );
 	m_pMessage->WriteAnswer();
 
-	Run();
+	if( bOK )
+		Run();
 
-	return true;
+	return bOK;
 }
 
 bool CITANetAudioStreamingServer::IsClientConnected() const
@@ -98,7 +96,9 @@ void CITANetAudioStreamingServer::SetInputStream( ITADatasource* pInStream )
 
 	m_pInputStream = pInStream;
 	m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels(), m_pInputStream->GetBlocklength(), true );
-
+	m_oServerParams.dSampleRate = m_pInputStream->GetSampleRate();
+	m_oServerParams.iBlockSize = m_pInputStream->GetBlocklength();
+	m_oServerParams.iChannels = m_pInputStream->GetNumberOfChannels();
 }
 
 int CITANetAudioStreamingServer::GetNetStreamBlocklength() const
@@ -181,5 +181,6 @@ ITADatasource* CITANetAudioStreamingServer::GetInputStream() const
 
 int CITANetAudioStreamingServer::Transmit(const ITASampleFrame& sfNewSamples, int iNumSamples)
 {
+	assert( false );
 	return 0;
 }
