@@ -38,18 +38,17 @@
 class VistaConnectionIP;
 
 //! Network audio messages
-/*
- * Messages consist of a message part and an answer part, each read or written
- * separately. Messages have a three-int-header (SIZE, MSGTYPE, ID), and
- * answers have a three-int header (SIZE, ANSWERTYPE, ID)
- *
- * @todo move to src folder
- */
+/**
+  * Messages consist of a message part and an answer part, each read or written
+  * separately. Messages have a three-int-header (SIZE, MSGTYPE, ID), and
+  * answers have a three-int header (SIZE, ANSWERTYPE, ID)
+  *
+  * @todo move to src folder
+  */
 class ITA_DATA_SOURCES_API CITANetAudioMessage
 {
 public:
 	CITANetAudioMessage( VistaSerializingToolset::ByteOrderSwapBehavior bSwapBuffers );
-
 
 	void SetConnection( VistaConnectionIP* );
 	VistaConnectionIP* GetConnection() const;
@@ -97,7 +96,6 @@ public:
 	int ReadRingBufferSize();
 	int ReadRingBufferFree();
 	void ReadSampleFrame(ITASampleFrame* pSampleFrame);
-
 
 private:
 	int m_nMessageType;
