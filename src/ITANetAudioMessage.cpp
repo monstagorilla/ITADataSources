@@ -111,37 +111,27 @@ void CITANetAudioMessage::WriteMessage()
 void CITANetAudioMessage::ReadMessage()
 {
 #if NET_AUDIO_SHOW_TRAFFIC
-	std::cout << "CITANetAudioMessage [ Reading ] Waiting for incoming data" << std::endl;
+	vstr::out() << "CITANetAudioMessage [ Reading ] Waiting for incoming data" << std::endl;
 #endif
 	long nIncomingBytes = m_pConnection->WaitForIncomingData( 0 );
 	assert( nIncomingBytes >= 4 ); // we need at least the size of message
 #if NET_AUDIO_SHOW_TRAFFIC
-	std::cout << "CITANetAudioMessage [ Reading ] " << nIncomingBytes << " bytes incoming" << std::endl;
+	vstr::out() << "CITANetAudioMessage [ Reading ] " << nIncomingBytes << " bytes incoming" << std::endl;
 #endif
 
 	VistaType::sint32 nMessagePayloadSize;
 	int nBytesRead = m_pConnection->ReadInt32( nMessagePayloadSize );
 	assert( nBytesRead == sizeof( VistaType::sint32 ) );
 #if NET_AUDIO_SHOW_TRAFFIC
-	std::cout << "CITANetAudioMessage [ Reading ] Expecting " << nMessagePayloadSize << " bytes message payload" << std::endl;
+	vstr::out() << "CITANetAudioMessage [ Reading ] Expecting " << nMessagePayloadSize << " bytes message payload" << std::endl;
 #endif
 	// we need at least the two protocol ints
 	assert( nMessagePayloadSize >= 2 * sizeof( VistaType::sint32 ) );
 
 	if( nMessagePayloadSize > ( int ) m_vecIncomingBuffer.size() )
 		m_vecIncomingBuffer.resize( nMessagePayloadSize );
-
-	/*
-	int iBytesReceivedTotal = 0;
-			while( iPayloadDataSize != iBytesReceivedTotal )
-			{
-				long nIncomingBytes = pSocket->WaitForIncomingData( 0 );
-				int iBytesReceived = pSocket->ReceiveRaw( &vdIncomingData[ iBytesReceivedTotal ], nIncomingBytes );
-				iBytesReceivedTotal += iBytesReceived;
-				vstr::out() << "[ Server ] " << setw( 3 ) << std::floor( iBytesReceivedTotal / float( iPayloadDataSize ) * 100.0f ) << "% transmitted" << endl;
-			}
-*/
-
+	
+	// Receive all incoming data (potentially splitted)
 	int iBytesReceivedTotal = 0;
 	while( nMessagePayloadSize != iBytesReceivedTotal )
 	{
@@ -149,7 +139,7 @@ void CITANetAudioMessage::ReadMessage()
 		int iBytesReceived = m_pConnection->Receive( &m_vecIncomingBuffer[ iBytesReceivedTotal ], iIncommingBytes );
 		iBytesReceivedTotal += iBytesReceived;
 #if NET_AUDIO_SHOW_TRAFFIC
-		std::cout << "CITANetAudioMessage [ Reading ] Further " << std::setw( 3 ) << iBytesReceivedTotal << " transmitted" << std::endl;
+		vstr::out() << "[ CITANetAudioMessage ] " << std::setw( 3 ) << std::floor( iBytesReceivedTotal / float( nMessagePayloadSize ) * 100.0f ) << "% transmitted" << std::endl;
 #endif
 	}
 
@@ -159,7 +149,7 @@ void CITANetAudioMessage::ReadMessage()
 	m_nMessageId = ReadInt();
 
 #if NET_AUDIO_SHOW_TRAFFIC
-	std::cout << "CITANetAudioMessage [ Reading ] Finished receiving " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
+	vstr::out() << "CITANetAudioMessage [ Reading ] Finished receiving " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
 #endif
 }
 
@@ -167,7 +157,7 @@ void CITANetAudioMessage::WriteAnswer()
 {
 
 #if NET_AUDIO_SHOW_TRAFFIC
-	std::cout << "CITANetAudioMessage [ Answering] to " << m_nMessageType << " with " << m_nAnswerType << " (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
+	vstr::out() << "CITANetAudioMessage [ Answering] to " << m_nMessageType << " with " << m_nAnswerType << " (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
 #endif
 
 	assert( m_nAnswerType != CITANetAudioProtocol::NP_INVALID );
@@ -208,40 +198,46 @@ void CITANetAudioMessage::ReadAnswer()
 {
 
 #if NET_AUDIO_SHOW_TRAFFIC
-	std::cout << "CITANetAudioMessage [ Reading] yet unkown answer from message " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ") OK" << std::endl;
+	vstr::out() << "CITANetAudioMessage [ Reading] yet unkown answer from message " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ") OK" << std::endl;
 #endif
 
-	VistaType::sint32 nMessageSize;
+	VistaType::sint32 nMessagePayloadSize;
 	int nReturn;
-	nReturn = m_pConnection->ReadInt32( nMessageSize );
+	nReturn = m_pConnection->ReadInt32( nMessagePayloadSize );
 #if NET_AUDIO_SHOW_TRAFFIC
-		std::cout << "CITANetAudioMessage [ Reading] 1. return is " << nReturn << " (id=" << std::setw( 4 ) << m_nMessageId << ") OK" << std::endl;
+		vstr::out() << "CITANetAudioMessage [ Reading] 1. return is " << nReturn << " (id=" << std::setw( 4 ) << m_nMessageId << ") OK" << std::endl;
 #endif
 	if( nReturn != sizeof( VistaType::sint32 ) )
 		ITA_EXCEPT1( UNKNOWN, "Protokoll error, was expecting 4 bytes to read message size, but received " + std::to_string( nReturn ) );
 
 	// we need at least the two protocol types
-	assert( nMessageSize >= 2 * sizeof( VistaType::sint32 ) );
+	assert( nMessagePayloadSize >= 2 * sizeof( VistaType::sint32 ) );
 
-	if( nMessageSize > ( int ) m_vecIncomingBuffer.size() )
-		m_vecIncomingBuffer.resize( nMessageSize );
+	if( nMessagePayloadSize > ( int ) m_vecIncomingBuffer.size() )
+		m_vecIncomingBuffer.resize( nMessagePayloadSize );
 
 	// @todo: read over while( received < total ) loop!!!
 
-	// jst: hier nicht while( nReturn < nMessageSize) ReadRawBuffer??
-	nReturn = m_pConnection->ReadRawBuffer( &m_vecIncomingBuffer[ 0 ], nMessageSize );
-	if( nReturn != nMessageSize )
-		ITA_EXCEPT1( UNKNOWN, "Protokoll error, Received less bytes than expected" );
-
+	int iBytesReceivedTotal = 0;
+	while( nMessagePayloadSize != iBytesReceivedTotal )
+	{
+		int iIncommingBytes = m_pConnection->WaitForIncomingData( 0 );
+		int iBytesReceived = m_pConnection->Receive( &m_vecIncomingBuffer[ iBytesReceivedTotal ], iIncommingBytes );
+		iBytesReceivedTotal += iBytesReceived;
 #if NET_AUDIO_SHOW_TRAFFIC
-		std::cout << "CITANetAudioMessage [ Reading] 2. return is " << nReturn << " (id=" << std::setw( 4 ) << m_nMessageId << ") OK" << std::endl;
+		vstr::out() << "[ CITANetAudioMessage ] " << std::setw( 3 ) << std::floor( iBytesReceivedTotal / float( nMessagePayloadSize ) * 100.0f ) << "% of answer transmitted" << std::endl;
 #endif
+	}
+
+	if( iBytesReceivedTotal != nMessagePayloadSize )
+		ITA_EXCEPT1( UNKNOWN, "Protokoll error, Received less bytes than expected when trying to receive answer" );
+
+	// Swap data to deserialization buffer
 	m_oIncoming.SetBuffer( &m_vecIncomingBuffer[ 0 ], nReturn );
 
 	m_nAnswerType = ReadInt();
 	int nMessageID = ReadInt();
 	assert( nMessageID == m_nMessageId );
-	m_nMessageId = nMessageID;
 }
 
 int CITANetAudioMessage::GetMessageType() const

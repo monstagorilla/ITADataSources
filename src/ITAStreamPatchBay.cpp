@@ -150,7 +150,7 @@ void ITAStreamPatchbay::SetInputDatasource( const int iInput, ITADatasource* pds
 			ITA_EXCEPT1( INVALID_PARAMETER, "Datasource properties do not match the input properties (num channel missmatch" );
 		if( pdsDatasource->GetSampleRate() != m_dSamplerate )
 			ITA_EXCEPT1( INVALID_PARAMETER, "Datasource properties do not match the input properties (samplerate missmatch" );
-		if( (unsigned int) pdsDatasource->GetBlocklength() != m_iBlockLength )
+		if( (int) pdsDatasource->GetBlocklength() != m_iBlockLength )
 			ITA_EXCEPT1( INVALID_PARAMETER, "Datasource properties do not match the input properties (blocklength missmatch)" );
 	}
 
@@ -445,6 +445,7 @@ void ITAStreamPatchbay::HandleProcessStream( ITADatasourceRealization* pSender, 
 {
 	// Output X wants data
 	OutputDesc* pOutput = dynamic_cast< OutputDesc* >( pSender );
+	assert( pOutput != nullptr );
 
 	// Produce all data?
 	if( m_bProcessData ) {

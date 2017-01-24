@@ -71,15 +71,18 @@ void WriteFromDatasourceToBuffer(ITADatasource* pSource,
 				unsigned int k = (uiNumberOfSamples - n);
 				if (k > uiBlocklength) k = uiBlocklength;
 
-				if (!pfData)
-					// Stille einfügen
-					for (unsigned int j=0; j<uiBlocklength; j++) ppfDest[i][n + j] = 0;
-				else {
-					if (dGain = 1.0)
-						memcpy(ppfDest[i] + n, pfData, k * sizeof(float));
+				if( !pfData )
+				{	// Stille einfügen
+					for( unsigned int j = 0; j < uiBlocklength; j++ )
+						ppfDest[ i ][ n + j ] = 0;
+				}
+				else
+				{
+					if( dGain == 1.0f )
+						memcpy( ppfDest[ i ] + n, pfData, k * sizeof( float ) );
 					else
-						for (unsigned int j=0; j<k; j++)
-							ppfDest[i][n + j] = (float) ((double) pfData[j] * dGain);
+						for( unsigned int j = 0; j < k; j++ )
+							ppfDest[ i ][ n + j ] = ( float ) ( ( double ) pfData[ j ] * dGain );
 				}
 			}
 
