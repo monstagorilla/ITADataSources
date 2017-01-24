@@ -22,7 +22,7 @@ const static string g_sInputFilePath = "gershwin-mono.wav";
 const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
 const static int g_iBlockLength = 1024;
-const static int g_iChannels = 2;
+const static int g_iChannels = 20;
 
 class CServer : public VistaThread
 {
@@ -71,8 +71,9 @@ int main( int, char** )
 	oPatchbay.AddInput( &oProbe );
 	int iOutputID = oPatchbay.AddOutput( 2 );
 
-	for ( unsigned int i = 0; i < oNetAudioStream.GetNumberOfChannels( ); i++ )
-		oPatchbay.ConnectChannels( 0, i, 0, i % 1 );
+	int N = int( oNetAudioStream.GetNumberOfChannels() );
+	for ( int i = 0; i < N ; i++ )
+		oPatchbay.ConnectChannels( 0, i, 0, i % 2, 1 / double( N ) );
 	
 	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBlockLength );
 	ITAPA.Initialize();
