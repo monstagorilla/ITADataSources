@@ -198,19 +198,18 @@ void CITANetAudioMessage::ReadAnswer()
 {
 
 #if NET_AUDIO_SHOW_TRAFFIC
-	vstr::out() << "CITANetAudioMessage [ Reading] yet unkown answer from message " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ") OK" << std::endl;
+	vstr::out() << "CITANetAudioMessage [ Reading] yet unkown answer from initial message type " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ") OK" << std::endl;
 #endif
 
 	VistaType::sint32 nMessagePayloadSize;
 	int nReturn;
 	nReturn = m_pConnection->ReadInt32( nMessagePayloadSize );
+	assert( nReturn == sizeof( VistaType::sint32 ) );
 #if NET_AUDIO_SHOW_TRAFFIC
-		vstr::out() << "CITANetAudioMessage [ Reading] 1. return is " << nReturn << " (id=" << std::setw( 4 ) << m_nMessageId << ") OK" << std::endl;
+	vstr::out() << "CITANetAudioMessage [ Reading] Answer type " << nReturn << " (id=" << std::setw( 4 ) << m_nMessageId << ") OK" << std::endl;
 #endif
-	if( nReturn != sizeof( VistaType::sint32 ) )
-		ITA_EXCEPT1( UNKNOWN, "Protokoll error, was expecting 4 bytes to read message size, but received " + std::to_string( nReturn ) );
 
-	// we need at least the two protocol types
+	// We need at least the message type and message id in payload
 	assert( nMessagePayloadSize >= 2 * sizeof( VistaType::sint32 ) );
 
 	if( nMessagePayloadSize > ( int ) m_vecIncomingBuffer.size() )
@@ -233,8 +232,9 @@ void CITANetAudioMessage::ReadAnswer()
 		ITA_EXCEPT1( UNKNOWN, "Protokoll error, Received less bytes than expected when trying to receive answer" );
 
 	// Swap data to deserialization buffer
-	m_oIncoming.SetBuffer( &m_vecIncomingBuffer[ 0 ], nReturn );
+	m_oIncoming.SetBuffer( &m_vecIncomingBuffer[ 0 ], nMessagePayloadSize, false );
 
+	// Take out the two protocol variables type and message id from deserialization buffer
 	m_nAnswerType = ReadInt();
 	int nMessageID = ReadInt();
 	assert( nMessageID == m_nMessageId );
