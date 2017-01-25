@@ -22,7 +22,7 @@ const static string g_sInputFilePath = "gershwin-mono.wav";
 const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
 const static int g_iBlockLength = 1024;
-const static int g_iChannels = 20;
+const static int g_iChannels = 300;
 
 class CServer : public VistaThread
 {
@@ -65,19 +65,20 @@ int main( int, char** )
 
 	// Client dumping received stream and mixing down to two channels
 	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBlockLength, 100 * g_iBlockLength );
-	ITAStreamProbe oProbe( &oNetAudioStream, "ITANetAudioTest.stream.wav" );
 
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBlockLength );
-	oPatchbay.AddInput( &oProbe );
+	oPatchbay.AddInput( &oNetAudioStream );
 	int iOutputID = oPatchbay.AddOutput( 2 );
 
 	int N = int( oNetAudioStream.GetNumberOfChannels() );
 	for ( int i = 0; i < N ; i++ )
 		oPatchbay.ConnectChannels( 0, i, 0, i % 2, 1 / double( N ) );
 	
+	ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.stream.wav" );
+
 	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBlockLength );
 	ITAPA.Initialize();
-	ITAPA.SetPlaybackDatasource( oPatchbay.GetOutputDatasource( iOutputID ) );
+	ITAPA.SetPlaybackDatasource( &oProbe );
 	ITAPA.Open();
 	ITAPA.Start();
 
