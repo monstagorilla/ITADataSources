@@ -12,11 +12,11 @@
 using namespace std;
 
 //static string g_sServerName = "137.226.61.163";
-static string g_sServerName = "localhost";
+static string g_sServerName = "137.226.61.67";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44100;
-static int g_iBufferSize = 1024;
-static int g_iChannels = 20;
+static int g_iBufferSize = 512;
+static int g_iChannels = 500;
 
 int main( int , char** )
 {
@@ -24,33 +24,23 @@ int main( int , char** )
 	
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBufferSize );
 	oPatchbay.AddInput( &oNetAudioStream );
-	ITADatasource* pOutput;
+	int iOutputID = oPatchbay.AddOutput( 2 );
 
-	oPatchbay.AddOutput( 1 );
-	/*
-	for ( int i = 0; i < oNetAudioStream.GetNumberOfChannels( ); i++ )
-	{
-		if ( i % 2 == 0 )
-			oPatchbay.ConnectChannels( 0, i, 0, 0 );
-		else
-			oPatchbay.ConnectChannels( 0, i, 0, 1 );
-	
-	*/
-	oPatchbay.ConnectChannels( 0, 0, 0, 0, 1.0f );
-	pOutput = oPatchbay.GetOutputDatasource( 0 );
-	oPatchbay.SetOutputMuted( 0, true );
-	
-	ITAStreamProbe oProbe( pOutput, "output.wav" );
-	ITAStreamMultiplier1N oMultiplier( &oProbe, 2 );
+	int N = int( oNetAudioStream.GetNumberOfChannels( ) );
+	for ( int i = 0; i < N; i++ )
+		oPatchbay.ConnectChannels( 0, i, 0, i % 2, 1 / double( N ) );
+
+	ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.stream.wav" );
+
 
 	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBufferSize );
 	ITAPA.Initialize();
-	ITAPA.SetPlaybackDatasource( &oMultiplier );
+	ITAPA.SetPlaybackDatasource( &oProbe );
 	ITAPA.Open();
 	ITAPA.Start(); 
 
 	cout << "Waiting 3 seconds (net audio stream not connected and returning zeros)" << endl;
-	ITAPA.Sleep( 3.0f );
+	ITAPA.Sleep( 2.0f );
 
 	cout << "Will now connect to '" << g_sServerName << "' on port " << g_iServerPort << endl;
 	try
@@ -75,7 +65,7 @@ int main( int , char** )
 
 	cout << "Will now disconnect from '" << g_sServerName << "' and port " << g_iServerPort << endl;
 	cout << "Closing in 3 seconds (net audio stream not connected and returning zeros)" << endl;
-	ITAPA.Sleep( 3.0f );
+	ITAPA.Sleep( 1.0f );
 
 	ITAPA.Stop();
 	ITAPA.Close();

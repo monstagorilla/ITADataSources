@@ -92,7 +92,7 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	, m_bRingBufferFull( false )
 	, m_iStreamingStatus( INVALID )
 	, m_dLastStreamingTimeCode( 0.0f )
-	, m_iTargetSampleLatency( 5*iBufferSize )
+	, m_iTargetSampleLatency( 10*iBufferSize )
 {
 	m_bRingBufferFull = false;
 	if( iBufferSize > iRingBufferCapacity )
@@ -116,9 +116,9 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 
 CITANetAudioStream::~CITANetAudioStream()
 {
-	delete m_pNetAudioStreamingClient; 
-	delete m_pStreamLogger;
 	delete m_pNetLogger;
+	delete m_pStreamLogger;
+	delete m_pNetAudioStreamingClient;
 }
 
 bool CITANetAudioStream::Connect( const std::string& sAddress, int iPort )
