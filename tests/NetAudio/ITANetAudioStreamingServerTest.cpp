@@ -9,11 +9,11 @@
 
 using namespace std;
 
-static string g_sServerName = "localhost";
+static string g_sServerName = "137.226.61.67";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44100;
-static int g_iBlockLength = 1024;
-static int g_iChannels = 20;
+static int g_iBlockLength = 512;
+static int g_iChannels = 500;
 
 int main( int , char** )
 {
