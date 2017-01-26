@@ -12,11 +12,11 @@
 using namespace std;
 
 //static string g_sServerName = "137.226.61.163";
-static string g_sServerName = "137.226.61.67";
+static string g_sServerName = "137.226.61.163";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44100;
-static int g_iBufferSize = 512;
-static int g_iChannels = 500;
+static int g_iBufferSize = 1024;
+static int g_iChannels = 1;
 
 int main( int , char** )
 {
@@ -57,7 +57,7 @@ int main( int , char** )
 	cout << "Connected." << endl;
 
 	// Playback
-	float fSeconds = 10.0f;
+	float fSeconds = 20.0f;
 	cout << "Playback started, waiting " << fSeconds << " seconds" << endl;
 	ITAPA.Sleep( fSeconds ); // blocking
 	cout << "Done." << endl;

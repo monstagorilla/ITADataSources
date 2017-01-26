@@ -3,9 +3,44 @@
 #include <ITANetAudioClient.h>
 #include <ITANetAudioMessage.h>
 #include <ITANetAudioStream.h>
+#include <ITADataLog.h>
+#include <ITAClock.h>
 
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
 #include <VistaBase/VistaStreamUtils.h>
+
+//! Audio streaming log item
+struct ITAClientLog : public ITALogDataBase
+{
+	inline static std::ostream& outputDesc( std::ostream& os )
+	{
+		os << "BlockId";
+		os << "\t" << "WorldTimeStamp";
+		os << "\t" << "ProtocolStatus";
+		os << "\t" << "FreeSamples";
+		os << std::endl;
+		return os;
+	};
+
+	inline std::ostream& outputData( std::ostream& os ) const
+	{
+		os << uiBlockId;
+		os << "\t" << std::setprecision( 12 ) << dWorldTimeStamp;
+		os << "\t" << iProtocolStatus;
+		os << "\t" << iFreeSamples;
+		os << std::endl;
+		return os;
+	};
+
+	unsigned int uiBlockId; //!< Block identifier (audio streaming)
+	double dWorldTimeStamp;
+	int iProtocolStatus; //!< ... usw
+	int iFreeSamples;
+
+};
+
+class ITABufferedDataLoggerImplClient : public ITABufferedDataLogger < ITAClientLog > {};
+
 
 CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pParent )
 	: m_oBlockIncrementEvent( VistaThreadEvent::WAITABLE_EVENT )
@@ -18,7 +53,9 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	m_oParams.iChannels = pParent->GetNumberOfChannels();
 	m_oParams.dSampleRate = pParent->GetSampleRate();
 	m_oParams.iBlockSize = pParent->GetBlocklength();
-
+	m_pClientLogger = new ITABufferedDataLoggerImplClient( );
+	m_pClientLogger->setOutputFile("NetAudioLogClient.txt");
+	iStreamingBlockId = 0;
 	m_pMessage = new CITANetAudioMessage( VistaSerializingToolset::SWAPS_MULTIBYTE_VALUES );
 }
 
@@ -32,6 +69,7 @@ CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 		m_pMessage->WriteMessage();
 		m_pClient->Disconnect();
 	}
+	delete m_pClientLogger;
 }
 
 bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPort )
@@ -66,6 +104,9 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 
 bool CITANetAudioStreamingClient::LoopBody()
 {
+	ITAClientLog oLog;
+	oLog.uiBlockId = ++iStreamingBlockId;
+
 	if( m_bStopIndicated )
 		return true;
 
@@ -74,6 +115,7 @@ bool CITANetAudioStreamingClient::LoopBody()
 	m_pMessage->SetConnection( m_pConnection );
 	m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_WAITING_FOR_SAMPLES );
 	int iFreeSamplesUntilAllowedReached = m_pStream->GetAllowedLatencySamples() - m_pStream->GetRingBufferAvailableSamples();
+	oLog.iFreeSamples = iFreeSamplesUntilAllowedReached;
 	if( iFreeSamplesUntilAllowedReached < 0 )
 		iFreeSamplesUntilAllowedReached = 0;
 	m_pMessage->WriteInt( iFreeSamplesUntilAllowedReached );
@@ -108,7 +150,9 @@ bool CITANetAudioStreamingClient::LoopBody()
 	case CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE :
 		break;
 	}
-
+	oLog.iProtocolStatus = iAnswerType;
+	oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
+	m_pClientLogger->log( oLog );
 	return true;
 }
 

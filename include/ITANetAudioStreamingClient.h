@@ -36,6 +36,7 @@ class CITANetAudioClient;
 class CITANetAudioMessage;
 class CITANetAudioProtocol;
 class CITANetAudioStream;
+class ITABufferedDataLoggerImplClient;
 
 //! Network audio streaming client
 /**
@@ -76,6 +77,8 @@ private:
 	CITANetAudioProtocol::StreamingParameters m_oParams;
 
 	bool m_bStopIndicated;
+	int iStreamingBlockId;
+	ITABufferedDataLoggerImplClient* m_pClientLogger;
 
 	friend class CITANetAudioStream;
 };
