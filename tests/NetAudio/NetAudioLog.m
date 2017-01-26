@@ -1,6 +1,7 @@
 %% Einlesen der Logs
 NetAudioLogNet = readtable( 'NetAudioLogNet.txt' );
 NetAudioLogStream = readtable( 'NetAudioLogStream.txt' );
+NetAudioLogClient = readtable( 'NetAudioLogClient.txt' );
 
 %% Plot Freie Smaples und Bufferstutus
 minTime = min(NetAudioLogStream.WorldTimeStamp(1),NetAudioLogNet.WorldTimeStamp(1));
@@ -20,10 +21,12 @@ ylabel('Anzahl der Blöcke')
 
 %% Plot Latenz
 subplot(2,2,3:4)
-DiffTime = diff(NetAudioLogNet.WorldTimeStamp * 1000);
+DiffTime = diff(NetAudioLogClient.WorldTimeStamp * 1000);
 median = mean(DiffTime);
 medianVec = zeros(size(DiffTime)); 
 medianVec = medianVec + median;
+DiffTime = [DiffTime NetAudioLogClient.ProtocolStatus(2:end)];
+
 plot( DiffTime, 'b')
 hold on
 plot( medianVec, 'r')
