@@ -22,14 +22,19 @@ ylabel('Anzahl der Blöcke')
 %% Plot Latenz
 subplot(2,2,3:4)
 DiffTime = diff(NetAudioLogClient.WorldTimeStamp * 1000);
-median = mean(DiffTime);
-medianVec = zeros(size(DiffTime)); 
+median = mean(DiffTime(:,1));
+medianVec = zeros(size(DiffTime(:,1))); 
 medianVec = medianVec + median;
 DiffTime = [DiffTime NetAudioLogClient.ProtocolStatus(2:end)];
-
-plot( DiffTime, 'b')
+DiffTime = sortrows(DiffTime,2);
+LatenzWaiting = DiffTime(find(DiffTime(:,2)<222),1);
+LatenzRunnning = DiffTime(find(DiffTime(:,2)>221),1);
+medianRunning = mean(LatenzRunnning(:,1));
+medianRunningVec = zeros(size(LatenzRunnning(:,1))); 
+medianRunningVec = medianRunningVec + medianRunning;
+plot( LatenzRunnning, 'b')
 hold on
-plot( medianVec, 'r')
+plot( medianRunningVec, 'r')
 title('Latenz pro Block')
 legend('Latenz', 'Durchschnittliche Latenz')
 xlabel('Block Nummer')
