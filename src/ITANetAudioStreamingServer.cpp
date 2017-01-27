@@ -120,6 +120,9 @@ bool CITANetAudioStreamingServer::LoopBody()
 	}
 	case CITANetAudioProtocol::NP_CLIENT_CLOSE:
 	{
+		m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_CLOSE );
+		m_pMessage->WriteAnswer();
+
 		m_pConnection = NULL;
 		StopGently( true );
 		Stop();

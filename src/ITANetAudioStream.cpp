@@ -178,6 +178,11 @@ int CITANetAudioStream::GetMaximumLatencySamples() const
 	return GetRingBufferSize();
 }
 
+void CITANetAudioStream::SetLatencyForRealtime()
+{
+	SetAllowedLatencySamples( GetMinimumLatencySamples() );
+}
+
 const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pInfo )
 {
 	if( !GetIsConnected() )

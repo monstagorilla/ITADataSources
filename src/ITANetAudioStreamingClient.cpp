@@ -132,6 +132,10 @@ bool CITANetAudioStreamingClient::LoopBody()
 		vstr::err() << "Received invalid message type" << std::endl;
 		break;
 
+	case CITANetAudioProtocol::NP_SERVER_CLOSE:
+		Disconnect();
+		break;
+
 	case CITANetAudioProtocol::NP_SERVER_WAITING_FOR_TRIGGER:
 		// Wait until block increment is triggered by audio context (more free samples in ring buffer)
 		m_oBlockIncrementEvent.WaitForEvent( true );
