@@ -12,8 +12,8 @@ using namespace std;
 static string g_sServerName = "localhost";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44100;
-static int g_iBlockLength = 512;
-static int g_iChannels = 500;
+static int g_iBlockLength = 256;
+static int g_iChannels = 1;
 
 int main( int, char** )
 {
