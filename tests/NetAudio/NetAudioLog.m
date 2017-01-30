@@ -1,10 +1,10 @@
 %% Einlesen der Logs
 close all;
 clear all;
-NetAudioLogNet = readtable( 'NetAudioLogNet.txt' );
-NetAudioLogStream = readtable( 'NetAudioLogStream.txt' );
-NetAudioLogClient = readtable( 'NetAudioLogClient.txt' );
-NetAudioLogBaseData = readtable( 'NetAudioLogBaseData.txt' );
+NetAudioLogNet = readtable( 'NetAudioLogNet.txt', 'FileType', 'text', 'Delimiter', '\t');
+NetAudioLogStream = readtable( 'NetAudioLogStream.txt', 'FileType', 'text', 'Delimiter', '\t')
+NetAudioLogClient = readtable( 'NetAudioLogClient.txt', 'FileType', 'text', 'Delimiter', '\t' );
+NetAudioLogBaseData = readtable( 'NetAudioLogBaseData.txt', 'FileType', 'text', 'Delimiter', '\t' );
 
 % Save Base Data
 Channel = NetAudioLogBaseData.Channel(1);
@@ -54,7 +54,7 @@ sollLatenzVec = zeros(size(LatenzRunnning(:,1)));
 sollLatenzVec = sollLatenzVec + sollLatenz;
 
 subplot(2,2,1:4)
-plot( LatenzRunnning(:,1), LatenzRunnning(:,2))
+plot( LatenzRunnning(:,1), LatenzRunnning(:,2), 'b.')
 hold on
 plot( LatenzRunnning(:,1), medianRunningVec, 'r')
 plot( LatenzRunnning(:,1), sollLatenzVec, 'g')
@@ -63,9 +63,10 @@ plot( TimeOverrun, zeros(size(TimeOverrun)) + medianRunning,'r*')
 AnzahlUnderruns = size(TimeUnderrun);
 AnzahlUnderruns = AnzahlUnderruns(1);
 AnzahlUnderruns = num2str(AnzahlUnderruns);
+RelativeUnderruns = 100 * size(TimeUnderrun) / size(TimeState);
 Durchsatz = [num2str((32 * SampleRate * Channel)/1000) ' kbit/s']
 title(['Latenz pro Block (' num2str(BufferSize) ' Samples) bei ' num2str(Channel) ' Kanälen'])
-legend('Latenz', ['Latenz (' num2str(medianRunning) ' ms)'], ['SollLatenz (' num2str(sollLatenz) ' ms)' ], ['Underruns (Anz. ' AnzahlUnderruns ')'], 'Overruns')
+legend('Latenz', ['Latenz (' num2str(medianRunning) ' ms)'], ['SollLatenz (' num2str(sollLatenz) ' ms)' ], ['Underruns (Anz. ' AnzahlUnderruns ' - ' num2str(RelativeUnderruns) '%)'], 'Overruns')
 xlabel('Zeit in s')
 ylabel('Latenz in ms')
 legend('show') 
