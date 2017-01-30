@@ -34,6 +34,7 @@ using namespace std;
 class CITANetAudioStreamingClient;
 class ITABufferedDataLoggerImplStream;
 class ITABufferedDataLoggerImplNet;
+class ITABufferedDataLoggerImplAudio;
 
 //! Network audio stream
 /**
@@ -208,6 +209,7 @@ private:
 	int m_iStreamingStatus; //!< Current streaming status
 	double m_dLastStreamingTimeCode;
 
+	ITABufferedDataLoggerImplAudio* m_pAudioLogger; //!< Logging for the audio stream
 	ITABufferedDataLoggerImplStream* m_pStreamLogger; //!< Logging for the audio stream
 	ITABufferedDataLoggerImplNet* m_pNetLogger; //!< Logging for the network stream
 	int iAudioStreamingBlockID; //!< Audio streaming block id

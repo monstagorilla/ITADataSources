@@ -15,12 +15,12 @@ using namespace std;
 static string g_sServerName = "137.226.61.163";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44100;
-static int g_iBufferSize = 1024;
-static int g_iChannels = 1;
+static int g_iBufferSize = 2048;
+static int g_iChannels = 150;
 
 int main( int , char** )
 {
-	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
+	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBufferSize, 1 * g_iBufferSize );
 	
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBufferSize );
 	oPatchbay.AddInput( &oNetAudioStream );

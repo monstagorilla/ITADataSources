@@ -17,6 +17,37 @@
 #include <iostream>
 
 //! Audio streaming log item
+struct ITAAudioLog : public ITALogDataBase
+{
+	inline static std::ostream& outputDesc( std::ostream& os )
+	{
+		os << "\t" << "Channel";
+		os << "\t" << "Samplerate";
+		os << "\t" << "BufferSize";
+		os << "\t" << "RingBufferSize";
+		os << "\t" << "TargetSampleLatency";
+		os << std::endl;
+		return os;
+	};
+
+	inline std::ostream& outputData( std::ostream& os ) const
+	{
+		os << "\t" << iChannel;
+		os << "\t" << dSampleRate;
+		os << "\t" << iBufferSize;
+		os << "\t" << iRingBufferSize;
+		os << "\t" << iTargetSampleLatency;
+		os << std::endl;
+		return os;
+	};
+
+	int iChannel;
+	double dSampleRate;
+	int iBufferSize;
+	int iRingBufferSize;
+	int iTargetSampleLatency;
+};
+	//! Audio streaming log item
 struct ITAStreamLog : public ITALogDataBase
 {
 	inline static std::ostream& outputDesc( std::ostream& os )
@@ -81,6 +112,7 @@ struct ITANetLog : public ITALogDataBase
 	int iNumSamplesTransmitted;
 };
 
+class ITABufferedDataLoggerImplAudio : public ITABufferedDataLogger < ITAAudioLog > {};
 class ITABufferedDataLoggerImplStream : public ITABufferedDataLogger < ITAStreamLog > {};
 class ITABufferedDataLoggerImplNet : public ITABufferedDataLogger < ITANetLog > {};
 
@@ -105,6 +137,9 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	m_iStreamingStatus = STOPPED;
 
 	// Logging
+	m_pAudioLogger = new ITABufferedDataLoggerImplAudio( );
+	m_pAudioLogger->setOutputFile( "NetAudioLogBaseData.txt" );
+
 	m_pStreamLogger = new ITABufferedDataLoggerImplStream();
 	m_pStreamLogger->setOutputFile( "NetAudioLogStream.txt" );
 	iAudioStreamingBlockID = 0;
@@ -112,12 +147,22 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	m_pNetLogger = new ITABufferedDataLoggerImplNet();
 	m_pNetLogger->setOutputFile( "NetAudioLogNet.txt" );
 	iNetStreamingBlockID = 0;
+
+	// Logging Base Data
+	ITAAudioLog oLog;
+	oLog.iChannel = GetNumberOfChannels();
+	oLog.dSampleRate = m_dSampleRate;
+	oLog.iBufferSize = GetBlocklength();
+	oLog.iRingBufferSize = GetRingBufferSize();
+	oLog.iTargetSampleLatency = m_iTargetSampleLatency;
+	m_pAudioLogger->log( oLog );
 }
 
 CITANetAudioStream::~CITANetAudioStream()
 {
 	delete m_pNetLogger;
 	delete m_pStreamLogger;
+	delete m_pAudioLogger;
 	delete m_pNetAudioStreamingClient;
 }
 
@@ -267,7 +312,7 @@ void CITANetAudioStream::IncrementBlockPointer()
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
 	oLog.dStreamingTimeCode = m_dLastStreamingTimeCode;
 	oLog.uiBlockId = ++iAudioStreamingBlockID;
-	oLog.iFreeSamples = GetRingBufferFreeSamples();
+	oLog.iFreeSamples = GetRingBufferFreeSamples( );
 	m_pStreamLogger->log( oLog );
 	
 	m_pNetAudioStreamingClient->TriggerBlockIncrement();
