@@ -16,7 +16,6 @@ TargetSampleLatency = NetAudioLogBaseData.TargetSampleLatency(1);
 minTime = min(NetAudioLogStream.WorldTimeStamp(1),NetAudioLogNet.WorldTimeStamp(1));
 TimeNet = NetAudioLogNet.WorldTimeStamp - minTime;
 TimeStream = NetAudioLogStream.WorldTimeStamp - minTime;
-BlockLenght = NetAudioLogNet.NumSamplesTransmitted(1);
 
 TimeState = [TimeStream NetAudioLogStream.StreamingStatus];
 TimeUnderrun = TimeState(find(TimeState(:,2)==3), 1);
@@ -27,14 +26,14 @@ TimeStream = TimeState(find(TimeState(:,2)==2), 1);
 Data = [NetAudioLogNet.WorldTimeStamp NetAudioLogNet.FreeSamples; NetAudioLogStream.WorldTimeStamp NetAudioLogStream.FreeSamples];
 Data = sortrows(Data,1 );
 Data(:,1) = Data(:,1) - minTime();
-Data(:,2) = (Data(:,2)) / BlockLenght;
+Data(:,2) = (Data(:,2)) / BufferSize;
 medianBlock = (max(Data(:,2)) - min(Data(:,2))) / 2;
 subplot(2,2,1:2)
 plot( Data(:,1), Data(:,2) )
 hold on
 plot( TimeUnderrun, zeros(size(TimeUnderrun)) + max(Data(:,2)),'r*')
 plot( TimeOverrun, zeros(size(TimeOverrun)) + min(Data(:,2)),'r+')
-title('Freie Blöcke im Ring Buffer')
+title(['Freie Blöcke im Ring Buffer (' num2str(RingBufferSize) ' Samples)'])
 xlabel('Zeit in s')
 ylabel('Anzahl der Blöcke')
 
@@ -50,11 +49,11 @@ LatenzRunnning = DiffTime(find(DiffTime(:,3)>221), (1:2));
 medianRunning = mean(LatenzRunnning(:,2));
 medianRunningVec = zeros(size(LatenzRunnning(:,1))); 
 medianRunningVec = medianRunningVec + medianRunning;
-sollLatenz = (BlockLenght / SampleRate) * 1000;
+sollLatenz = (BufferSize / SampleRate) * 1000;
 sollLatenzVec = zeros(size(LatenzRunnning(:,1))); 
 sollLatenzVec = sollLatenzVec + sollLatenz;
 
-subplot(2,2,3:4)
+subplot(2,2,1:4)
 plot( LatenzRunnning(:,1), LatenzRunnning(:,2))
 hold on
 plot( LatenzRunnning(:,1), medianRunningVec, 'r')
@@ -65,8 +64,8 @@ AnzahlUnderruns = size(TimeUnderrun);
 AnzahlUnderruns = AnzahlUnderruns(1);
 AnzahlUnderruns = num2str(AnzahlUnderruns);
 Durchsatz = [num2str((32 * SampleRate * Channel)/1000) ' kbit/s']
-title('Latenz pro Block')
-legend('Latenz', 'Durchschnittliche Latenz', 'SollLatenz', ['Underruns (Anz. ' AnzahlUnderruns ')'], 'Overruns')
-xlabel('Zeit in ms')
+title(['Latenz pro Block (' num2str(BufferSize) ' Samples) bei ' num2str(Channel) ' Kanälen'])
+legend('Latenz', ['Latenz (' num2str(medianRunning) ' ms)'], ['SollLatenz (' num2str(sollLatenz) ' ms)' ], ['Underruns (Anz. ' AnzahlUnderruns ')'], 'Overruns')
+xlabel('Zeit in s')
 ylabel('Latenz in ms')
 legend('show') 

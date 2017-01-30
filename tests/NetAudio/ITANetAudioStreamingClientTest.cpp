@@ -15,8 +15,8 @@ using namespace std;
 static string g_sServerName = "137.226.61.163";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44100;
-static int g_iBufferSize = 2048;
-static int g_iChannels = 150;
+static int g_iBufferSize = 1024;
+static int g_iChannels = 100;
 
 int main( int , char** )
 {
@@ -57,7 +57,7 @@ int main( int , char** )
 	cout << "Connected." << endl;
 
 	// Playback
-	float fSeconds = 20.0f;
+	float fSeconds = 900.0f; // 15min
 	cout << "Playback started, waiting " << fSeconds << " seconds" << endl;
 	ITAPA.Sleep( fSeconds ); // blocking
 	cout << "Done." << endl;
