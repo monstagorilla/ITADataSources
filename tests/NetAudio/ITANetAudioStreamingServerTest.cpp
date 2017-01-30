@@ -9,14 +9,20 @@
 
 using namespace std;
 
-static string g_sServerName = "localhost";
+static string g_sServerName = "137.226.61.85";
 static int g_iServerPort = 12480;
 static double g_dSampleRate = 44100;
-static int g_iBlockLength = 256;
-static int g_iChannels = 1;
+static int g_iBlockLength = 32;
+static int g_iChannels = 10;
 
 int main( int, char** )
 {
+	std::cout << "BufferSize: " << endl;
+	cin >> g_iBlockLength;
+	cout << "ChannelAnzahl: " << endl;
+	cin >> g_iChannels;
+
+
 	ITAFileDatasource oFile( "gershwin-mono.wav", g_iBlockLength );
 	oFile.SetIsLooping( true );
 	ITAStreamMultiplier1N oMuliplier( &oFile, g_iChannels );
