@@ -9,22 +9,25 @@
 
 using namespace std;
 
-static string g_sServerName = "localhost";
-static int g_iServerPort = 12480;
-static double g_dSampleRate = 44100;
-static int g_iBlockLength = 256;
-static int g_iChannels = 1;
-
-int main( int, char** )
+int main(int argc, char** argv)
 {
-	ITAFileDatasource oFile( "gershwin-mono.wav", g_iBlockLength );
+	if (argc != 5)
+		fprintf(stderr, "Fehler: Syntax = ServerName ServerPort SampleRate BufferSize Channel!\n");
+
+	static string sServerName = argv[1];
+	static int iServerPort = (int)argv[2];
+	static double dSampleRate = strtod(argv[3], NULL);
+	static int iBlockLength = (int)argv[4];
+	static int iChannels = (int)argv[5];
+
+	ITAFileDatasource oFile( "gershwin-mono.wav", iBlockLength );
 	oFile.SetIsLooping( true );
-	ITAStreamMultiplier1N oMuliplier( &oFile, g_iChannels );
+	ITAStreamMultiplier1N oMuliplier( &oFile, iChannels );
 	CITANetAudioStreamingServer oStreamingServer;
 	oStreamingServer.SetInputStream( &oMuliplier );
 
-	cout << "Starting net audio server and waiting for connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
-	oStreamingServer.Start( g_sServerName, g_iServerPort );
+	cout << "Starting net audio server and waiting for connections on '" << sServerName << "' on port " << iServerPort << endl;
+	oStreamingServer.Start( sServerName, iServerPort );
 
 	int iKey;
 	std::cin >> iKey;

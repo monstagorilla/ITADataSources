@@ -13,126 +13,124 @@
 
 using namespace std;
 
-//static string g_sServerName = "137.226.61.163";
-static string g_sServerName = "137.226.61.85";
-static int g_iServerPort = 12480;
-static double g_dSampleRate = 44100;
-static int g_iBufferSize = 512;
-static int g_iChannels = 0;
-
-int main( int , char** )
+int main(int argc, char** argv)
 {
-	while (g_iChannels < 20)
-	{
-		g_iChannels++;
-		cout << "Starte mit Anzahl Channel " << g_iChannels << endl;
+	if (argc != 6)
+		fprintf(stderr, "Fehler: Syntax = ServerName ServerPort SampleRate BufferSize Channel RingBufferSize!\n");
+
+	static string sServerName = argv[1];
+	static int iServerPort = (int)argv[2];
+	static double dSampleRate = strtod(argv[3], NULL);
+	static int iBlockLength = (int)argv[4];
+	static int iChannels = (int)argv[5];
+	static int iBufferSize = (int)argv[6];
 
 
-		CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBufferSize, 1 * g_iBufferSize );
+
+	CITANetAudioStream oNetAudioStream(iChannels, dSampleRate, iBlockLength, 1 * iBufferSize);
 	
-		ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBufferSize );
-		oPatchbay.AddInput( &oNetAudioStream );
-		int iOutputID = oPatchbay.AddOutput( 2 );
+	ITAStreamPatchbay oPatchbay(dSampleRate, iBlockLength);
+	oPatchbay.AddInput( &oNetAudioStream );
+	int iOutputID = oPatchbay.AddOutput( 2 );
 
-		int N = int( oNetAudioStream.GetNumberOfChannels( ) );
-		for ( int i = 0; i < N; i++ )
-			oPatchbay.ConnectChannels( 0, i, 0, i % 2, 1 / double( N ) );
+	int N = int( oNetAudioStream.GetNumberOfChannels( ) );
+	for ( int i = 0; i < N; i++ )
+		oPatchbay.ConnectChannels( 0, i, 0, i % 2, 1 / double( N ) );
 
-		ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.stream.wav" );
-
-
-		ITAsioInitializeLibrary();
-
-		try {
-
-			cout << "Will now connect to '" << g_sServerName << "' on port " << g_iServerPort << endl;
-
-			if (ITAsioInitializeDriver("ASIO MADIface USB") != ASE_OK) {
-				ITAsioFinalizeLibrary();
-				fprintf(stderr, "Fehler: ITAsioInit schlug fehl!\n");
-
-				return 255;
-			}
-
-			long lBuffersize, lDummy;
-			if (ITAsioGetBufferSize(&lDummy, &lDummy, &lBuffersize, &lDummy) != ASE_OK) {
-				ITAsioFinalizeLibrary();
-				fprintf(stderr, "Fehler: ITAsioGetBufferSize schlug fehl!\n");
-
-				return 255;
-			}
+	ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.stream.wav" );
 
 
-			if (ITAsioSetSampleRate((ASIOSampleRate)g_dSampleRate) != ASE_OK) {
-				ITAsioFinalizeLibrary();
-				fprintf(stderr, "Fehler: ITAsioSetSamplerate schlug fehl!\n");
+	ITAsioInitializeLibrary();
 
-				return 255;
-			}
+	try {
 
-			long lNumInputChannels, lNumOutputChannels;
-			ASIOError ae;
-			if ((ae = ITAsioGetChannels(&lNumInputChannels, &lNumOutputChannels)) != ASE_OK)
-			{
-				cerr << "Error in ITAsioGetChannels, ASIO error " << ae << " encountered" << endl;
-				ITAsioFinalizeLibrary();
-				return 255;
-			}
+		cout << "Will now connect to '" << sServerName << "' on port " << iServerPort << endl;
 
-			if ((ae = ITAsioCreateBuffers(0, 2, lBuffersize)) != ASE_OK)
-			{
-				cerr << "Error in ITAsioCreateBuffers, ASIO error " << ae << " encountered" << endl;
-				ITAsioFinalizeLibrary();
-				return 255;
-			}
-
-		
-			ITAsioSetPlaybackDatasource(&oProbe);
-
-			if (ITAsioStart() != ASE_OK) {
-				ITAsioFinalizeLibrary();
-				fprintf(stderr, "Fehler: ITAsioStart schlug fehl!\n");
-
-				return 255;
-			}
-
-			if (!oNetAudioStream.Connect(g_sServerName, g_iServerPort))
-				ITA_EXCEPT1(INVALID_PARAMETER, "Could not connect to server");
-			printf("Wiedergabe gestartet ...\n");
-			VistaTimeUtils::Sleep(10 * 1000);
-
-			if (ITAsioStop() != ASE_OK) {
-				ITAsioFinalizeLibrary();
-				fprintf(stderr, "Fehler: ITAsioStop schlug fehl!\n");
-
-				return 255;
-			}
-
-			printf("Wiedergabe beendet!\n");
-
-			if (ITAsioDisposeBuffers() != ASE_OK) {
-				ITAsioFinalizeLibrary();
-				fprintf(stderr, "Fehler: ITAsioDisposeBuffers schlug fehl!\n");
-
-				return 255;
-			}
-
-			if (ITAsioFinalizeDriver() != ASE_OK) {
-				ITAsioFinalizeLibrary();
-				fprintf(stderr, "Fehler: ITAsioExit schlug fehl!\n");
-
-				return 255;
-			}
-		}
-		catch (ITAException e) {
+		if (ITAsioInitializeDriver("ASIO MADIface USB") != ASE_OK) {
 			ITAsioFinalizeLibrary();
-			cerr << e << endl;
+			fprintf(stderr, "Fehler: ITAsioInit schlug fehl!\n");
 
 			return 255;
 		}
 
-		ITAsioFinalizeLibrary();
+		long lBuffersize, lDummy;
+		if (ITAsioGetBufferSize(&lDummy, &lDummy, &lBuffersize, &lDummy) != ASE_OK) {
+			ITAsioFinalizeLibrary();
+			fprintf(stderr, "Fehler: ITAsioGetBufferSize schlug fehl!\n");
+
+			return 255;
+		}
+
+
+		if (ITAsioSetSampleRate((ASIOSampleRate)dSampleRate) != ASE_OK) {
+			ITAsioFinalizeLibrary();
+			fprintf(stderr, "Fehler: ITAsioSetSamplerate schlug fehl!\n");
+
+			return 255;
+		}
+
+		long lNumInputChannels, lNumOutputChannels;
+		ASIOError ae;
+		if ((ae = ITAsioGetChannels(&lNumInputChannels, &lNumOutputChannels)) != ASE_OK)
+		{
+			cerr << "Error in ITAsioGetChannels, ASIO error " << ae << " encountered" << endl;
+			ITAsioFinalizeLibrary();
+			return 255;
+		}
+
+		if ((ae = ITAsioCreateBuffers(0, 2, lBuffersize)) != ASE_OK)
+		{
+			cerr << "Error in ITAsioCreateBuffers, ASIO error " << ae << " encountered" << endl;
+			ITAsioFinalizeLibrary();
+			return 255;
+		}
+
+		
+		ITAsioSetPlaybackDatasource(&oProbe);
+
+		if (ITAsioStart() != ASE_OK) {
+			ITAsioFinalizeLibrary();
+			fprintf(stderr, "Fehler: ITAsioStart schlug fehl!\n");
+
+			return 255;
+		}
+
+		if (!oNetAudioStream.Connect(sServerName, iServerPort))
+			ITA_EXCEPT1(INVALID_PARAMETER, "Could not connect to server");
+		printf("Wiedergabe gestartet ...\n");
+		VistaTimeUtils::Sleep(10 * 1000);
+
+		if (ITAsioStop() != ASE_OK) {
+			ITAsioFinalizeLibrary();
+			fprintf(stderr, "Fehler: ITAsioStop schlug fehl!\n");
+
+			return 255;
+		}
+
+		printf("Wiedergabe beendet!\n");
+
+		if (ITAsioDisposeBuffers() != ASE_OK) {
+			ITAsioFinalizeLibrary();
+			fprintf(stderr, "Fehler: ITAsioDisposeBuffers schlug fehl!\n");
+
+			return 255;
+		}
+
+		if (ITAsioFinalizeDriver() != ASE_OK) {
+			ITAsioFinalizeLibrary();
+			fprintf(stderr, "Fehler: ITAsioExit schlug fehl!\n");
+
+			return 255;
+		}
 	}
+	catch (ITAException e) {
+		ITAsioFinalizeLibrary();
+		cerr << e << endl;
+
+		return 255;
+	}
+
+	ITAsioFinalizeLibrary();
 
 	
 	return 0;
