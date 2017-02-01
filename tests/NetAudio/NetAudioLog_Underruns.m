@@ -2,7 +2,7 @@
 close all;
 clear all;
 ChannelVec = [1:20];
-BlockSize = '64';
+BlockSize = '256';
 NetAudioLogClient = dir(['NetAudioLogClient_BS' BlockSize '*.txt']);
 NetAudioLogClient = {NetAudioLogClient.name};
 NetAudioLogClientTab = readtable(NetAudioLogClient{1}, 'FileType', 'text', 'Delimiter', '\t');
@@ -47,7 +47,7 @@ LatenzWaiting = DiffTime(find(DiffTime(:,3)==221), (1:4));
 LatenzRunnning = DiffTime(find(DiffTime(:,3)==222), (1:4));
 LatenzRunnning = sortrows(LatenzRunnning,1);
 
-%% Plot Latency
+%% Get Anzahl Dropouts
 plotMean = ChannelVec;
 AnzUnderrun = ChannelVec;
 channel = [];
@@ -56,20 +56,13 @@ for k = ChannelVec
      plotTime = LatenzRunnning(find(LatenzRunnning(:,4)==k), 1);
      plotLatency = LatenzRunnning(find(LatenzRunnning(:,4)==k), 2);
      plotChannel = LatenzRunnning(find(LatenzRunnning(:,4)==k), 4);
-     channel = [channel; plotChannel(2:end)];
-     latenz = [latenz; plotLatency(2:end) ];
+     plotMean(k) = round(mean(plotLatency(2:end)),3);
+     underruns = TimeUnderrun < plotTime(end) & TimeUnderrun > plotTime(1);
+     AnzUnderrun(k) = sum(underruns);
 end
-boxplot(latenz,channel)
 
-sollLatenz = (BufferSize / SampleRate) * 1000;
-Llang{21} = ['Grenz Latenz (' num2str(sollLatenz) 'ms)'];
-Llang{22} = ['Underruns'];
-Lkurz{21} = ['Grenz Latenz'];
-Lkurz{22} = ['Underruns'];
-Durchsatz = [num2str((32 * SampleRate * Channel)/1000) ' kbit/s'];
-title(['Latenz pro Block (' num2str(BufferSize) ' Samples)'])
-xlabel('Anzahl der Channel')
-ylabel('Latenz in ms')
-%legend(Lkurz)
-legend('show') 
-name = ['Latency' num2str(BufferSize) '  ' num2str(RingBufferSize) ' - ' num2str(Channel)];
+%% Plot Anzahl der Underruns
+plot(ChannelVec, AnzUnderrun)
+title(['Anzahl der Underruns bei x Kanälen'])
+xlabel('Anzahl der Kanäle')
+ylabel('Anzahl der Underruns')
