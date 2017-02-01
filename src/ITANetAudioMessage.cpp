@@ -5,6 +5,8 @@
 #include <VistaBase/VistaExceptionBase.h>
 #include <VistaBase/VistaStreamUtils.h>
 
+#include <cstring>
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <iomanip>
@@ -65,7 +67,7 @@ void CITANetAudioMessage::WriteMessage()
 	iSwapDummy = m_oOutgoing.GetBufferSize() - sizeof( VistaType::sint32 );
 	if( m_oOutgoing.GetByteorderSwapFlag() )
 		VistaSerializingToolset::Swap4( &iSwapDummy );
-	memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
+	std::memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
 
 	pBuffer += sizeof( VistaType::sint32 );
 
@@ -73,7 +75,7 @@ void CITANetAudioMessage::WriteMessage()
 	iSwapDummy = m_nMessageType;
 	if( m_oOutgoing.GetByteorderSwapFlag() )
 		VistaSerializingToolset::Swap4( &iSwapDummy );
-	memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
+	std::memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
 
 	pBuffer += sizeof( VistaType::sint32 );
 
@@ -81,7 +83,7 @@ void CITANetAudioMessage::WriteMessage()
 	iSwapDummy = m_nMessageId;
 	if( m_oOutgoing.GetByteorderSwapFlag() )
 		VistaSerializingToolset::Swap4( &iSwapDummy );
-	memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
+	std::memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
 
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [  Writing] " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
