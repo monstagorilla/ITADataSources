@@ -7,6 +7,7 @@ include( VistaCommon )
 vista_use_package( VistaCoreLibs REQUIRED COMPONENTS VistaInterProcComm FIND_DEPENDENCIES )
 vista_use_package( ITADataSources REQUIRED FIND_DEPENDENCIES )
 
+add_definitions( -DIEEE754_64FLOAT)
 
 add_executable( ITANABufferServerTest ITANABufferServerTest.cpp )
 target_link_libraries( ITANABufferServerTest ${VISTA_USE_PACKAGE_LIBRARIES} )
@@ -54,4 +55,9 @@ vista_configure_app( ITANetAudioTest )
 vista_install( ITANetAudioTest )
 vista_create_default_info_file( ITANetAudioTest )
 
+vista_set_target_msvc_arguments( ITANetAudioStreamingClientTest "localhost 12480 44100 32 1 32" )
+vista_set_target_msvc_arguments( ITANetAudioStreamingServerTest "localhost 12480 44100 32 1" )
+
 set_property( TARGET ITANetAudioTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+
+vista_install_all_dlls(bin)
