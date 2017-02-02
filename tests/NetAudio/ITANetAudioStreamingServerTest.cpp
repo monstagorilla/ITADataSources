@@ -16,17 +16,11 @@ int main(int argc, char** argv)
 		fprintf(stderr, "Fehler: Syntax = ServerName ServerPort SampleRate BufferSize Channel!\n");
 	}
 
-	static string sServerName = argv[1];
-	static int iServerPort = (int)argv[2];
-	static double dSampleRate = strtod(argv[3], NULL);
-	static int iBlockLength = (int)argv[4];
-	static int iChannels = (int)argv[5];
-
-	cout << "sServerName = " << sServerName << endl;
-	cout << "iServerPort = " << iServerPort << endl;
-	cout << "dSampleRate = " << dSampleRate << endl;
-	cout << "iBlockLength = " << iBlockLength << endl;
-	cout << "iChannels = " << iChannels << endl;
+	string sServerName = argv[1];
+	unsigned int iServerPort = atoi(argv[2]);
+	double dSampleRate = strtod(argv[3], NULL);
+	int iBlockLength = atoi(argv[4]);
+	int iChannels = atoi(argv[5]);
 
 	ITAFileDatasource oFile( "gershwin-mono.wav", iBlockLength );
 	oFile.SetIsLooping( true );

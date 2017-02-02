@@ -13,10 +13,10 @@
 
 using namespace std;
 
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 {
 	
-	if (argc != 7)
+	//if (argc != 7)
 	{
 		cout << "argc = " << argc << endl;
 		cout << "sServerName = " << argv[1] << endl;
@@ -25,18 +25,18 @@ int main(int argc, char** argv)
 		cout << "iBlockLength = " << argv[4] << endl;
 		cout << "iChannels = " << argv[5] << endl;
 		cout << "iBufferSize = " << argv[6] << endl;
-		//fprintf(stderr, "Fehler: Syntax = ServerName ServerPort SampleRate BufferSize Channel RingBufferSize!\n");
+		fprintf(stderr, "Fehler: Syntax = ServerName ServerPort SampleRate BufferSize Channel RingBufferSize!\n");
 	}
 	
 
-	static string sServerName = argv[1];
-	static int iServerPort = (int)argv[2];
-	static double dSampleRate = strtod(argv[3], NULL);
-	static int iBlockLength = (int)argv[4];
-	static int iChannels = (int)argv[5];
-	static int iBufferSize = (int)argv[6];
+	 string sServerName = argv[1];
+	 unsigned int iServerPort = atoi(argv[2]);
+	 double dSampleRate = strtod(argv[3], NULL);
+	 int iBlockLength = atoi(argv[4]);
+	 int iChannels = atoi(argv[5]);
+	 int iBufferSize = atoi(argv[6]);
 
-
+	cout << "Channel" << iChannels << endl;
 
 	CITANetAudioStream oNetAudioStream(iChannels, dSampleRate, iBlockLength, 1 * iBufferSize);
 	
