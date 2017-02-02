@@ -18,7 +18,6 @@ struct ITAClientLog : public ITALogDataBase
 		os << "\t" << "WorldTimeStamp";
 		os << "\t" << "ProtocolStatus";
 		os << "\t" << "FreeSamples";
-		os << "\t" << "Channel";
 		os << std::endl;
 		return os;
 	};
@@ -29,7 +28,6 @@ struct ITAClientLog : public ITALogDataBase
 		os << "\t" << std::setprecision( 12 ) << dWorldTimeStamp;
 		os << "\t" << iProtocolStatus;
 		os << "\t" << iFreeSamples;
-		os << "\t" << iChannel;
 		os << std::endl;
 		return os;
 	};
@@ -38,7 +36,6 @@ struct ITAClientLog : public ITALogDataBase
 	double dWorldTimeStamp;
 	int iProtocolStatus; //!< ... usw
 	int iFreeSamples;
-	int iChannel;
 
 };
 
@@ -57,10 +54,7 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	m_oParams.dSampleRate = pParent->GetSampleRate();
 	m_oParams.iBlockSize = pParent->GetBlocklength();
 	m_pClientLogger = new ITABufferedDataLoggerImplClient( );
-
-	char name[50];
-	sprintf(name, "NetAudioLogClient_BS%i_Ch%i.txt", m_pStream->GetRingBufferSize(), m_pStream->GetNumberOfChannels());
-	m_pClientLogger->setOutputFile(name);
+	m_pClientLogger->setOutputFile("NetAudioLogClient.txt");
 	iStreamingBlockId = 0;
 	m_pMessage = new CITANetAudioMessage( VistaSerializingToolset::SWAPS_MULTIBYTE_VALUES );
 }
@@ -162,7 +156,6 @@ bool CITANetAudioStreamingClient::LoopBody()
 	}
 	oLog.iProtocolStatus = iAnswerType;
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
-	oLog.iChannel = m_pStream->GetNumberOfChannels();
 	m_pClientLogger->log( oLog );
 	return true;
 }

@@ -21,7 +21,6 @@ struct ITAAudioLog : public ITALogDataBase
 {
 	inline static std::ostream& outputDesc( std::ostream& os )
 	{
-		os << "WorldTimeStamp";
 		os << "\t" << "Channel";
 		os << "\t" << "Samplerate";
 		os << "\t" << "BufferSize";
@@ -33,7 +32,6 @@ struct ITAAudioLog : public ITALogDataBase
 
 	inline std::ostream& outputData( std::ostream& os ) const
 	{
-		os << dWorldTimeStamp;
 		os << "\t" << iChannel;
 		os << "\t" << dSampleRate;
 		os << "\t" << iBufferSize;
@@ -43,7 +41,6 @@ struct ITAAudioLog : public ITALogDataBase
 		return os;
 	};
 
-	double dWorldTimeStamp;
 	int iChannel;
 	double dSampleRate;
 	int iBufferSize;
@@ -60,7 +57,6 @@ struct ITAStreamLog : public ITALogDataBase
 		os << "\t" << "StreamingTimeCode";
 		os << "\t" << "StreamingStatus";
 		os << "\t" << "FreeSamples";
-		os << "\t" << "Channel";
 		os << std::endl;
 		return os;
 	};
@@ -72,7 +68,6 @@ struct ITAStreamLog : public ITALogDataBase
 		os << "\t" << std::setprecision( 12 ) << dStreamingTimeCode;
 		os << "\t" << iStreamingStatus;
 		os << "\t" << iFreeSamples;
-		os << "\t" << iChannel;
 		os << std::endl;
 		return os;
 	};
@@ -82,7 +77,6 @@ struct ITAStreamLog : public ITALogDataBase
 	double dStreamingTimeCode;
 	int iStreamingStatus; //!< ... usw
 	int iFreeSamples;
-	int iChannel;
 
 };
 
@@ -143,25 +137,19 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	m_iStreamingStatus = STOPPED;
 
 	// Logging
-	char name[50];
-
 	m_pAudioLogger = new ITABufferedDataLoggerImplAudio( );
-	sprintf(name, "NetAudioLogBaseData_BS%i_Ch%i.txt", GetRingBufferSize(), GetNumberOfChannels());
-	m_pAudioLogger->setOutputFile(name);
+	m_pAudioLogger->setOutputFile( "NetAudioLogBaseData.txt" );
 
 	m_pStreamLogger = new ITABufferedDataLoggerImplStream();
-	sprintf(name, "NetAudioLogStream_BS%i_Ch%i.txt", GetRingBufferSize(), GetNumberOfChannels());
-	m_pStreamLogger->setOutputFile(name);
+	m_pStreamLogger->setOutputFile( "NetAudioLogStream.txt" );
 	iAudioStreamingBlockID = 0;
 
 	m_pNetLogger = new ITABufferedDataLoggerImplNet();
-	sprintf(name, "NetAudioLogNet_BS%i_Ch%i.txt", GetRingBufferSize(), GetNumberOfChannels());
-	m_pNetLogger->setOutputFile(name);
+	m_pNetLogger->setOutputFile( "NetAudioLogNet.txt" );
 	iNetStreamingBlockID = 0;
 
 	// Logging Base Data
 	ITAAudioLog oLog;
-	oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
 	oLog.iChannel = GetNumberOfChannels();
 	oLog.dSampleRate = m_dSampleRate;
 	oLog.iBufferSize = GetBlocklength();
@@ -325,7 +313,6 @@ void CITANetAudioStream::IncrementBlockPointer()
 	oLog.dStreamingTimeCode = m_dLastStreamingTimeCode;
 	oLog.uiBlockId = ++iAudioStreamingBlockID;
 	oLog.iFreeSamples = GetRingBufferFreeSamples( );
-	oLog.iChannel = GetNumberOfChannels();
 	m_pStreamLogger->log( oLog );
 	
 	m_pNetAudioStreamingClient->TriggerBlockIncrement();
