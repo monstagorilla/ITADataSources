@@ -13,24 +13,34 @@
 
 using namespace std;
 
-//static string g_sServerName = "137.226.61.163";
-static string g_sServerName = "137.226.61.85";
-static int g_iServerPort = 12480;
-static double g_dSampleRate = 44100;
-static int g_iBufferSize = 32;
-static int g_iChannels = 10;
-
-int main( int , char** )
+int main(int argc, char* argv[])
 {
-	std::cout << "BufferSize: " << endl;
-	cin >> g_iBufferSize;
-	cout << "ChannelAnzahl: " << endl;
-	cin >> g_iChannels;
-
-
-	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBufferSize, 1 * g_iBufferSize );
 	
-	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBufferSize );
+	if (argc != 7)
+	{
+		cout << "argc = " << argc << endl;
+		cout << "sServerName = " << argv[1] << endl;
+		cout << "iServerPort = " << argv[2] << endl;
+		cout << "dSampleRate = " << argv[3] << endl;
+		cout << "iBlockLength = " << argv[4] << endl;
+		cout << "iChannels = " << argv[5] << endl;
+		cout << "iBufferSize = " << argv[6] << endl;
+		fprintf(stderr, "Fehler: Syntax = ServerName ServerPort SampleRate BufferSize Channel RingBufferSize!\n");
+	}
+	
+
+	 string sServerName = argv[1];
+	 unsigned int iServerPort = atoi(argv[2]);
+	 double dSampleRate = strtod(argv[3], NULL);
+	 int iBlockLength = atoi(argv[4]);
+	 int iChannels = atoi(argv[5]);
+	 int iBufferSize = atoi(argv[6]);
+
+	cout << "Channel " << iChannels << endl;
+
+	CITANetAudioStream oNetAudioStream(iChannels, dSampleRate, iBlockLength, 1 * iBufferSize);
+	
+	ITAStreamPatchbay oPatchbay(dSampleRate, iBlockLength);
 	oPatchbay.AddInput( &oNetAudioStream );
 	int iOutputID = oPatchbay.AddOutput( 2 );
 
@@ -45,7 +55,7 @@ int main( int , char** )
 
 	try {
 
-		cout << "Will now connect to '" << g_sServerName << "' on port " << g_iServerPort << endl;
+		cout << "Will now connect to '" << sServerName << "' on port " << iServerPort << endl;
 
 		if (ITAsioInitializeDriver("ASIO MADIface USB") != ASE_OK) {
 			ITAsioFinalizeLibrary();
@@ -63,7 +73,7 @@ int main( int , char** )
 		}
 
 
-		if (ITAsioSetSampleRate((ASIOSampleRate)g_dSampleRate) != ASE_OK) {
+		if (ITAsioSetSampleRate((ASIOSampleRate)dSampleRate) != ASE_OK) {
 			ITAsioFinalizeLibrary();
 			fprintf(stderr, "Fehler: ITAsioSetSamplerate schlug fehl!\n");
 
@@ -96,11 +106,10 @@ int main( int , char** )
 			return 255;
 		}
 
-		if (!oNetAudioStream.Connect(g_sServerName, g_iServerPort))
+		if (!oNetAudioStream.Connect(sServerName, iServerPort))
 			ITA_EXCEPT1(INVALID_PARAMETER, "Could not connect to server");
-		VistaTimeUtils::Sleep(2 * 1000);
 		printf("Wiedergabe gestartet ...\n");
-		VistaTimeUtils::Sleep(20 * 1000);
+		VistaTimeUtils::Sleep(10 * 1000);
 
 		if (ITAsioStop() != ASE_OK) {
 			ITAsioFinalizeLibrary();
