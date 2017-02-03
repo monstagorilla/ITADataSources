@@ -5,11 +5,11 @@
 #include <ITAPortaudioInterface.h>
 #include <ITAStreamMultiplier1N.h>
 #include <ITAException.h>
-#include <ITAFileDatasource.h>
+#include <ITAFileDataSource.h>
 #include <ITAStreamProbe.h>
-#include <ITAStreamPatchbay.h>
+#include <ITAStreamPatchBay.h>
 #include <ITAAsioInterface.h>
-#include <VistaBase\VistaTimeUtils.h>
+#include <VistaBase/VistaTimeUtils.h>
 
 using namespace std;
 

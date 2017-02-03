@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cmath>
 #include <string>
 
 #include <VistaInterProcComm/Concurrency/VistaThread.h>
@@ -105,7 +106,7 @@ int main( int , char** )
 		vstr::out() << "[ Client ] Client sending data now." << endl;
 		vector< char > vdData( g_lDataSize + 4 );
 		int* piDataSize = ( int* ) &vdData[ 0 ];
-		*piDataSize = unsigned int( g_lDataSize ); // Send data size as first block
+		*piDataSize = (unsigned int)( g_lDataSize ); // Send data size as first block
 		vdData[ 1 * sizeof( int ) + 0 ] = 1; // First entry one (just for fun)
 		vdData[ vdData.size() - 2 ] = -1; // Second last entry -1 (just for fun)
 		void* pData = ( void* ) &vdData[ 0 ];

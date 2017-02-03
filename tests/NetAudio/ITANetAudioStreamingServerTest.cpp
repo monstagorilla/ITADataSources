@@ -5,7 +5,7 @@
 #include <ITANetAudioServer.h>
 #include <ITAStreamFunctionGenerator.h>
 #include <ITAStreamMultiplier1N.h>
-#include <ITAFileDatasource.h>
+#include <ITAFileDataSource.h>
 
 using namespace std;
 

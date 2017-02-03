@@ -38,14 +38,16 @@ vista_create_default_info_file( ITANetAudioStreamingServerTest )
 set_property( TARGET ITANetAudioStreamingServerTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
 
 
-add_executable( ITANetAudioStreamingClientTest ITANetAudioStreamingClientTest.cpp )
-target_link_libraries( ITANetAudioStreamingClientTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+if( WIN32 ) # uses ASIO
+	add_executable( ITANetAudioStreamingClientTest ITANetAudioStreamingClientTest.cpp )
+	target_link_libraries( ITANetAudioStreamingClientTest ${VISTA_USE_PACKAGE_LIBRARIES} )
 
-vista_configure_app( ITANetAudioStreamingClientTest )
-vista_install( ITANetAudioStreamingClientTest )
-vista_create_default_info_file( ITANetAudioStreamingClientTest )
+	vista_configure_app( ITANetAudioStreamingClientTest )
+	vista_install( ITANetAudioStreamingClientTest )
+	vista_create_default_info_file( ITANetAudioStreamingClientTest )
 
-set_property( TARGET ITANetAudioStreamingClientTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+	set_property( TARGET ITANetAudioStreamingClientTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+endif( )
 
 add_executable( ITANetAudioTest ITANetAudioTest.cpp )
 target_link_libraries( ITANetAudioTest ${VISTA_USE_PACKAGE_LIBRARIES} )

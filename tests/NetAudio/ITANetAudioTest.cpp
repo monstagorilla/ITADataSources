@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include <string>
 
@@ -7,11 +8,10 @@
 #include <ITAPortaudioInterface.h>
 #include <ITAStreamFunctionGenerator.h>
 #include <ITAStreamMultiplier1N.h>
-#include <ITAFileDatasource.h>
 #include <ITAException.h>
-#include <ITAFileDatasource.h>
+#include <ITAFileDataSource.h>
 #include <ITAStreamProbe.h>
-#include <ITAStreamPatchbay.h>
+#include <ITAStreamPatchBay.h>
 
 #include <VistaBase/VistaStreamUtils.h>
 
