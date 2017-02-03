@@ -5,12 +5,8 @@
 #include <ITANetAudioServer.h>
 #include <ITAStreamFunctionGenerator.h>
 #include <ITAStreamMultiplier1N.h>
-<<<<<<< HEAD
 #include <ITAFileDataSource.h>
-=======
-#include <ITAFileDatasource.h>
-#include <VistaBase\VistaTimeUtils.h>
->>>>>>> 8eb8596629ad0642aaaec5a68bf1554216289863
+#include <VistaBase/VistaTimeUtils.h>
 
 using namespace std;
 
