@@ -17,12 +17,12 @@
 
 using namespace std;
 
-const static string g_sServerName = "137.226.61.67";
+const static string g_sServerName = "localhost";
 const static string g_sInputFilePath = "gershwin-mono.wav";
 const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
 const static int g_iBlockLength = 1024;
-const static int g_iChannels = 300;
+const static int g_iChannels = 257;
 
 class CServer : public VistaThread
 {
