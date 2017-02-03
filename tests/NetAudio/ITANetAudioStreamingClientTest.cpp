@@ -16,7 +16,7 @@ using namespace std;
 int main(int argc, char* argv[])
 {
 	
-	//if (argc != 7)
+	if (argc != 7)
 	{
 		cout << "argc = " << argc << endl;
 		cout << "sServerName = " << argv[1] << endl;
@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 	 int iChannels = atoi(argv[5]);
 	 int iBufferSize = atoi(argv[6]);
 
-	cout << "Channel" << iChannels << endl;
+	cout << "Channel " << iChannels << endl;
 
 	CITANetAudioStream oNetAudioStream(iChannels, dSampleRate, iBlockLength, 1 * iBufferSize);
 	
@@ -142,7 +142,6 @@ int main(int argc, char* argv[])
 	}
 
 	ITAsioFinalizeLibrary();
-
 	
 	return 0;
 }

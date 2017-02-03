@@ -6,6 +6,7 @@
 #include <ITAStreamFunctionGenerator.h>
 #include <ITAStreamMultiplier1N.h>
 #include <ITAFileDatasource.h>
+#include <VistaBase\VistaTimeUtils.h>
 
 using namespace std;
 
@@ -31,8 +32,15 @@ int main(int argc, char** argv)
 	cout << "Starting net audio server and waiting for connections on '" << sServerName << "' on port " << iServerPort << endl;
 	oStreamingServer.Start( sServerName, iServerPort );
 
-	int iKey;
-	std::cin >> iKey;
+	while (!oStreamingServer.IsClientConnected())
+	{
+		VistaTimeUtils::Sleep(100);
+	}
+	while (oStreamingServer.IsClientConnected())
+	{
+		VistaTimeUtils::Sleep(100);
+	}
 
+	VistaTimeUtils::Sleep(1000);
 	return 0;
 }

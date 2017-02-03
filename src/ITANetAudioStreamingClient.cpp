@@ -61,14 +61,19 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 
 CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 {
-	if( m_pConnection )
-	{
-		m_pMessage->ResetMessage();
-		m_pMessage->SetConnection( m_pConnection );
-		m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_CLOSE );
-		m_pMessage->WriteMessage();
-		m_pClient->Disconnect();
-	}
+	//try{
+		if (m_pConnection->GetIsOpen())
+		{
+			m_pMessage->ResetMessage();
+			m_pMessage->SetConnection(m_pConnection);
+			m_pMessage->SetMessageType(CITANetAudioProtocol::NP_CLIENT_CLOSE);
+			//m_pMessage->WriteMessage();
+			m_pClient->Disconnect();
+		}
+	//}
+	//catch (ITAException e){
+	//	std::cout << e << std::endl;
+	//}
 	delete m_pClientLogger;
 }
 
