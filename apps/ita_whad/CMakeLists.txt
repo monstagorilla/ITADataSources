@@ -6,13 +6,13 @@ include( VistaCommon )
 
 vista_use_package( ITADataSources REQUIRED FIND_DEPENDENCIES )
 
-if( TA_DATA_SOURCES_WITH_INTEGRATED_ASIO )
+if( ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO )
 	add_definitions( "-DITA_WHAD_WITH_ASIO" )
-endif( TA_DATA_SOURCES_WITH_INTEGRATED_ASIO )
+endif( )
 
-if( TA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO )
+if( ITA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO )
 	add_definitions( "-DITA_WHAD_WITH_PORTAUDIO" )
-endif( TA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO )
+endif( )
 
 add_executable( ita_whad main.cpp )
 target_link_libraries( ita_whad ${VISTA_USE_PACKAGE_LIBRARIES} )
