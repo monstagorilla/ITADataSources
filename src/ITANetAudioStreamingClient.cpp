@@ -18,6 +18,7 @@ struct ITAClientLog : public ITALogDataBase
 		os << "\t" << "WorldTimeStamp";
 		os << "\t" << "ProtocolStatus";
 		os << "\t" << "FreeSamples";
+		os << "\t" << "Channel";
 		os << std::endl;
 		return os;
 	};
@@ -28,6 +29,7 @@ struct ITAClientLog : public ITALogDataBase
 		os << "\t" << std::setprecision( 12 ) << dWorldTimeStamp;
 		os << "\t" << iProtocolStatus;
 		os << "\t" << iFreeSamples;
+		os << "\t" << iChannel;
 		os << std::endl;
 		return os;
 	};
@@ -36,6 +38,7 @@ struct ITAClientLog : public ITALogDataBase
 	double dWorldTimeStamp;
 	int iProtocolStatus; //!< ... usw
 	int iFreeSamples;
+	int iChannel;
 
 };
 
@@ -53,8 +56,10 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	m_oParams.iChannels = pParent->GetNumberOfChannels();
 	m_oParams.dSampleRate = pParent->GetSampleRate();
 	m_oParams.iBlockSize = pParent->GetBlocklength();
+
+	std::string paras = std::string("NetAudioLogClient") + std::string("_BS") + std::to_string(pParent->GetBlocklength()) + std::string("_Ch") + std::to_string(pParent->GetNumberOfChannels()) + std::string(".txt");
 	m_pClientLogger = new ITABufferedDataLoggerImplClient( );
-	m_pClientLogger->setOutputFile("NetAudioLogClient.txt");
+	m_pClientLogger->setOutputFile(paras);
 	iStreamingBlockId = 0;
 	m_pMessage = new CITANetAudioMessage( VistaSerializingToolset::SWAPS_MULTIBYTE_VALUES );
 }
@@ -67,8 +72,9 @@ CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 			m_pMessage->ResetMessage();
 			m_pMessage->SetConnection(m_pConnection);
 			m_pMessage->SetMessageType(CITANetAudioProtocol::NP_CLIENT_CLOSE);
-			//m_pMessage->WriteMessage();
+			m_pMessage->WriteMessage();
 			m_pClient->Disconnect();
+			//Disconnect();
 		}
 	//}
 	//catch (ITAException e){
@@ -159,6 +165,7 @@ bool CITANetAudioStreamingClient::LoopBody()
 	case CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE :
 		break;
 	}
+	oLog.iChannel = m_pStream->GetNumberOfChannels();
 	oLog.iProtocolStatus = iAnswerType;
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
 	m_pClientLogger->log( oLog );
@@ -180,7 +187,7 @@ void CITANetAudioStreamingClient::Disconnect()
 	m_bStopIndicated = true;
 	StopGently( true );
 
-	delete m_pConnection;
+	//delete m_pConnection;
 	m_pConnection = NULL;
 
 	m_bStopIndicated = false;

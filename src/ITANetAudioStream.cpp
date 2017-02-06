@@ -137,15 +137,18 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	m_iStreamingStatus = STOPPED;
 
 	// Logging
+	std::string paras = std::string("NetAudioLogBaseData") + std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string(".txt");
 	m_pAudioLogger = new ITABufferedDataLoggerImplAudio( );
-	m_pAudioLogger->setOutputFile( "NetAudioLogBaseData.txt" );
+	m_pAudioLogger->setOutputFile(paras);
 
+	paras = std::string("NetAudioLogStream") + std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string(".txt");
 	m_pStreamLogger = new ITABufferedDataLoggerImplStream();
-	m_pStreamLogger->setOutputFile( "NetAudioLogStream.txt" );
+	m_pStreamLogger->setOutputFile(paras);
 	iAudioStreamingBlockID = 0;
 
+	paras = std::string("NetAudioLogNet") + std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string(".txt");
 	m_pNetLogger = new ITABufferedDataLoggerImplNet();
-	m_pNetLogger->setOutputFile( "NetAudioLogNet.txt" );
+	m_pNetLogger->setOutputFile(paras);
 	iNetStreamingBlockID = 0;
 
 	// Logging Base Data
@@ -332,7 +335,6 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	{
 		// BufferFull
 		m_iStreamingStatus = BUFFER_OVERRUN;
-		oLog.iBufferStatus = 1;
 #if NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ NetAudio ] Buffer overrun" << std::endl;
 #endif
@@ -344,14 +346,12 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 
 		m_iStreamingStatus = BUFFER_OVERRUN;
 		m_iWriteCursor = m_iReadCursor;
-		oLog.iBufferStatus = 2;
 	}
 	else
 	{
 		// write samples into ring buffer
 		m_sfRingBuffer.cyclic_write( sfNewSamples, iNumSamples, 0, iCurrentWriteCursor );
 		m_bRingBufferFull = false;
-		oLog.iBufferStatus = 1;
 		m_iStreamingStatus = STREAMING;
 #if NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ NetAudio ] Buffer write" << std::endl;
@@ -362,9 +362,6 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 		if ( m_iWriteCursor == m_iReadCursor )
 		{
 			m_bRingBufferFull = true;
-			oLog.iBufferStatus = 1;
-
-			m_iStreamingStatus = BUFFER_OVERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
 			vstr::out() << "[ NetAudio ] Buffer overrun" << std::endl;
 #endif

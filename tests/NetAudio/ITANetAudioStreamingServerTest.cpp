@@ -41,6 +41,7 @@ int main(int argc, char** argv)
 		VistaTimeUtils::Sleep(100);
 	}
 
-	VistaTimeUtils::Sleep(1000);
+	VistaTimeUtils::Sleep(2000);
+
 	return 0;
 }
