@@ -335,7 +335,6 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	{
 		// BufferFull
 		m_iStreamingStatus = BUFFER_OVERRUN;
-		oLog.iBufferStatus = 1;
 #if NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ NetAudio ] Buffer overrun" << std::endl;
 #endif
@@ -347,14 +346,12 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 
 		m_iStreamingStatus = BUFFER_OVERRUN;
 		m_iWriteCursor = m_iReadCursor;
-		oLog.iBufferStatus = 2;
 	}
 	else
 	{
 		// write samples into ring buffer
 		m_sfRingBuffer.cyclic_write( sfNewSamples, iNumSamples, 0, iCurrentWriteCursor );
 		m_bRingBufferFull = false;
-		oLog.iBufferStatus = 1;
 		m_iStreamingStatus = STREAMING;
 #if NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ NetAudio ] Buffer write" << std::endl;
@@ -365,9 +362,6 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 		if ( m_iWriteCursor == m_iReadCursor )
 		{
 			m_bRingBufferFull = true;
-			oLog.iBufferStatus = 1;
-
-			m_iStreamingStatus = BUFFER_OVERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
 			vstr::out() << "[ NetAudio ] Buffer overrun" << std::endl;
 #endif
