@@ -61,11 +61,17 @@ int main( int, char** )
 	ITAPortaudioInterface oITAPA( 44.1e3, 1024 );
 	oITAPA.Initialize();
 	int iPANumDevices = oITAPA.GetNumDevices();
+	int iPADefaultIn = oITAPA.GetDefaultInputDevice();
+	int iPADefaultOut = oITAPA.GetDefaultOutputDevice();
 
 	cout << " ### Portaudio ### " << endl;
 	for( int i = 0; i < iPANumDevices; i++ )
 	{
-		cout << "[" << i + 1 << "] \"" << oITAPA.GetDeviceName( i ) << "\"" << endl;
+		string sExtra = "";
+		if( i == iPADefaultIn || i == iPADefaultOut )
+			sExtra = " *";
+
+		cout << "[" << i + 1 << "] \"" << oITAPA.GetDeviceName( i ) << "\"" << sExtra << endl;
 	}
 	cout << endl;
 
