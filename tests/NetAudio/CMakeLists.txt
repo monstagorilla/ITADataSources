@@ -9,6 +9,16 @@ vista_use_package( ITADataSources REQUIRED FIND_DEPENDENCIES )
 
 add_definitions(-DIEEE754_64FLOAT)
 
+add_executable( ITANetAudioStreamingPortaudioClientTest ITANetAudioStreamingPortaudioClientTest.cpp )
+target_link_libraries( ITANetAudioStreamingPortaudioClientTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+
+vista_configure_app( ITANetAudioStreamingPortaudioClientTest )
+vista_install( ITANetAudioStreamingPortaudioClientTest )
+vista_create_default_info_file( ITANetAudioStreamingPortaudioClientTest )
+
+set_property( TARGET ITANetAudioStreamingPortaudioClientTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+
+
 add_executable( ITANABufferServerTest ITANABufferServerTest.cpp )
 target_link_libraries( ITANABufferServerTest ${VISTA_USE_PACKAGE_LIBRARIES} )
 
