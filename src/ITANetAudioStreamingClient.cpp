@@ -101,8 +101,9 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 	m_pMessage->WriteStreamingParameters( m_oParams );
 	m_pMessage->WriteMessage();
 
-	m_pMessage->ReadAnswer();
-	assert( m_pMessage->GetAnswerType() == CITANetAudioProtocol::NP_SERVER_OPEN );
+	while ( !m_pMessage->ReadMessage( ) );
+	
+	assert( m_pMessage->GetMessageType( ) == CITANetAudioProtocol::NP_SERVER_OPEN );
 	bool bOK = m_pMessage->ReadBool();
 	
 	if( !bOK )
@@ -132,43 +133,45 @@ bool CITANetAudioStreamingClient::LoopBody()
 	m_pMessage->WriteInt( iFreeSamplesUntilAllowedReached );
 	m_pMessage->WriteMessage();
 
-	// Wait for answer of server
-	m_pMessage->ReadAnswer();
-	int iAnswerType = m_pMessage->GetAnswerType();
-	switch( iAnswerType )
+	// Read answer 
+	if ( m_pMessage->ReadMessage( ) )
 	{
+		int iAnswerType = m_pMessage->GetMessageType( );
+		switch ( iAnswerType )
+		{
 
-	case CITANetAudioProtocol::NP_INVALID:
-		// Something went wrong
-		vstr::err() << "Received invalid message type" << std::endl;
-		break;
+		case CITANetAudioProtocol::NP_INVALID:
+			// Something went wrong
+			vstr::err( ) << "Received invalid message type" << std::endl;
+			break;
 
-	case CITANetAudioProtocol::NP_SERVER_CLOSE:
-		Disconnect();
-		break;
+		case CITANetAudioProtocol::NP_SERVER_CLOSE:
+			Disconnect( );
+			break;
 
-	case CITANetAudioProtocol::NP_SERVER_WAITING_FOR_TRIGGER:
-		// Wait until block increment is triggered by audio context (more free samples in ring buffer)
-		m_oBlockIncrementEvent.WaitForEvent( true );
-		break;
+		case CITANetAudioProtocol::NP_SERVER_WAITING_FOR_TRIGGER:
+			// Wait until block increment is triggered by audio context (more free samples in ring buffer)
+			m_oBlockIncrementEvent.WaitForEvent( true );
+			break;
 
-	case CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES:
-		// Receive samples from net message and forward them to the stream ring buffer
+		case CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES:
+			// Receive samples from net message and forward them to the stream ring buffer
 
-		m_pMessage->ReadSampleFrame( &m_sfReceivingBuffer );
-		if ( m_pStream->GetRingBufferFreeSamples( ) >= m_sfReceivingBuffer.GetLength( ) )
-			m_pStream->Transmit( m_sfReceivingBuffer, m_sfReceivingBuffer.GetLength( ) );
-		//else 
+			m_pMessage->ReadSampleFrame( &m_sfReceivingBuffer );
+			if ( m_pStream->GetRingBufferFreeSamples( ) >= m_sfReceivingBuffer.GetLength( ) )
+				m_pStream->Transmit( m_sfReceivingBuffer, m_sfReceivingBuffer.GetLength( ) );
+			//else 
 			// Fehler
-		
-		break;
-	case CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE :
-		break;
+
+			break;
+		case CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE:
+			break;
+		}
+		oLog.iChannel = m_pStream->GetNumberOfChannels( );
+		oLog.iProtocolStatus = iAnswerType;
+		oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
+		m_pClientLogger->log( oLog );
 	}
-	oLog.iChannel = m_pStream->GetNumberOfChannels();
-	oLog.iProtocolStatus = iAnswerType;
-	oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
-	m_pClientLogger->log( oLog );
 	return true;
 }
 

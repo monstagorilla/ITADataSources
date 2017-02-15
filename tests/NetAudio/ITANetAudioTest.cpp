@@ -22,7 +22,7 @@ const static string g_sInputFilePath = "gershwin-mono.wav";
 const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
 const static int g_iBlockLength = 1024;
-const static int g_iChannels = 257;
+const static int g_iChannels = 100;
 
 class CServer : public VistaThread
 {

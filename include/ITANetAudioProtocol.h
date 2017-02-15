@@ -51,6 +51,7 @@ public:
 
 	static const int NP_INVALID = -1;
 	static const int NP_GET_VERSION_INFO = 1;
+	static const int NP_NO_MESSAGE = 2;
 
 	static const int NP_CLIENT_OPEN = 100;
 	static const int NP_CLIENT_CLOSE = 101;
