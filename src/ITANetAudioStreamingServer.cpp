@@ -72,9 +72,9 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 
 bool CITANetAudioStreamingServer::LoopBody( )
 {
+	
+	//m_pMessage->SetConnection( m_pConnection );
 	m_pMessage->ResetMessage( );
-	m_pMessage->SetConnection( m_pConnection );
-	m_pMessage->ReadMessage( );
 
 	if ( m_pMessage->ReadMessage( ) )
 	{

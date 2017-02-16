@@ -27,7 +27,7 @@ CITANetAudioMessage::CITANetAudioMessage( VistaSerializingToolset::ByteOrderSwap
 void CITANetAudioMessage::ResetMessage()
 {
 	if( m_oIncoming.GetTailSize() > 0 )
-		vstr::err() << "CITANetAudioMessage::ResetMessage() called before message was fully processed!" << std::endl;
+		//vstr::err() << "CITANetAudioMessage::ResetMessage() called before message was fully processed!" << std::endl;
 
 	// wait till sending is complete -> this prevents us
 	// from deleting the buffer while it is still being read
@@ -46,7 +46,7 @@ void CITANetAudioMessage::ResetMessage()
 
 	m_nMessageType = CITANetAudioProtocol::NP_INVALID;
 
-	m_pConnection = NULL;
+	//m_pConnection = NULL;
 
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [Preparing] (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
@@ -121,11 +121,12 @@ bool CITANetAudioMessage::ReadMessage()
 	double dTimeAfter = ITAClock::getDefaultClock( )->getTime( );
 	double DTimeDiff = dTimeAfter - dTimeBefore;
 	// TODO Timer entfernen
-	if ( nIncomingBytes < 4 )
+	if ( nIncomingBytes == -1)
 	{
 		m_nMessageType = CITANetAudioProtocol::NP_NO_MESSAGE;
 		return false;
 	}
+	nIncomingBytes = m_pConnection->WaitForIncomingData( 0 );
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] " << nIncomingBytes << " bytes incoming" << std::endl;
 #endif
@@ -144,10 +145,14 @@ bool CITANetAudioMessage::ReadMessage()
 	
 	// Receive all incoming data (potentially splitted)
 	int iBytesReceivedTotal = 0;
-	while( nMessagePayloadSize != iBytesReceivedTotal )
+	while( nMessagePayloadSize > iBytesReceivedTotal )
 	{
 		int iIncommingBytes = m_pConnection->WaitForIncomingData( 0 );
-		int iBytesReceived = m_pConnection->Receive( &m_vecIncomingBuffer[ iBytesReceivedTotal ], iIncommingBytes );
+		int iBytesReceived;
+		if ( nMessagePayloadSize < iIncommingBytes )
+			iBytesReceived = m_pConnection->Receive( &m_vecIncomingBuffer[ iBytesReceivedTotal ], nMessagePayloadSize - iBytesReceivedTotal );
+		else
+			iBytesReceived = m_pConnection->Receive( &m_vecIncomingBuffer[ iBytesReceivedTotal ], iIncommingBytes );
 		iBytesReceivedTotal += iBytesReceived;
 #if NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ CITANetAudioMessage ] " << std::setw( 3 ) << std::floor( iBytesReceivedTotal / float( nMessagePayloadSize ) * 100.0f ) << "% transmitted" << std::endl;

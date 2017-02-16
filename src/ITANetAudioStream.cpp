@@ -236,14 +236,16 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 	if( !GetIsConnected() )
 	{
 		m_sfOutputStreamBuffer[ uiChannel ].Zero( );
-		m_iStreamingStatus = STOPPED;
+		if (uiChannel == 0 )
+			m_iStreamingStatus = STOPPED;
 	}
 	else
 	{
 		if( GetIsRingBufferEmpty() )
 		{
 			m_sfOutputStreamBuffer[ uiChannel ].Zero();
-			m_iStreamingStatus = BUFFER_UNDERRUN;
+			if (uiChannel == 0 )
+				m_iStreamingStatus = BUFFER_UNDERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
 			//vstr::out() << "[ Stream ] Buffer underrun" << std::endl;
 #endif
@@ -254,7 +256,8 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 			{
 				// @todo: fade out
 				m_sfRingBuffer[ uiChannel ].Zero();
-				m_iStreamingStatus = BUFFER_UNDERRUN;
+				if (uiChannel == 0 )
+					m_iStreamingStatus = BUFFER_UNDERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
 				//vstr::out() << "[ Stream ] Buffer underrun" << std::endl;
 #endif
@@ -263,7 +266,8 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 			{
 				// Normal behaviour (if everything is OK with ring buffer status)
 				m_sfRingBuffer[ uiChannel ].cyclic_read( m_sfOutputStreamBuffer[ uiChannel ].GetData(), GetBlocklength(), m_iReadCursor );
-				m_iStreamingStatus = STREAMING;
+				if ( uiChannel == 0 )
+					m_iStreamingStatus = STREAMING;
 #if NET_AUDIO_SHOW_TRAFFIC
 				vstr::out() << "[ Stream ] Streaming" << std::endl;
 #endif
@@ -274,6 +278,7 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 	if( uiChannel == 0 )
 		m_dLastStreamingTimeCode = pInfo->dTimecode;
 
+
 	return m_sfOutputStreamBuffer[uiChannel].GetData();
 }
 
@@ -283,26 +288,26 @@ void CITANetAudioStream::IncrementBlockPointer()
 	int iSavedSample = GetRingBufferSize( ) - GetRingBufferFreeSamples( );
 	if ( !GetIsConnected( ) )
 	{
-		m_iStreamingStatus = STOPPED;
+		//m_iStreamingStatus = STOPPED;
 	} else if ( iSavedSample >= int( GetBlocklength( ) ) )
 	{
 		//es wurden Samples abgespielt
 		m_iReadCursor = ( m_iReadCursor + m_sfOutputStreamBuffer.GetLength() ) % m_sfRingBuffer.GetLength();
-		m_iStreamingStatus = STREAMING;
+		//m_iStreamingStatus = STREAMING;
 #if NET_AUDIO_SHOW_TRAFFIC
 		//vstr::out() << "[ Stream ] Streaming" << std::endl;
 #endif
 	}
 	else if ( GetIsRingBufferEmpty( ) )
 	{
-		m_iStreamingStatus = BUFFER_UNDERRUN;
+		//m_iStreamingStatus = BUFFER_UNDERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
 		//vstr::out() << "[ Stream ] Buffer underrun" << std::endl;
 #endif
 	}
 	else
 	{
-		m_iStreamingStatus = BUFFER_UNDERRUN;
+		//m_iStreamingStatus = BUFFER_UNDERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
 		//vstr::out() << "[ Stream ] Buffer underrun" << std::endl;
 #endif
@@ -310,7 +315,7 @@ void CITANetAudioStream::IncrementBlockPointer()
 	}
 	m_bRingBufferFull = false;
 
-	ITAStreamLog oLog;
+	ITAStreamLog oLog;	
 	oLog.iStreamingStatus = m_iStreamingStatus;
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
 	oLog.dStreamingTimeCode = m_dLastStreamingTimeCode;
