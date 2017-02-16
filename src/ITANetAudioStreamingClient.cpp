@@ -54,8 +54,9 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	m_pClient = new CITANetAudioClient();
 
 	m_oParams.iChannels = pParent->GetNumberOfChannels();
-	m_oParams.dSampleRate = pParent->GetSampleRate();
-	m_oParams.iBlockSize = pParent->GetBlocklength();
+	m_oParams.dSampleRate = pParent->GetSampleRate( );
+	m_oParams.iBlockSize = pParent->GetBlocklength( );
+	m_oParams.iBufferSize = pParent->GetRingBufferSize( );
 
 	std::string paras = std::string("NetAudioLogClient") + std::string("_BS") + std::to_string(pParent->GetBlocklength()) + std::string("_Ch") + std::to_string(pParent->GetNumberOfChannels()) + std::string(".txt");
 	m_pClientLogger = new ITABufferedDataLoggerImplClient( );

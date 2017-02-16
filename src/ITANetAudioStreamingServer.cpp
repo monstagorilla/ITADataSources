@@ -47,6 +47,7 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 	CITANetAudioProtocol::StreamingParameters oClientParams = m_pMessage->ReadStreamingParameters( );
 
 	bool bOK = false;
+	m_oServerParams.iBufferSize = oClientParams.iBufferSize;
 	if ( m_oServerParams == oClientParams )
 	{
 		bOK = true;

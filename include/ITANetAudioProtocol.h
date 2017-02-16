@@ -72,17 +72,19 @@ public:
 		int iChannels;
 		double dSampleRate;
 		int iBlockSize;
+		int iBufferSize;
 
 		inline StreamingParameters()
 		{
 			iChannels = 0;
 			dSampleRate = 0.0f;
 			iBlockSize = 0;
+			iBufferSize = 0;
 		};
 
 		inline bool operator==( const StreamingParameters& rhs )
 		{
-			if( ( iChannels == rhs.iChannels ) && ( dSampleRate == rhs.dSampleRate ) && ( iBlockSize == rhs.iBlockSize ) )
+			if ( ( iChannels == rhs.iChannels ) && ( dSampleRate == rhs.dSampleRate ) && ( iBlockSize == rhs.iBlockSize ) && ( iBufferSize == rhs.iBufferSize ) )
 				return true;
 			else
 				return false;
