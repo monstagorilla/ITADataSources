@@ -56,7 +56,7 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	m_oParams.iChannels = pParent->GetNumberOfChannels();
 	m_oParams.dSampleRate = pParent->GetSampleRate( );
 	m_oParams.iBlockSize = pParent->GetBlocklength( );
-	m_oParams.iBufferSize = pParent->GetRingBufferSize( );
+	m_oParams.iRingBufferSize = pParent->GetRingBufferSize( );
 
 	std::string paras = std::string("NetAudioLogClient") + std::string("_BS") + std::to_string(pParent->GetBlocklength()) + std::string("_Ch") + std::to_string(pParent->GetNumberOfChannels()) + std::string(".txt");
 	m_pClientLogger = new ITABufferedDataLoggerImplClient( );
@@ -102,7 +102,7 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 	m_pMessage->WriteStreamingParameters( m_oParams );
 	m_pMessage->WriteMessage();
 
-	while ( !m_pMessage->ReadMessage( ) );
+	while ( !m_pMessage->ReadMessage( 0 ) );
 	
 	assert( m_pMessage->GetMessageType( ) == CITANetAudioProtocol::NP_SERVER_OPEN );
 	bool bOK = m_pMessage->ReadBool();
@@ -125,55 +125,41 @@ bool CITANetAudioStreamingClient::LoopBody()
 
 	// Send message to server that samples can be received
 	m_pMessage->ResetMessage();
-	m_pMessage->SetConnection( m_pConnection );
-	m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_WAITING_FOR_SAMPLES );
-	int iFreeSamplesUntilAllowedReached = m_pStream->GetAllowedLatencySamples() - m_pStream->GetRingBufferAvailableSamples();
-	oLog.iFreeSamples = iFreeSamplesUntilAllowedReached;
-	if( iFreeSamplesUntilAllowedReached < 0 )
-		iFreeSamplesUntilAllowedReached = 0;
-	m_pMessage->WriteInt( iFreeSamplesUntilAllowedReached );
-	m_pMessage->WriteMessage();
 
 	// Read answer 
-	if ( m_pMessage->ReadMessage( ) )
+	if ( m_pMessage->ReadMessage( 0 ) )
 	{
-		int iAnswerType = m_pMessage->GetMessageType( );
-		switch ( iAnswerType )
+		int iMsgType = m_pMessage->GetMessageType( );
+		switch ( iMsgType )
 		{
+			case CITANetAudioProtocol::NP_SERVER_SENDING_SAMPLES:
+				// Receive samples from net message and forward them to the stream ring buffer
 
-		case CITANetAudioProtocol::NP_INVALID:
-			// Something went wrong
-			vstr::err( ) << "Received invalid message type" << std::endl;
-			break;
+				m_pMessage->ReadSampleFrame( &m_sfReceivingBuffer );
+				if ( m_pStream->GetRingBufferFreeSamples( ) >= m_sfReceivingBuffer.GetLength( ) )
+					m_pStream->Transmit( m_sfReceivingBuffer, m_sfReceivingBuffer.GetLength( ) );
+				//else 
+				// Fehler
 
-		case CITANetAudioProtocol::NP_SERVER_CLOSE:
-			Disconnect( );
-			break;
-
-		case CITANetAudioProtocol::NP_SERVER_WAITING_FOR_TRIGGER:
-			// Wait until block increment is triggered by audio context (more free samples in ring buffer)
-			m_oBlockIncrementEvent.WaitForEvent( true );
-			break;
-
-		case CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES:
-			// Receive samples from net message and forward them to the stream ring buffer
-
-			m_pMessage->ReadSampleFrame( &m_sfReceivingBuffer );
-			if ( m_pStream->GetRingBufferFreeSamples( ) >= m_sfReceivingBuffer.GetLength( ) )
-				m_pStream->Transmit( m_sfReceivingBuffer, m_sfReceivingBuffer.GetLength( ) );
-			//else 
-			// Fehler
-
-			break;
-		case CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE:
-			break;
+				break;
+			case CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES:
+				m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES );
+				m_pMessage->WriteInt( m_pStream->GetRingBufferFreeSamples( ) );
+				m_pMessage->WriteMessage( );
+				break;
+			case CITANetAudioProtocol::NP_SERVER_CLOSE:
+				Disconnect( );
+				break;
+			default:
+				vstr::out( ) << "[ITANetAudioStreamingServer] Unkown protocol type : " << iMsgType << std::endl;
+				break;
 		}
 		oLog.iChannel = m_pStream->GetNumberOfChannels( );
-		oLog.iProtocolStatus = iAnswerType;
+		oLog.iProtocolStatus = iMsgType;
 		oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
 		m_pClientLogger->log( oLog );
 	}
-	return true;
+	return false;
 }
 
 void CITANetAudioStreamingClient::TriggerBlockIncrement()

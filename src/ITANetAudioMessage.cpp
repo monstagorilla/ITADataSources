@@ -44,7 +44,7 @@ void CITANetAudioMessage::ResetMessage()
 
 	m_oIncoming.SetBuffer( NULL, 0 );
 
-	m_nMessageType = CITANetAudioProtocol::NP_INVALID;
+	m_nMessageType = -1;
 
 	//m_pConnection = NULL;
 
@@ -110,22 +110,20 @@ void CITANetAudioMessage::WriteMessage()
 }
 
 
-bool CITANetAudioMessage::ReadMessage()
+bool CITANetAudioMessage::ReadMessage( int timeout)
 {
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] Waiting for incoming data" << std::endl;
 #endif
 	double dTimeBefore = ITAClock::getDefaultClock( )->getTime( );
 	// WaitForIncomming Data int in ca ms
-	long nIncomingBytes = m_pConnection->WaitForIncomingData( 1 );
+	long nIncomingBytes = m_pConnection->WaitForIncomingData( timeout );
 	double dTimeAfter = ITAClock::getDefaultClock( )->getTime( );
 	double DTimeDiff = dTimeAfter - dTimeBefore;
 	// TODO Timer entfernen
 	if ( nIncomingBytes == -1)
-	{
-		m_nMessageType = CITANetAudioProtocol::NP_NO_MESSAGE;
 		return false;
-	}
+
 	nIncomingBytes = m_pConnection->WaitForIncomingData( 0 );
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] " << nIncomingBytes << " bytes incoming" << std::endl;
@@ -318,7 +316,7 @@ CITANetAudioProtocol::StreamingParameters CITANetAudioMessage::ReadStreamingPara
 	oParams.iChannels = ReadInt();
 	oParams.dSampleRate = ReadDouble( );
 	oParams.iBlockSize = ReadInt( );
-	oParams.iBufferSize = ReadInt( );
+	oParams.iRingBufferSize = ReadInt( );
 
 	return oParams;
 }
@@ -328,7 +326,7 @@ void CITANetAudioMessage::WriteStreamingParameters( const CITANetAudioProtocol::
 	WriteInt( oParams.iChannels );
 	WriteDouble( oParams.dSampleRate );
 	WriteInt( oParams.iBlockSize );
-	WriteInt( oParams.iBufferSize );
+	WriteInt( oParams.iRingBufferSize );
 }
 
 int CITANetAudioMessage::ReadRingBufferSize()

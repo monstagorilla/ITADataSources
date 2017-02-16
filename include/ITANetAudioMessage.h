@@ -56,7 +56,7 @@ public:
 
 	void WriteMessage();
 	// Returns false if no incomming data
-	bool ReadMessage();
+	bool ReadMessage( int timeout );
 
 	void ResetMessage();
 

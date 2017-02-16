@@ -1,10 +1,10 @@
 %% Einlesen der Logs
 close all;
 clear all;
-NetAudioLogNet = readtable( 'NetAudioLogNet.txt', 'FileType', 'text', 'Delimiter', '\t');
-NetAudioLogStream = readtable( 'NetAudioLogStream.txt', 'FileType', 'text', 'Delimiter', '\t')
-NetAudioLogClient = readtable( 'NetAudioLogClient.txt', 'FileType', 'text', 'Delimiter', '\t' );
-NetAudioLogBaseData = readtable( 'NetAudioLogBaseData.txt', 'FileType', 'text', 'Delimiter', '\t' );
+NetAudioLogNet = readtable( 'NetAudioLogNet_BS1024_Ch2.txt', 'FileType', 'text', 'Delimiter', '\t');
+NetAudioLogStream = readtable( 'NetAudioLogStream_BS1024_Ch2.txt', 'FileType', 'text', 'Delimiter', '\t')
+NetAudioLogClient = readtable( 'NetAudioLogClient_BS1024_Ch2.txt', 'FileType', 'text', 'Delimiter', '\t' );
+NetAudioLogBaseData = readtable( 'NetAudioLogBaseData_BS1024_Ch2.txt', 'FileType', 'text', 'Delimiter', '\t' );
 
 % Save Base Data
 Channel = NetAudioLogBaseData.Channel(1);

@@ -31,9 +31,8 @@ int main(int argc, char* argv[])
 	int iChannels = atoi(argv[5]);
 	int iBufferSize = atoi(argv[6]);
 	
-	CITANetAudioStream oNetAudioStream( iChannels, dSampleRate, iBlockLength, iBufferSize );
-	
-	ITAStreamPatchbay oPatchbay( dSampleRate, iBufferSize );
+	CITANetAudioStream oNetAudioStream( iChannels, dSampleRate, iBlockLength, iBlockLength*16 );
+	ITAStreamPatchbay oPatchbay( dSampleRate, iBlockLength );
 	oPatchbay.AddInput( &oNetAudioStream );
 	int iOutputID = oPatchbay.AddOutput( 2 );
 	int N = int( oNetAudioStream.GetNumberOfChannels( ) );
@@ -61,7 +60,7 @@ int main(int argc, char* argv[])
 	}
 	cout << "Connected." << endl;
 	// Playback
-	float fSeconds = 20.0f; // 15min
+	float fSeconds = 10.0f; // 15min
 	cout << "Playback started, waiting " << fSeconds << " seconds" << endl;
 	ITAPA.Sleep( fSeconds ); // blocking
 	cout << "Done." << endl;
