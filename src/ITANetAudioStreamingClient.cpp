@@ -75,7 +75,6 @@ CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 			m_pMessage->SetMessageType(CITANetAudioProtocol::NP_CLIENT_CLOSE);
 			m_pMessage->WriteMessage();
 			m_pClient->Disconnect();
-			//Disconnect();
 		}
 	//}
 	//catch (ITAException e){

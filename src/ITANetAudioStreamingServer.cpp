@@ -7,6 +7,7 @@
 #include <ITANetAudioMessage.h>
 #include <ITAException.h>
 #include <ITAStreamInfo.h>
+#include <ITAClock.h>
 
 // Vista includes
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
@@ -15,10 +16,41 @@
 #include <VistaBase/VistaTimeUtils.h>
 #include <VistaInterProcComm/IPNet/VistaIPAddress.h>
 #include <VistaBase/VistaStreamUtils.h>
+#include <ITADataLog.h>
 
 // STL
 #include <cmath>
 #include <cassert>
+
+struct ITAServerLog : public ITALogDataBase
+{
+	inline static std::ostream& outputDesc( std::ostream& os )
+	{
+		os << "BlockId";
+		os << "\t" << "WorldTimeStamp";
+		os << "\t" << "ProtocolStatus";
+		os << "\t" << "FreeSamples";
+		os << std::endl;
+		return os;
+	};
+
+	inline std::ostream& outputData( std::ostream& os ) const
+	{
+		os << uiBlockId;
+		os << "\t" << std::setprecision( 12 ) << dWorldTimeStamp;
+		os << "\t" << iProtocolStatus;
+		os << "\t" << iFreeSamples;
+		os << std::endl;
+		return os;
+	};
+
+	unsigned int uiBlockId; //!< Block identifier (audio streaming)
+	double dWorldTimeStamp;
+	int iProtocolStatus; //!< ... usw
+	int iFreeSamples;
+};
+
+class ITABufferedDataLoggerImplServer : public ITABufferedDataLogger < ITAServerLog > {};
 
 CITANetAudioStreamingServer::CITANetAudioStreamingServer( )
 : m_pInputStream( NULL )
@@ -26,6 +58,7 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer( )
 , m_pConnection( NULL )
 , m_pNetAudioServer( new CITANetAudioServer( ) )
 {
+	iServerBlockId = 0;
 }
 
 bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort )
@@ -48,6 +81,7 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 
 	bool bOK = false;
 	m_oServerParams.iRingBufferSize = oClientParams.iRingBufferSize;
+	m_iClientRingBufferFreeSamples = m_oServerParams.iRingBufferSize;
 	if ( m_oServerParams == oClientParams )
 	{
 		bOK = true;
@@ -59,6 +93,10 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 		vstr::out() << "[ITANetAudioStreamingServer] Server and client parameters mismatch detected. Will notify client and stop." << std::endl;
 #endif
 	}
+
+	std::string paras = std::string( "NetAudioLogServer" ) + std::string( "_BS" ) + std::to_string( m_oServerParams.iBlockSize ) + std::string( "_Ch" ) + std::to_string( m_oServerParams.iChannels ) + std::string( ".txt" );
+	m_pServerLogger = new ITABufferedDataLoggerImplServer( );
+	m_pServerLogger->setOutputFile( paras );
 
 	m_pMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_OPEN );
 	m_pMessage->WriteBool( bOK );
@@ -72,6 +110,9 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 
 bool CITANetAudioStreamingServer::LoopBody( )
 {
+	ITAServerLog oLog;
+	oLog.uiBlockId = ++iServerBlockId;
+	int iMsgType;
 	// Sending Samples 
 	if ( m_iClientRingBufferFreeSamples >= int( m_pInputStream->GetBlocklength( ) ) )
 	{
@@ -85,7 +126,8 @@ bool CITANetAudioStreamingServer::LoopBody( )
 				m_sfTempTransmitBuffer[ i ].write( pfData, m_sfTempTransmitBuffer.GetLength( ) );
 		}
 		m_pInputStream->IncrementBlockPointer( );
-		m_pMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_SENDING_SAMPLES );
+		iMsgType = CITANetAudioProtocol::NP_SERVER_SENDING_SAMPLES;
+		m_pMessage->SetMessageType( iMsgType );
 		m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
 		m_pMessage->WriteMessage( ); 
 		m_iClientRingBufferFreeSamples -= m_sfTempTransmitBuffer.GetLength( );
@@ -97,7 +139,8 @@ bool CITANetAudioStreamingServer::LoopBody( )
 	else
 	{
 		// Waiting for Trigger
-		m_pMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES );
+		iMsgType = CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES;
+		m_pMessage->SetMessageType( iMsgType );
 		m_pMessage->WriteMessage( );
 
 #ifdef NET_AUDIO_SHOW_TRAFFIC
@@ -105,6 +148,10 @@ bool CITANetAudioStreamingServer::LoopBody( )
 #endif
 	}
 
+	oLog.iFreeSamples = m_iClientRingBufferFreeSamples;
+	oLog.iProtocolStatus = iMsgType;
+	oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
+	m_pServerLogger->log( oLog );
 
 	// Try to Empfange Daten
 	//m_pMessage->SetConnection( m_pConnection );
@@ -112,6 +159,8 @@ bool CITANetAudioStreamingServer::LoopBody( )
 
 	if ( m_pMessage->ReadMessage( 1 ) )
 	{
+		ITAServerLog oLog;
+		oLog.uiBlockId = ++iServerBlockId;
 		int iMsgType = m_pMessage->GetMessageType( );
 		switch ( iMsgType )
 		{
@@ -127,7 +176,7 @@ bool CITANetAudioStreamingServer::LoopBody( )
 				StopGently( false );
 				m_pConnection = NULL;
 				Stop( );
-				return false;
+				break;
 			}
 			default:
 			{
@@ -135,8 +184,12 @@ bool CITANetAudioStreamingServer::LoopBody( )
 				break;
 			}
 		}
-
+		oLog.iFreeSamples = m_iClientRingBufferFreeSamples;
+		oLog.iProtocolStatus = iMsgType;
+		oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
+		m_pServerLogger->log( oLog );
 	}
+
 
 	return false;
 }
@@ -190,5 +243,6 @@ int CITANetAudioStreamingServer::GetNetworkPort( ) const
 
 void CITANetAudioStreamingServer::Stop( )
 {
+	delete m_pServerLogger;
 	m_pNetAudioServer->Stop( );
 }
