@@ -76,11 +76,11 @@ CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 			m_pMessage->WriteMessage();
 			m_pClient->Disconnect();
 		}
+		delete m_pClientLogger;
 	//}
 	//catch (ITAException e){
 	//	std::cout << e << std::endl;
 	//}
-	delete m_pClientLogger;
 }
 
 bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPort )
@@ -99,7 +99,8 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 	// Validate streaming parameters of server and client
 	m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_OPEN );
 	m_pMessage->WriteStreamingParameters( m_oParams );
-	m_pMessage->WriteMessage();
+	m_pMessage->WriteMessage( );
+	m_pMessage->ResetMessage( );
 
 	while ( !m_pMessage->ReadMessage( 0 ) );
 	
@@ -123,8 +124,8 @@ bool CITANetAudioStreamingClient::LoopBody()
 		return true;
 
 	// Send message to server that samples can be received
-	m_pMessage->ResetMessage();
 
+	m_pMessage->ResetMessage( );
 	// Read answer 
 	if ( m_pMessage->ReadMessage( 0 ) )
 	{

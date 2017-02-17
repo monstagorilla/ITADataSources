@@ -18,8 +18,20 @@ for k=2:numel(NetAudioLogServer)
 end
 NetAudioLogServerTab.WorldTimeStamp = NetAudioLogServerTab.WorldTimeStamp - minTime;
 
+% NetAudioLogClient = dir(['NetAudioLogClient_BS' BlockSize '*.txt']);
+% NetAudioLogClient = {NetAudioLogClient.name};
+% NetAudioLogClientTab = readtable(NetAudioLogClient{1}, 'FileType', 'text', 'Delimiter', '\t');
+% minTime = NetAudioLogClientTab.WorldTimeStamp(1);
+% maxTime = NetAudioLogClientTab.WorldTimeStamp(end);
+% for k=2:numel(NetAudioLogClient) 
+%     temp = readtable(NetAudioLogClient{k}, 'FileType', 'text', 'Delimiter', '\t');
+%     NetAudioLogClientTab = [NetAudioLogClientTab; temp];
+%     minTime = min(minTime, temp.WorldTimeStamp(1));
+%     maxTime = max(maxTime, temp.WorldTimeStamp(end));
+% end
+
+
 %% Protocolstatus ersetzten
-hallo = [1 2; 3 4 ];
 Protocol = {'100', 'NP_CLIENT_OPEN';...
     '101', 'NP_CLIENT_CLOSE';...
     '111', 'NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES';...
@@ -36,4 +48,4 @@ end
 %% Plot Protocol
 plot(NetAudioLogServerTab.WorldTimeStamp, NetAudioLogServerTab.ProtocolStatus)
 hold on;
-plot(NetAudioLogServerTab.WorldTimeStamp, NetAudioLogServerTab.FreeSamples)
+%plot(NetAudioLogServerTab.WorldTimeStamp, NetAudioLogServerTab.FreeSamples)

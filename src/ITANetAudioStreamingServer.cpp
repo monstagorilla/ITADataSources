@@ -110,6 +110,7 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 
 bool CITANetAudioStreamingServer::LoopBody( )
 {
+	m_pMessage->ResetMessage( );
 	ITAServerLog oLog;
 	oLog.uiBlockId = ++iServerBlockId;
 	int iMsgType;

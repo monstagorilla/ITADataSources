@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 	ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.stream.wav" );
 	ITAPortaudioInterface ITAPA( dSampleRate, iBufferSize );
 	ITAPA.Initialize();
-	ITAPA.SetPlaybackDatasource( &oProbe );
+	ITAPA.SetPlaybackDatasource( &oNetAudioStream );
 	ITAPA.Open();
 	ITAPA.Start(); 
 	cout << "Waiting 3 seconds (net audio stream not connected and returning zeros)" << endl;
