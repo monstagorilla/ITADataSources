@@ -72,10 +72,10 @@ vista_install_all_dlls( bin )
 set_property( TARGET ITANetAudioTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
 
 if( NOT DEFINED ITA_NETAUDIO_SERVER_WITH_TESTS )
-    set( ITA_NETAUDIO_SERVER_WITH_TESTS "default value" CACHE STRING "localhost 12480 44100 1024 2" )
+    set( ITA_NETAUDIO_SERVER_WITH_TESTS "default value" CACHE STRING "localhost 12480 44100 32 2" )
 endif( )
 if( NOT DEFINED ITA_NETAUDIO_CLIENT_WITH_TESTS )
-    set( ITA_NETAUDIO_CLIENT_WITH_TESTS "default value" CACHE STRING "localhost 12480 44100 1024 2 1024" )
+    set( ITA_NETAUDIO_CLIENT_WITH_TESTS "default value" CACHE STRING "localhost 12480 44100 32 2 3200" )
 endif( )
 
 vista_set_target_msvc_arguments( ITANetAudioStreamingPortaudioClientTest ITA_NETAUDIO_CLIENT_WITH_TESTS )

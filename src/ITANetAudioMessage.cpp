@@ -124,7 +124,8 @@ bool CITANetAudioMessage::ReadMessage( int timeout)
 	if ( nIncomingBytes == -1)
 		return false;
 
-	nIncomingBytes = m_pConnection->WaitForIncomingData( 0 );
+	if (timeout != 0)
+		nIncomingBytes = m_pConnection->WaitForIncomingData( 0 );
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] " << nIncomingBytes << " bytes incoming" << std::endl;
 #endif
@@ -135,8 +136,10 @@ bool CITANetAudioMessage::ReadMessage( int timeout)
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] Expecting " << nMessagePayloadSize << " bytes message payload" << std::endl;
 #endif
+	if (nMessagePayloadSize <= 2 * sizeof(VistaType::sint32))
+		int i = 34;
 	// we need at least the two protocol ints
-	assert( nMessagePayloadSize >= 2 * sizeof( VistaType::sint32 ) );
+	//assert( nMessagePayloadSize >= 2 * sizeof( VistaType::sint32 ) );
 
 	if( nMessagePayloadSize > ( int ) m_vecIncomingBuffer.size() )
 		m_vecIncomingBuffer.resize( nMessagePayloadSize );
@@ -165,6 +168,7 @@ bool CITANetAudioMessage::ReadMessage( int timeout)
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] Finished receiving " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
 #endif
+	return true;
 }
 
 int CITANetAudioMessage::GetMessageType() const

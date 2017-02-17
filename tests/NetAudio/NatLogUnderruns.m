@@ -2,7 +2,7 @@
 close all;
 clear all;
 ChannelVec = [2];
-BlockSize = '1024';
+BlockSize = '32';
 NetAudioLogClient = dir(['NetAudioLogClient_BS' BlockSize '*.txt']);
 NetAudioLogClient = {NetAudioLogClient.name};
 NetAudioLogClientTab = readtable(NetAudioLogClient{1}, 'FileType', 'text', 'Delimiter', '\t');
