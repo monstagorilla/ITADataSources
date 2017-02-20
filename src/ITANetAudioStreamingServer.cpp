@@ -59,6 +59,7 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer( )
 , m_pNetAudioServer( new CITANetAudioServer( ) )
 {
 	iServerBlockId = 0;
+	m_iClientRingBufferFreeSamples = 0;
 }
 
 bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort )
@@ -124,28 +125,27 @@ bool CITANetAudioStreamingServer::LoopBody( )
 		for ( int i = 0; i < int( m_pInputStream->GetNumberOfChannels( ) ); i++ )
 		{
 			ITAStreamInfo oStreamInfo;
-			oStreamInfo.nSamples = m_sfTempTransmitBuffer.GetLength( );
+			oStreamInfo.nSamples = m_iClientRingBufferFreeSamples;
 			const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
 			if ( pfData != 0 )
-				m_sfTempTransmitBuffer[ i ].write( pfData, m_sfTempTransmitBuffer.GetLength( ) );
+				m_sfTempTransmitBuffer[ i ].write( pfData, m_iClientRingBufferFreeSamples );
 		}
 		m_pInputStream->IncrementBlockPointer( );
 		iMsgType = CITANetAudioProtocol::NP_SERVER_SENDING_SAMPLES;
 		m_pMessage->SetMessageType( iMsgType );
 		m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
 		m_pMessage->WriteMessage( );
-		m_iClientRingBufferFreeSamples -= m_sfTempTransmitBuffer.GetLength( );
+		m_iClientRingBufferFreeSamples -= m_iClientRingBufferFreeSamples;
 #ifdef NET_AUDIO_SHOW_TRAFFIC
 		vstr::out( ) << "[ITANetAudioStreamingServer] Transmitted " << m_sfTempTransmitBuffer.GetLength( ) << " samples for "
 			<< m_pInputStream->GetNumberOfChannels( ) << " channels" << std::endl;
 #endif
-	}
-	else
-	{
 		// Waiting for Trigger
 		iMsgType = CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES;
 		m_pMessage->SetMessageType( iMsgType );
 		m_pMessage->WriteMessage( );
+
+		oLog.iProtocolStatus = iMsgType;
 
 #ifdef NET_AUDIO_SHOW_TRAFFIC
 		vstr::out( ) << "[ITANetAudioStreamingServer] Not enough free samples in client buffer, requesting a trigger when more free samples available" << std::endl;
@@ -153,7 +153,6 @@ bool CITANetAudioStreamingServer::LoopBody( )
 	}
 
 	oLog.iFreeSamples = m_iClientRingBufferFreeSamples;
-	oLog.iProtocolStatus = iMsgType;
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
 	m_pServerLogger->log( oLog );
 
@@ -174,8 +173,6 @@ bool CITANetAudioStreamingServer::LoopBody( )
 			}
 			case CITANetAudioProtocol::NP_CLIENT_CLOSE:
 			{
-				m_pMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_CLOSE );
-				m_pMessage->WriteMessage( );
 				StopGently( false );
 				m_pConnection = NULL;
 				Stop( );
