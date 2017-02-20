@@ -63,6 +63,7 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	m_pClientLogger->setOutputFile(paras);
 	iStreamingBlockId = 0;
 	m_pMessage = new CITANetAudioMessage( VistaSerializingToolset::SWAPS_MULTIBYTE_VALUES );
+	m_sfReceivingBuffer.init(m_oParams.iChannels, m_oParams.iRingBufferSize, false);
 }
 
 CITANetAudioStreamingClient::~CITANetAudioStreamingClient()

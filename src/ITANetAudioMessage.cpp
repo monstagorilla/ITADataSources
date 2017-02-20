@@ -100,8 +100,8 @@ void CITANetAudioMessage::WriteMessage()
 #endif
 
 		m_pConnection->WaitForSendFinish();
-		if( nRet != m_oOutgoing.GetBufferSize() )
-			VISTA_THROW( "ITANetAudioMessage: could not send all data from output buffer via network connection", 255 );
+		//if( nRet != m_oOutgoing.GetBufferSize() )
+			//VISTA_THROW( "ITANetAudioMessage: could not send all data from output buffer via network connection", 255 );
 	}
 	catch (VistaExceptionBase& ex)
 	{
