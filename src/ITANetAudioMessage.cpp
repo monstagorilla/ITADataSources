@@ -27,7 +27,7 @@ CITANetAudioMessage::CITANetAudioMessage( VistaSerializingToolset::ByteOrderSwap
 void CITANetAudioMessage::ResetMessage()
 {
 	if( m_oIncoming.GetTailSize() > 0 )
-		//vstr::err() << "CITANetAudioMessage::ResetMessage() called before message was fully processed!" << std::endl;
+		vstr::err() << "CITANetAudioMessage::ResetMessage() called before message was fully processed!" << std::endl;
 
 	// wait till sending is complete -> this prevents us
 	// from deleting the buffer while it is still being read
@@ -115,14 +115,13 @@ bool CITANetAudioMessage::ReadMessage( int timeout)
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] Waiting for incoming data" << std::endl;
 #endif
-	double dTimeBefore = ITAClock::getDefaultClock( )->getTime( );
 	// WaitForIncomming Data int in ca ms
 	long nIncomingBytes = m_pConnection->WaitForIncomingData( timeout );
-	double dTimeAfter = ITAClock::getDefaultClock( )->getTime( );
-	double DTimeDiff = dTimeAfter - dTimeBefore;
 	// TODO Timer entfernen
-	if ( nIncomingBytes == -1)
+	if (nIncomingBytes == -1)
 		return false;
+	else
+		int a = 5;
 
 	if (timeout != 0)
 		nIncomingBytes = m_pConnection->WaitForIncomingData( 0 );
@@ -136,8 +135,8 @@ bool CITANetAudioMessage::ReadMessage( int timeout)
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] Expecting " << nMessagePayloadSize << " bytes message payload" << std::endl;
 #endif
-	if (nMessagePayloadSize <= 2 * sizeof(VistaType::sint32))
-		int i = 34;
+	if (nMessagePayloadSize <= 0)
+		return false;
 	// we need at least the two protocol ints
 	//assert( nMessagePayloadSize >= 2 * sizeof( VistaType::sint32 ) );
 

@@ -68,13 +68,14 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 {
 	//try{
-		if (m_pConnection->GetIsOpen())
+		if (m_pConnection->GetIsConnected())
 		{
 			m_pMessage->ResetMessage();
 			m_pMessage->SetConnection(m_pConnection);
 			m_pMessage->SetMessageType(CITANetAudioProtocol::NP_CLIENT_CLOSE);
+			m_pMessage->WriteBool(true);
 			m_pMessage->WriteMessage();
-			m_pClient->Disconnect();
+			//m_pClient->Disconnect();
 		}
 		delete m_pClientLogger;
 	//}
@@ -154,8 +155,9 @@ bool CITANetAudioStreamingClient::LoopBody()
 				vstr::out( ) << "[ITANetAudioStreamingServer] Unkown protocol type : " << iMsgType << std::endl;
 				break;
 		}
-		oLog.iChannel = m_pStream->GetNumberOfChannels( );
+		oLog.iChannel = m_pStream->GetNumberOfChannels();
 		oLog.iProtocolStatus = iMsgType;
+		oLog.iFreeSamples = m_pStream->GetRingBufferFreeSamples();
 		oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
 		m_pClientLogger->log( oLog );
 	}
