@@ -125,11 +125,20 @@ bool CITANetAudioStreamingClient::LoopBody()
 	if( m_bStopIndicated )
 		return true;
 
+	// Send Puffer informationenen
+	if (iStreamingBlockId % 2 == 1)
+	{
+		m_pMessage->ResetMessage();
+		m_pMessage->SetMessageType(CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES);
+		m_pMessage->WriteInt(m_pStream->GetRingBufferFreeSamples());
+		m_pMessage->WriteMessage();
+	}
 	// Send message to server that samples can be received
 
-	m_pMessage->ResetMessage( );
+
 	// Read answer 
-	if ( m_pMessage->ReadMessage( 0 ) )
+	m_pMessage->ResetMessage( );
+	if ( m_pMessage->ReadMessage( 1 ) )
 	{
 		int iMsgType = m_pMessage->GetMessageType( );
 		switch ( iMsgType )
