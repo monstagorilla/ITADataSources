@@ -141,11 +141,6 @@ bool CITANetAudioMessage::ReadMessage( int timeout)
 	// we need at least the two protocol ints
 	//assert( nMessagePayloadSize >= 2 * sizeof( VistaType::sint32 ) );
 
-	if (nMessagePayloadSize > 26000)
-	{
-		int i = 0;
-	}
-
 	if( nMessagePayloadSize > ( int ) m_vecIncomingBuffer.size() )
 		m_vecIncomingBuffer.resize( nMessagePayloadSize );
 	
@@ -363,7 +358,6 @@ void CITANetAudioMessage::ReadSampleFrame( ITASampleFrame* pSampleFrame )
 {
 	int iChannels = ReadInt();
 	int iSamples = ReadInt();
-
 	if( pSampleFrame->channels() != iChannels || pSampleFrame->GetLength() != iSamples )
 		pSampleFrame->init( iChannels, iSamples, false );
 

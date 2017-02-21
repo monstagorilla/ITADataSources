@@ -104,6 +104,9 @@ private:
 	std::vector< VistaType::byte > m_vecIncomingBuffer; // Net IO buffer
 
 	VistaConnectionIP* m_pConnection;
+
+	//DEBUG
+	int i;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_MESSAGE

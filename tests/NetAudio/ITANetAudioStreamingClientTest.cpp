@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 	cout << "Channel " << iChannels << endl;
 
 	CITANetAudioStream oNetAudioStream(iChannels, dSampleRate, iBlockLength, 1 * iBufferSize);
-	/*
+	
 	ITAStreamPatchbay oPatchbay(dSampleRate, iBlockLength);
 	oPatchbay.AddInput( &oNetAudioStream );
 	int iOutputID = oPatchbay.AddOutput( 2 );
@@ -40,8 +40,8 @@ int main(int argc, char* argv[])
 	int N = int( oNetAudioStream.GetNumberOfChannels( ) );
 	for ( int i = 0; i < N; i++ )
 		oPatchbay.ConnectChannels( 0, i, 0, i % 2, 1 / double( N ) );
-	*/
-	//ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.stream.wav" );
+	
+	ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.stream.wav" );
 
 
 	ITAsioInitializeLibrary();
@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
 		}
 
 		
-		ITAsioSetPlaybackDatasource( &oNetAudioStream );
+		ITAsioSetPlaybackDatasource(&oProbe);
 
 		if (ITAsioStart() != ASE_OK) {
 			ITAsioFinalizeLibrary();

@@ -63,39 +63,51 @@ TimeServer = {Time100 Time101 Time111 Time200 Time201 Time211 Time222};
 
 %% Plot Protocol
 %plot(NetAudioLogServerTab.WorldTimeStamp, NetAudioLogServerTab.ProtocolStatus)
+plots1 = {};
+plots2 = {};
+subplot(2,2,1:2)
 
-%subplot(2,2,1:4)
-plot(NetAudioLogServerTab.WorldTimeStamp, NetAudioLogServerTab.FreeSamples)
+plots1{1} = plot([10 0],[3200 3200]);
 hold on
-%subplot(2,2,3:4)
-%plot(NetAudioLogClientTab.WorldTimeStamp, NetAudioLogClientTab.FreeSamples)
+plots1{2} = plot(NetAudioLogServerTab.WorldTimeStamp, NetAudioLogServerTab.FreeSamples, '-*');
+
+subplot(2,2,3:4)
+maxSamples = 3200;
+plots2{1} = plot([10 0],[3200 3200]);
+hold on;
+plots2{2} = plot(NetAudioLogClientTab.WorldTimeStamp, NetAudioLogClientTab.FreeSamples, '-*');
 legendeServer = {};
 legendeClient = {};
-legendeServer{1} = 'Freie Samples Server';
-legendeClient{1} = 'Freie Samples Client';
+legendeServer{1} = 'Maximal Freie Samples';
+legendeServer{2} = 'Freie Samples Server';
+legendeClient{1} = 'Maximal Freie Samples';
+legendeClient{2} = 'Freie Samples Client';
 
-i = 2;
-j = 2;
+i = 3;
+j = 3;
 for k = (1:7)
     if size(TimeServer{k}, 1) ~= 0
-        %subplot(2,2,1:4)
-        plot(TimeServer{k}, ones(size(TimeServer{k})),'.')
+        subplot(2,2,1:2)
+        plots1{i} = plot(TimeServer{k}, ones(size(TimeServer{k})),'.');
         legendeServer{i} = Protocol{k,2};
         i = i + 1;
     end
     if size(TimeClient{k}, 1) ~= 0
-        %subplot(2,2,3:4)
-        %plot(TimeClient{k}, ones(size(TimeClient{k})),'.')
-        legendeClient{i} = Protocol{k,2};
+        subplot(2,2,3:4)
+        p = 1;
+        if k == 3
+            p = 1500;
+        end
+        plots2{j} = plot(TimeClient{k}, ones(size(TimeClient{k})),'.');
+        legendeClient{j} = Protocol{k,2};
         j = j + 1;
     end
 end
-%subplot(2,2,1:2)
+subplot(2,2,1:2)
 title(['Protokolstatus Server'])
 xlabel('Zeit in s')
-legend(legendeServer);
-%subplot(2,2,3:4)
-%title(['Protokolstatus Client'])
-%xlabel('Zeit in s')
-%legend(legendeClient);
+legend([plots1, plots2], {legendeServer, legendeClient});
+subplot(2,2,3:4)
+title(['Protokolstatus Client'])
+xlabel('Zeit in s')
 legend('show');

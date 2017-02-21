@@ -139,15 +139,16 @@ bool CITANetAudioStreamingClient::LoopBody()
 
 				m_pMessage->ReadSampleFrame( &m_sfReceivingBuffer );
 				if ( m_pStream->GetRingBufferFreeSamples( ) >= m_sfReceivingBuffer.GetLength( ) )
-					m_pStream->Transmit( m_sfReceivingBuffer, m_sfReceivingBuffer.GetLength( ) );
-				//else 
-				// Fehler
-
+					m_pStream->Transmit(m_sfReceivingBuffer, m_sfReceivingBuffer.GetLength());
+#ifdef NET_AUDIO_SHOW_TRAFFIC
+				vstr::out() << "[ITANetAudioStreamingClient] Recived " << m_sfReceivingBuffer.GetLength() << " samples" << std::endl;
+#endif
 				break;
 			case CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES:
+				m_pMessage->ReadBool();
 				m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES );
 				m_pMessage->WriteInt( m_pStream->GetRingBufferFreeSamples( ) );
-				m_pMessage->WriteMessage( );
+				m_pMessage->WriteMessage();
 				break;
 			case CITANetAudioProtocol::NP_SERVER_CLOSE:
 				Disconnect( );
