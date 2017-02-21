@@ -323,7 +323,7 @@ void CITANetAudioStream::IncrementBlockPointer()
 	oLog.iFreeSamples = GetRingBufferFreeSamples( );
 	m_pStreamLogger->log( oLog );
 	
-	m_pNetAudioStreamingClient->TriggerBlockIncrement();
+	//m_pNetAudioStreamingClient->TriggerBlockIncrement();
 }
 
 int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples )

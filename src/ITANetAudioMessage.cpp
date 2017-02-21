@@ -144,16 +144,16 @@ bool CITANetAudioMessage::ReadMessage( int timeout)
 		m_vecIncomingBuffer.resize( nMessagePayloadSize );
 	
 	// Receive all incoming data (potentially splitted)
-	int iBytesReceivedTotal = 0;
-	while( nMessagePayloadSize > iBytesReceivedTotal )
+	m_iBytesReceivedTotal = 0;
+	while (nMessagePayloadSize > m_iBytesReceivedTotal)
 	{
 		int iIncommingBytes = m_pConnection->WaitForIncomingData( 0 );
 		int iBytesReceived;
 		if ( nMessagePayloadSize < iIncommingBytes )
-			iBytesReceived = m_pConnection->Receive( &m_vecIncomingBuffer[ iBytesReceivedTotal ], nMessagePayloadSize - iBytesReceivedTotal );
+			iBytesReceived = m_pConnection->Receive(&m_vecIncomingBuffer[m_iBytesReceivedTotal], nMessagePayloadSize - m_iBytesReceivedTotal);
 		else
-			iBytesReceived = m_pConnection->Receive( &m_vecIncomingBuffer[ iBytesReceivedTotal ], iIncommingBytes );
-		iBytesReceivedTotal += iBytesReceived;
+			iBytesReceived = m_pConnection->Receive(&m_vecIncomingBuffer[m_iBytesReceivedTotal], iIncommingBytes);
+		m_iBytesReceivedTotal += iBytesReceived;
 #if NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ CITANetAudioMessage ] " << std::setw( 3 ) << std::floor( iBytesReceivedTotal / float( nMessagePayloadSize ) * 100.0f ) << "% transmitted" << std::endl;
 #endif

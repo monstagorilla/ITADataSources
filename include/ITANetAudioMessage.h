@@ -97,6 +97,8 @@ public:
 private:
 	int m_nMessageType;
 	int m_nMessageId;
+	unsigned long m_iBytesReceivedTotal;
+
 	VistaByteBufferSerializer m_oOutgoing; //!< Serialization buffer for messages
 	VistaByteBufferDeSerializer m_oIncoming; //!< Deserialization buffer for messages
 	std::vector< VistaType::byte > m_vecIncomingBuffer; // Net IO buffer
