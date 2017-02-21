@@ -221,7 +221,7 @@ bool CITANetAudioStreamingServer::LoopBody( )
 	{
 		/*
 		// Neue Sample bei ca 1ms (0,9ms) warten
-		float dSamples = 0.0011 * m_pInputStream->GetSampleRate();
+		float dSamples = 0.0009 * m_pInputStream->GetSampleRate();
 		int iSamples = ( int ) dSamples;
 		int offset = iSamples % m_pInputStream->GetBlocklength( );
 		m_iClientRingBufferFreeSamples += iSamples - offset;
