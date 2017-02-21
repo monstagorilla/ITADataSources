@@ -59,6 +59,7 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer( )
 , m_pNetAudioServer( new CITANetAudioServer( ) )
 {
 	iServerBlockId = 0;
+	m_iMaxSendBlocks = 20;
 	m_iClientRingBufferFreeSamples = 0;
 }
 
@@ -114,47 +115,74 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 
 bool CITANetAudioStreamingServer::LoopBody( )
 {
+	bool bAskClient = false;
 	m_pMessage->ResetMessage( );
 	ITAServerLog oLog;
 	oLog.uiBlockId = ++iServerBlockId;
 	int iMsgType;
 	// Sending Samples 
-	if ( m_iClientRingBufferFreeSamples >= int( m_pInputStream->GetBlocklength() ) )
+	unsigned int uiBlockLength = m_pInputStream->GetBlocklength( );
+	if ( m_iClientRingBufferFreeSamples >= uiBlockLength )
 	{
 		// Send Samples
-		for ( int i = 0; i < int( m_pInputStream->GetNumberOfChannels( ) ); i++ )
+		// Sende max 10 * Blocklänge aufeinmal
+		int iSendBlocks;
+		if ( m_iClientRingBufferFreeSamples > m_iMaxSendBlocks * uiBlockLength )
+			iSendBlocks = m_iMaxSendBlocks;
+		else
 		{
-			ITAStreamInfo oStreamInfo;
-			oStreamInfo.nSamples = m_iClientRingBufferFreeSamples;
-			const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
-			if ( pfData != 0 )
-				m_sfTempTransmitBuffer[ i ].write( pfData, m_iClientRingBufferFreeSamples );
+			iSendBlocks = m_iClientRingBufferFreeSamples / uiBlockLength;
+			bAskClient = true;
 		}
-		m_pInputStream->IncrementBlockPointer( );
+		if ( m_sfTempTransmitBuffer.GetLength( ) != iSendBlocks * uiBlockLength )
+			m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels( ), iSendBlocks * uiBlockLength, false );
+		
+		for ( int j = 0; j < iSendBlocks; j++ )
+		{
+			for ( int i = 0; i < int( m_pInputStream->GetNumberOfChannels( ) ); i++ )
+			{
+				ITAStreamInfo oStreamInfo;
+				oStreamInfo.nSamples = uiBlockLength;
+
+				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
+				if ( pfData != 0 )
+					m_sfTempTransmitBuffer[ i ].write( pfData, uiBlockLength, j * uiBlockLength );
+			}
+			m_pInputStream->IncrementBlockPointer( );
+		}
 		iMsgType = CITANetAudioProtocol::NP_SERVER_SENDING_SAMPLES;
 		m_pMessage->SetMessageType( iMsgType );
 		m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
 		m_pMessage->WriteMessage( );
-		m_iClientRingBufferFreeSamples -= m_iClientRingBufferFreeSamples;
+		m_iClientRingBufferFreeSamples -= iSendBlocks * uiBlockLength;
 #ifdef NET_AUDIO_SHOW_TRAFFIC
-		vstr::out( ) << "[ITANetAudioStreamingServer] Transmitted " << m_sfTempTransmitBuffer.GetLength( ) << " samples for "
+		vstr::out( ) << "[ITANetAudioStreamingServer] Transmitted " << iSendSamples << " samples for "
 			<< m_pInputStream->GetNumberOfChannels( ) << " channels" << std::endl;
 #endif
+		
+	}
+	else
+		bAskClient = true;
+
+	if ( bAskClient )
+	{
 		// Waiting for Trigger
-		iMsgType = CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES;
-		m_pMessage->SetMessageType( iMsgType );
-		m_pMessage->WriteMessage( );
-
-		oLog.iProtocolStatus = iMsgType;
-
 #ifdef NET_AUDIO_SHOW_TRAFFIC
 		vstr::out( ) << "[ITANetAudioStreamingServer] Not enough free samples in client buffer, requesting a trigger when more free samples available" << std::endl;
 #endif
+		ITAServerLog oLog;
+		oLog.uiBlockId = ++iServerBlockId;
+		m_pMessage->ResetMessage( );
+		iMsgType = CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES;
+		m_pMessage->SetMessageType( iMsgType );
+		m_pMessage->WriteBool( true );
+		m_pMessage->WriteMessage( );
+		oLog.iProtocolStatus = iMsgType;
+		oLog.iFreeSamples = m_iClientRingBufferFreeSamples;
+		oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
+		m_pServerLogger->log( oLog );
 	}
 
-	oLog.iFreeSamples = m_iClientRingBufferFreeSamples;
-	oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
-	m_pServerLogger->log( oLog );
 
 	// Try to Empfange Daten
 	m_pMessage->ResetMessage( );
@@ -234,6 +262,8 @@ std::string CITANetAudioStreamingServer::GetNetworkAddress( ) const
 {
 	return m_pNetAudioServer->GetServerAddress( );
 }
+
+
 
 int CITANetAudioStreamingServer::GetNetworkPort( ) const
 {
