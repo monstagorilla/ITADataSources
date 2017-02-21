@@ -18,6 +18,7 @@ CITANetAudioMessage::CITANetAudioMessage( VistaSerializingToolset::ByteOrderSwap
 	: m_vecIncomingBuffer( 2048 )
 	, m_oOutgoing( 2048 )
 	, m_pConnection( NULL )
+	, m_iBytesReceivedTotal(0)
 {
 	m_oOutgoing.SetByteorderSwapFlag( bSwapBuffers );
 	m_oIncoming.SetByteorderSwapFlag( bSwapBuffers );
@@ -140,11 +141,16 @@ bool CITANetAudioMessage::ReadMessage( int timeout)
 	// we need at least the two protocol ints
 	//assert( nMessagePayloadSize >= 2 * sizeof( VistaType::sint32 ) );
 
+	if (nMessagePayloadSize > 26000)
+	{
+		int i = 0;
+	}
+
 	if( nMessagePayloadSize > ( int ) m_vecIncomingBuffer.size() )
 		m_vecIncomingBuffer.resize( nMessagePayloadSize );
 	
 	// Receive all incoming data (potentially splitted)
-	m_iBytesReceivedTotal = 0;
+	
 	while (nMessagePayloadSize > m_iBytesReceivedTotal)
 	{
 		int iIncommingBytes = m_pConnection->WaitForIncomingData( 0 );
@@ -158,6 +164,7 @@ bool CITANetAudioMessage::ReadMessage( int timeout)
 		vstr::out() << "[ CITANetAudioMessage ] " << std::setw( 3 ) << std::floor( iBytesReceivedTotal / float( nMessagePayloadSize ) * 100.0f ) << "% transmitted" << std::endl;
 #endif
 	}
+	m_iBytesReceivedTotal = 0;
 
 	// Transfer data into members
 	m_oIncoming.SetBuffer( &m_vecIncomingBuffer[ 0 ], nMessagePayloadSize, false );

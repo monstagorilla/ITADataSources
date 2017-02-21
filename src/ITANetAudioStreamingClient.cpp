@@ -69,7 +69,7 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 {
 	//try{
-		if (m_pConnection->GetIsConnected())
+	if (m_pConnection != NULL && m_pConnection->GetIsConnected())
 		{
 			m_pMessage->ResetMessage();
 			m_pMessage->SetConnection(m_pConnection);
