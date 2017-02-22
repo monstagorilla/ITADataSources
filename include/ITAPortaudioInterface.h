@@ -40,7 +40,7 @@ class ITA_DATA_SOURCES_API ITAPortaudioInterface
 {
 public:
 	//! ITAPortaudio error code table
-	typedef enum ITA_PA_ERRORCODE
+	enum ITA_PA_ERRORCODE
 	{
 		//! Portaudio/ITAPortaudio no error
 		ITA_PA_NO_ERROR=0,
@@ -161,7 +161,7 @@ public:
 	};
 
 	//! Portaudio available host APIs
-	typedef enum ITA_PA_HOST_APIS
+	enum ITA_PA_HOST_APIS
 	{
 		ITA_PA_DIRECT_SOUND = 1,	//!< Windows DirectSound
 		ITA_PA_MME = 2,				//!< Windows MME

@@ -176,6 +176,16 @@ void  ITABufferDatasource::SetCursor(unsigned int uiNewCursor) {
 	m_iCursor = (int) uiNewCursor;
 }
 
+void ITABufferDatasource::SetIsLooping( bool bEnabled )
+{
+	SetLoopMode( bEnabled );
+}
+
+bool ITABufferDatasource::GetIsLooping()
+{
+	return GetLoopMode();
+}
+
 bool ITABufferDatasource::GetLoopMode() {
 	/* TODO: Diese Implementierung ist NICHT THREAD-SAFE.
              m_bLoopMode kann durch IncrementReadPointer modifiziert werden,
@@ -189,6 +199,7 @@ void ITABufferDatasource::SetLoopMode(bool bLoopMode) {
 	m_bNewLoopMode = bLoopMode;
 	m_bChangeLoopMode = true;
 }
+
 
 bool ITABufferDatasource::IsPaused() const {
 	return m_bPaused;

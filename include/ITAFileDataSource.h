@@ -49,7 +49,8 @@
  *
  * \ingroup datasources
  */
-class ITA_DATA_SOURCES_API ITAFileDatasource : public ITABufferDatasource {
+class ITA_DATA_SOURCES_API ITAFileDatasource : public ITABufferDatasource
+{
 public:
 	//! Konstruktor
 	/**

@@ -17,6 +17,37 @@
 #include <iostream>
 
 //! Audio streaming log item
+struct ITAAudioLog : public ITALogDataBase
+{
+	inline static std::ostream& outputDesc( std::ostream& os )
+	{
+		os << "\t" << "Channel";
+		os << "\t" << "Samplerate";
+		os << "\t" << "BufferSize";
+		os << "\t" << "RingBufferSize";
+		os << "\t" << "TargetSampleLatency";
+		os << std::endl;
+		return os;
+	};
+
+	inline std::ostream& outputData( std::ostream& os ) const
+	{
+		os << "\t" << iChannel;
+		os << "\t" << dSampleRate;
+		os << "\t" << iBufferSize;
+		os << "\t" << iRingBufferSize;
+		os << "\t" << iTargetSampleLatency;
+		os << std::endl;
+		return os;
+	};
+
+	int iChannel;
+	double dSampleRate;
+	int iBufferSize;
+	int iRingBufferSize;
+	int iTargetSampleLatency;
+};
+	//! Audio streaming log item
 struct ITAStreamLog : public ITALogDataBase
 {
 	inline static std::ostream& outputDesc( std::ostream& os )
@@ -81,6 +112,7 @@ struct ITANetLog : public ITALogDataBase
 	int iNumSamplesTransmitted;
 };
 
+class ITABufferedDataLoggerImplAudio : public ITABufferedDataLogger < ITAAudioLog > {};
 class ITABufferedDataLoggerImplStream : public ITABufferedDataLogger < ITAStreamLog > {};
 class ITABufferedDataLoggerImplNet : public ITABufferedDataLogger < ITANetLog > {};
 
@@ -92,7 +124,7 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	, m_bRingBufferFull( false )
 	, m_iStreamingStatus( INVALID )
 	, m_dLastStreamingTimeCode( 0.0f )
-	, m_iTargetSampleLatency( 10*iBufferSize )
+	, m_iTargetSampleLatencyServer( iRingBufferCapacity )
 {
 	m_bRingBufferFull = false;
 	if( iBufferSize > iRingBufferCapacity )
@@ -105,19 +137,35 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	m_iStreamingStatus = STOPPED;
 
 	// Logging
+	std::string paras = std::string("NetAudioLogBaseData") + std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string(".txt");
+	m_pAudioLogger = new ITABufferedDataLoggerImplAudio( );
+	m_pAudioLogger->setOutputFile(paras);
+
+	paras = std::string("NetAudioLogStream") + std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string(".txt");
 	m_pStreamLogger = new ITABufferedDataLoggerImplStream();
-	m_pStreamLogger->setOutputFile( "NetAudioLogStream.txt" );
+	m_pStreamLogger->setOutputFile(paras);
 	iAudioStreamingBlockID = 0;
 
+	paras = std::string("NetAudioLogNet") + std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string(".txt");
 	m_pNetLogger = new ITABufferedDataLoggerImplNet();
-	m_pNetLogger->setOutputFile( "NetAudioLogNet.txt" );
+	m_pNetLogger->setOutputFile(paras);
 	iNetStreamingBlockID = 0;
+
+	// Logging Base Data
+	ITAAudioLog oLog;
+	oLog.iChannel = GetNumberOfChannels();
+	oLog.dSampleRate = m_dSampleRate;
+	oLog.iBufferSize = GetBlocklength();
+	oLog.iRingBufferSize = GetRingBufferSize();
+	oLog.iTargetSampleLatency = m_iTargetSampleLatencyServer;
+	m_pAudioLogger->log( oLog );
 }
 
 CITANetAudioStream::~CITANetAudioStream()
 {
 	delete m_pNetLogger;
 	delete m_pStreamLogger;
+	delete m_pAudioLogger;
 	delete m_pNetAudioStreamingClient;
 }
 
@@ -159,17 +207,17 @@ void CITANetAudioStream::SetAllowedLatencySamples( int iLatencySamples )
 	if( iLatencySamples > GetMaximumLatencySamples() )
 		ITA_EXCEPT1( INVALID_PARAMETER, "Can not set latency greater than the maximum possible" );
 
-	m_iTargetSampleLatency = iLatencySamples;
+	m_iTargetSampleLatencyServer = iLatencySamples;
 }
 
 float CITANetAudioStream::GetAllowedLatencySeconds() const
 {
-	return float( m_iTargetSampleLatency / GetSampleRate() );
+	return float(m_iTargetSampleLatencyServer / GetSampleRate());
 }
 
 int CITANetAudioStream::GetAllowedLatencySamples() const
 {
-	return m_iTargetSampleLatency;
+	return m_iTargetSampleLatencyServer;
 }
 
 int CITANetAudioStream::GetMinimumLatencySamples() const
@@ -183,18 +231,26 @@ int CITANetAudioStream::GetMaximumLatencySamples() const
 	return GetRingBufferSize();
 }
 
+void CITANetAudioStream::SetLatencyForRealtime()
+{
+	SetAllowedLatencySamples( GetMinimumLatencySamples() );
+}
+
 const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pInfo )
 {
 	if( !GetIsConnected() )
 	{
 		m_sfOutputStreamBuffer[ uiChannel ].Zero( );
+		if (uiChannel == 0 )
+			m_iStreamingStatus = STOPPED;
 	}
 	else
 	{
 		if( GetIsRingBufferEmpty() )
 		{
 			m_sfOutputStreamBuffer[ uiChannel ].Zero();
-			m_iStreamingStatus = BUFFER_UNDERRUN;
+			if (uiChannel == 0 )
+				m_iStreamingStatus = BUFFER_UNDERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
 			//vstr::out() << "[ Stream ] Buffer underrun" << std::endl;
 #endif
@@ -205,7 +261,8 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 			{
 				// @todo: fade out
 				m_sfRingBuffer[ uiChannel ].Zero();
-				m_iStreamingStatus = BUFFER_UNDERRUN;
+				if (uiChannel == 0 )
+					m_iStreamingStatus = BUFFER_UNDERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
 				//vstr::out() << "[ Stream ] Buffer underrun" << std::endl;
 #endif
@@ -214,7 +271,8 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 			{
 				// Normal behaviour (if everything is OK with ring buffer status)
 				m_sfRingBuffer[ uiChannel ].cyclic_read( m_sfOutputStreamBuffer[ uiChannel ].GetData(), GetBlocklength(), m_iReadCursor );
-				m_iStreamingStatus = STREAMING;
+				if ( uiChannel == 0 )
+					m_iStreamingStatus = STREAMING;
 #if NET_AUDIO_SHOW_TRAFFIC
 				vstr::out() << "[ Stream ] Streaming" << std::endl;
 #endif
@@ -225,6 +283,7 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 	if( uiChannel == 0 )
 		m_dLastStreamingTimeCode = pInfo->dTimecode;
 
+
 	return m_sfOutputStreamBuffer[uiChannel].GetData();
 }
 
@@ -232,42 +291,44 @@ void CITANetAudioStream::IncrementBlockPointer()
 {
 	// Increment read cursor by one audio block and wrap around if exceeding ring buffer
 	int iSavedSample = GetRingBufferSize( ) - GetRingBufferFreeSamples( );
-
-	if ( iSavedSample >= int( GetBlocklength( ) ) )
+	if ( !GetIsConnected( ) )
+	{
+		//m_iStreamingStatus = STOPPED;
+	} else if ( iSavedSample >= int( GetBlocklength( ) ) )
 	{
 		//es wurden Samples abgespielt
 		m_iReadCursor = ( m_iReadCursor + m_sfOutputStreamBuffer.GetLength() ) % m_sfRingBuffer.GetLength();
-		m_iStreamingStatus = STREAMING;
+		//m_iStreamingStatus = STREAMING;
 #if NET_AUDIO_SHOW_TRAFFIC
 		//vstr::out() << "[ Stream ] Streaming" << std::endl;
 #endif
 	}
 	else if ( GetIsRingBufferEmpty( ) )
 	{
-		m_iStreamingStatus = BUFFER_UNDERRUN;
+		//m_iStreamingStatus = BUFFER_UNDERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
 		//vstr::out() << "[ Stream ] Buffer underrun" << std::endl;
 #endif
 	}
 	else
 	{
-		m_iStreamingStatus = BUFFER_OVERRUN;
+		//m_iStreamingStatus = BUFFER_UNDERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
-		//vstr::out() << "[ Stream ] Buffer overrun" << std::endl;
+		//vstr::out() << "[ Stream ] Buffer underrun" << std::endl;
 #endif
 		m_iReadCursor = m_iWriteCursor;
 	}
 	m_bRingBufferFull = false;
 
-	ITAStreamLog oLog;
+	ITAStreamLog oLog;	
 	oLog.iStreamingStatus = m_iStreamingStatus;
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
 	oLog.dStreamingTimeCode = m_dLastStreamingTimeCode;
 	oLog.uiBlockId = ++iAudioStreamingBlockID;
-	oLog.iFreeSamples = GetRingBufferFreeSamples();
-	m_pStreamLogger->log( oLog );
+	oLog.iFreeSamples = GetRingBufferFreeSamples( );
+	//m_pStreamLogger->log( oLog );
 	
-	m_pNetAudioStreamingClient->TriggerBlockIncrement();
+	//m_pNetAudioStreamingClient->TriggerBlockIncrement();
 }
 
 int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples )
@@ -283,7 +344,7 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	if ( ( m_iWriteCursor == m_iReadCursor ) && m_bRingBufferFull )
 	{
 		// BufferFull
-		oLog.iBufferStatus = 1;
+		m_iStreamingStatus = BUFFER_OVERRUN;
 #if NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ NetAudio ] Buffer overrun" << std::endl;
 #endif
@@ -292,16 +353,16 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	{
 		// @todo: only partly write
 		//std::cerr << "BUFFER_OVERRUN! Would partly write samples because ring buffer will be full then." << std::endl;
-		
+
+		m_iStreamingStatus = BUFFER_OVERRUN;
 		m_iWriteCursor = m_iReadCursor;
-		oLog.iBufferStatus = 2;
 	}
 	else
 	{
 		// write samples into ring buffer
 		m_sfRingBuffer.cyclic_write( sfNewSamples, iNumSamples, 0, iCurrentWriteCursor );
 		m_bRingBufferFull = false;
-		oLog.iBufferStatus = 1;
+		m_iStreamingStatus = STREAMING;
 #if NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ NetAudio ] Buffer write" << std::endl;
 #endif
@@ -311,13 +372,12 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 		if ( m_iWriteCursor == m_iReadCursor )
 		{
 			m_bRingBufferFull = true;
-			oLog.iBufferStatus = 1;
 #if NET_AUDIO_SHOW_TRAFFIC
 			vstr::out() << "[ NetAudio ] Buffer overrun" << std::endl;
 #endif
 		}
 	}
-
+	oLog.iBufferStatus = m_iStreamingStatus;
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
 	oLog.uiBlockId = ++iAudioStreamingBlockID;
 	oLog.iFreeSamples = GetRingBufferFreeSamples( );

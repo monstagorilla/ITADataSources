@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include <string>
 
@@ -7,22 +8,21 @@
 #include <ITAPortaudioInterface.h>
 #include <ITAStreamFunctionGenerator.h>
 #include <ITAStreamMultiplier1N.h>
-#include <ITAFileDatasource.h>
 #include <ITAException.h>
-#include <ITAFileDatasource.h>
+#include <ITAFileDataSource.h>
 #include <ITAStreamProbe.h>
-#include <ITAStreamPatchbay.h>
+#include <ITAStreamPatchBay.h>
 
 #include <VistaBase/VistaStreamUtils.h>
 
 using namespace std;
 
-const static string g_sServerName = "137.226.61.67";
+const static string g_sServerName = "localhost";
 const static string g_sInputFilePath = "gershwin-mono.wav";
 const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
 const static int g_iBlockLength = 1024;
-const static int g_iChannels = 300;
+const static int g_iChannels = 100;
 
 class CServer : public VistaThread
 {

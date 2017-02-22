@@ -36,6 +36,7 @@ class CITANetAudioClient;
 class CITANetAudioMessage;
 class CITANetAudioProtocol;
 class CITANetAudioStream;
+class ITABufferedDataLoggerImplClient;
 
 //! Network audio streaming client
 /**

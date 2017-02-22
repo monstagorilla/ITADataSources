@@ -8,6 +8,8 @@
 #include <ITADataSourceRealization.h>
 #include <ITAStreamInfo.h>
 
+class PaStreamCallbackTimeInfo;
+
 // Portaudio Callback Function
 static int PortaudioCallbackFunction( const void*, void*, unsigned long, const PaStreamCallbackTimeInfo*, PaStreamCallbackFlags, void* );
 

@@ -151,6 +151,18 @@ public:
 	//! Wiederholung Ein-/Ausschalten
 	void SetLoopMode(bool bLoopMode);
 
+	//! Sets the looping mode
+	/**
+	  * @param[in] bLoopingEnabled True means looping, false will play until EOF
+	  */
+	void SetIsLooping( bool bLoopingEnabled );
+	
+	//! Looping mode getter
+	/**
+	  * @return True means looping, false will play until EOF
+  	  */
+	bool GetIsLooping();
+
 	//! Arbeitsbereich (region of interest) festlegen
 	/**
 	 * Legt den Arbeitsbereich fest, d.h. das Interval in den Quellendaten, aus dem die

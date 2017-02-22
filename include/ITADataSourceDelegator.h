@@ -16,7 +16,7 @@
 #ifndef _ITADATASOURCEDELEGATOR_H_
 #define _ITADATASOURCEDELEGATOR_H_
 
-#include <ITADatasource.h>
+#include <ITADataSource.h>
 
 /**
  * Diese Klasse implementiert die Schnittstelle der ITADatasource, stellt die

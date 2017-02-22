@@ -34,6 +34,7 @@ using namespace std;
 class CITANetAudioStreamingClient;
 class ITABufferedDataLoggerImplStream;
 class ITABufferedDataLoggerImplNet;
+class ITABufferedDataLoggerImplAudio;
 
 //! Network audio stream
 /**
@@ -96,11 +97,33 @@ public:
 	void SetAllowedLatencySamples( int iLatencySamples );
 	float GetAllowedLatencySeconds() const;
 	int GetAllowedLatencySamples() const;
-
+	
+	//! Sets the minimal latency possible
+	/**
+	  * Real-time network audio is considered to process at lowest latency possible.
+	  * However, this implementation requires at least one block. Hence latency is
+	  * depending on sampling rate and block length.
+	  *
+	  * @sa GetMinimumLatencySamples()
+	  * @sa GetMinimumLatencySamples()
+	  */
 	float GetMinimumLatencySeconds() const;
+
 	float GetMaximumLatencySeconds() const;
 	int GetMinimumLatencySamples() const;
 	int GetMaximumLatencySamples() const;
+
+	//! Sets the latency for real-time processing
+	/**
+	  * Real-time network audio is considered to process at lowest latency possible.
+	  * However, this implementation requires at least one block. Hence latency is
+	  * depending on sampling rate and block length. This method basically
+	  * sets the minimum allowed latency to this value.
+	  *
+	  * @sa GetMinimumLatencySeconds()
+	  * @sa SetAllowedLatencySeconds()
+	  */
+	void SetLatencyForRealtime();
 
 	//! Returns (static) size of ring buffer
 	/**
@@ -183,11 +206,12 @@ private:
 	int m_iWriteCursor; //!< Cursor where samples will be fed into ring buffer from net audio producer (always ahead)
 	bool m_bRingBufferFull; //!< Indicator if ring buffer is full (and read cursor equals write cursor)
 	ITASampleFrame m_sfRingBuffer; //!< Ring buffer
-	int m_iTargetSampleLatency; //!< Maximum allowed samples / target sample latency
+	int m_iTargetSampleLatencyServer; //!< Maximum allowed samples / target sample latency
 
 	int m_iStreamingStatus; //!< Current streaming status
 	double m_dLastStreamingTimeCode;
 
+	ITABufferedDataLoggerImplAudio* m_pAudioLogger; //!< Logging for the audio stream
 	ITABufferedDataLoggerImplStream* m_pStreamLogger; //!< Logging for the audio stream
 	ITABufferedDataLoggerImplNet* m_pNetLogger; //!< Logging for the network stream
 	int iAudioStreamingBlockID; //!< Audio streaming block id

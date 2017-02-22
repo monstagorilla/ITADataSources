@@ -55,9 +55,8 @@ public:
 	void ClearConnection();
 
 	void WriteMessage();
-	void ReadMessage();
-	void WriteAnswer();
-	void ReadAnswer();
+	// Returns false if no incomming data
+	bool ReadMessage( int timeout );
 
 	void ResetMessage();
 
@@ -66,9 +65,7 @@ public:
 	bool GetOutgoingMessageHasData() const;
 
 	void SetMessageType( int nType );
-	void SetAnswerType( int nType );
 	int GetMessageType() const;
-	int GetAnswerType() const;
 
 
 	void WriteInt( const int );
@@ -100,12 +97,16 @@ public:
 private:
 	int m_nMessageType;
 	int m_nMessageId;
-	int m_nAnswerType;
+	unsigned long m_iBytesReceivedTotal;
+
 	VistaByteBufferSerializer m_oOutgoing; //!< Serialization buffer for messages
 	VistaByteBufferDeSerializer m_oIncoming; //!< Deserialization buffer for messages
 	std::vector< VistaType::byte > m_vecIncomingBuffer; // Net IO buffer
 
 	VistaConnectionIP* m_pConnection;
+
+	//DEBUG
+	int i;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_MESSAGE

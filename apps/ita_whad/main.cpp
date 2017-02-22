@@ -31,26 +31,55 @@ int main( int, char** )
 
 #ifdef ITA_WHAD_WITH_ASIO
 
-	string sFileName = "ita_whad_asio.txt";
-	FILE* file = fopen( sFileName.c_str(), "w" );
+	string sASIOFileName = "ita_whad_asio.txt";
+	FILE* PASIOFile = fopen( sASIOFileName.c_str(), "w" );
 
 	ITAsioInitializeLibrary();
 
-	long lDrivers = ITAsioGetNumDrivers();
-	
-	if( lDrivers == 0 )
+	long lASIODrivers = ITAsioGetNumDrivers();
+
+	if( lASIODrivers == 0 )
 		cerr << "Warning: no ASIO drivers found." << endl;
 
-	for( long i = 0; i < lDrivers; i++ )
+	cout << " ### ASIO ### " << endl;
+	for( long i = 0; i < lASIODrivers; i++ )
 	{
-		cout << "[" << i+1 << "] \"" << ITAsioGetDriverName(i) << "\"" << endl;
+		cout << "[" << i + 1 << "] \"" << ITAsioGetDriverName( i ) << "\"" << endl;
 	}
+	cout << endl;
 
 	ITAsioFinalizeLibrary();
 
-	fclose( file );
+	fclose( PASIOFile );
 
 #endif // ITA_WHAD_WITH_ASIO
+#ifdef ITA_WHAD_WITH_PORTAUDIO
+
+	string sPAFileName = "ita_whad_portaudio.txt";
+	FILE* pPAFile = fopen( sPAFileName.c_str(), "w" );
+
+	ITAPortaudioInterface oITAPA( 44.1e3, 1024 );
+	oITAPA.Initialize();
+	int iPANumDevices = oITAPA.GetNumDevices();
+	int iPADefaultIn = oITAPA.GetDefaultInputDevice();
+	int iPADefaultOut = oITAPA.GetDefaultOutputDevice();
+
+	cout << " ### Portaudio ### " << endl;
+	for( int i = 0; i < iPANumDevices; i++ )
+	{
+		string sExtra = "";
+		if( i == iPADefaultIn || i == iPADefaultOut )
+			sExtra = " *";
+
+		cout << "[" << i + 1 << "] \"" << oITAPA.GetDeviceName( i ) << "\"" << sExtra << endl;
+	}
+	cout << endl;
+
+	oITAPA.Finalize();
+
+	fclose( pPAFile );
+
+#endif // ITA_WHAD_WITH:PORTAUDIO
 
 	return 0;
 }

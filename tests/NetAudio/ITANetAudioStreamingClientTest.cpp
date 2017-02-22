@@ -5,71 +5,135 @@
 #include <ITAPortaudioInterface.h>
 #include <ITAStreamMultiplier1N.h>
 #include <ITAException.h>
-#include <ITAFileDatasource.h>
+#include <ITAFileDataSource.h>
 #include <ITAStreamProbe.h>
-#include <ITAStreamPatchbay.h>
+#include <ITAStreamPatchBay.h>
+#include <ITAAsioInterface.h>
+#include <VistaBase/VistaTimeUtils.h>
 
 using namespace std;
 
-//static string g_sServerName = "137.226.61.163";
-static string g_sServerName = "137.226.61.67";
-static int g_iServerPort = 12480;
-static double g_dSampleRate = 44100;
-static int g_iBufferSize = 512;
-static int g_iChannels = 500;
-
-int main( int , char** )
+int main(int argc, char* argv[])
 {
-	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBufferSize, 100 * g_iBufferSize );
 	
-	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBufferSize );
+	if (argc != 7)
+	{
+		fprintf(stderr, "Fehler: Syntax = ServerName ServerPort SampleRate BufferSize Channel RingBufferSize!\n");
+	}
+	
+
+	 string sServerName = argv[1];
+	 unsigned int iServerPort = atoi(argv[2]);
+	 double dSampleRate = strtod(argv[3], NULL);
+	 int iBlockLength = atoi(argv[4]);
+	 int iChannels = atoi(argv[5]);
+	 int iBufferSize = atoi(argv[6]);
+
+	cout << "Channel " << iChannels << endl;
+
+	CITANetAudioStream oNetAudioStream(iChannels, dSampleRate, iBlockLength, 1 * iBufferSize);
+	
+	ITAStreamPatchbay oPatchbay(dSampleRate, iBlockLength);
 	oPatchbay.AddInput( &oNetAudioStream );
 	int iOutputID = oPatchbay.AddOutput( 2 );
 
 	int N = int( oNetAudioStream.GetNumberOfChannels( ) );
 	for ( int i = 0; i < N; i++ )
 		oPatchbay.ConnectChannels( 0, i, 0, i % 2, 1 / double( N ) );
-
+	
 	ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.stream.wav" );
 
 
-	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBufferSize );
-	ITAPA.Initialize();
-	ITAPA.SetPlaybackDatasource( &oProbe );
-	ITAPA.Open();
-	ITAPA.Start(); 
+	ITAsioInitializeLibrary();
 
-	cout << "Waiting 3 seconds (net audio stream not connected and returning zeros)" << endl;
-	ITAPA.Sleep( 2.0f );
+	try {
 
-	cout << "Will now connect to '" << g_sServerName << "' on port " << g_iServerPort << endl;
-	try
-	{
-		if( !oNetAudioStream.Connect( g_sServerName, g_iServerPort ) )
-			ITA_EXCEPT1( INVALID_PARAMETER, "Could not connect to server" );
+		cout << "Will now connect to '" << sServerName << "' on port " << iServerPort << endl;
+
+		if (ITAsioInitializeDriver("ASIO MADIface USB") != ASE_OK) {
+			ITAsioFinalizeLibrary();
+			fprintf(stderr, "Fehler: ITAsioInit schlug fehl!\n");
+
+			return 255;
+		}
+
+		long lBuffersize, lDummy;
+		if (ITAsioGetBufferSize(&lDummy, &lDummy, &lBuffersize, &lDummy) != ASE_OK) {
+			ITAsioFinalizeLibrary();
+			fprintf(stderr, "Fehler: ITAsioGetBufferSize schlug fehl!\n");
+
+			return 255;
+		}
+
+
+		if (ITAsioSetSampleRate((ASIOSampleRate)dSampleRate) != ASE_OK) {
+			ITAsioFinalizeLibrary();
+			fprintf(stderr, "Fehler: ITAsioSetSamplerate schlug fehl!\n");
+
+			return 255;
+		}
+
+		long lNumInputChannels, lNumOutputChannels;
+		ASIOError ae;
+		if ((ae = ITAsioGetChannels(&lNumInputChannels, &lNumOutputChannels)) != ASE_OK)
+		{
+			cerr << "Error in ITAsioGetChannels, ASIO error " << ae << " encountered" << endl;
+			ITAsioFinalizeLibrary();
+			return 255;
+		}
+
+		if ((ae = ITAsioCreateBuffers(0, 2, lBuffersize)) != ASE_OK)
+		{
+			cerr << "Error in ITAsioCreateBuffers, ASIO error " << ae << " encountered" << endl;
+			ITAsioFinalizeLibrary();
+			return 255;
+		}
+
+		
+		ITAsioSetPlaybackDatasource(&oProbe);
+
+		if (ITAsioStart() != ASE_OK) {
+			ITAsioFinalizeLibrary();
+			fprintf(stderr, "Fehler: ITAsioStart schlug fehl!\n");
+
+			return 255;
+		}
+
+		if (!oNetAudioStream.Connect(sServerName, iServerPort))
+			ITA_EXCEPT1(INVALID_PARAMETER, "Could not connect to server");
+		printf("Wiedergabe gestartet ...\n");
+		VistaTimeUtils::Sleep(10 * 1000);
+
+		if (ITAsioStop() != ASE_OK) {
+			ITAsioFinalizeLibrary();
+			fprintf(stderr, "Fehler: ITAsioStop schlug fehl!\n");
+
+			return 255;
+		}
+
+		printf("Wiedergabe beendet!\n");
+
+		if (ITAsioDisposeBuffers() != ASE_OK) {
+			ITAsioFinalizeLibrary();
+			fprintf(stderr, "Fehler: ITAsioDisposeBuffers schlug fehl!\n");
+
+			return 255;
+		}
+
+		if (ITAsioFinalizeDriver() != ASE_OK) {
+			ITAsioFinalizeLibrary();
+			fprintf(stderr, "Fehler: ITAsioExit schlug fehl!\n");
+
+			return 255;
+		}
 	}
-	catch( ITAException e )
-	{
-		cout << "Connection failed." << endl;
+	catch (ITAException e) {
+		ITAsioFinalizeLibrary();
 		cerr << e << endl;
+
 		return 255;
 	}
-	cout << "Connected." << endl;
-
-	// Playback
-	float fSeconds = 10.0f;
-	cout << "Playback started, waiting " << fSeconds << " seconds" << endl;
-	ITAPA.Sleep( fSeconds ); // blocking
-	cout << "Done." << endl;
-
-
-	cout << "Will now disconnect from '" << g_sServerName << "' and port " << g_iServerPort << endl;
-	cout << "Closing in 3 seconds (net audio stream not connected and returning zeros)" << endl;
-	ITAPA.Sleep( 1.0f );
-
-	ITAPA.Stop();
-	ITAPA.Close();
-	ITAPA.Finalize();
+	ITAsioFinalizeLibrary();
 	
 	return 0;
 }

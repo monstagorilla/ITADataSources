@@ -1,6 +1,6 @@
 #include <ITAPortaudioInterface.h>
 #include <ITADataSource.h>
-//#include <ITADatasourceUtils.h>
+#include <ITADataSourceUtils.h>
 #include <ITABufferDataSink.h>
 #include <ITASampleFrame.h>
 
@@ -36,9 +36,9 @@ void record()
 		vpfRecordData[ i ] = sfRecordData[ i ].data();
 
 	ITAPA.Start();
-	ITABufferDataSink oBufferRec( pdsRecordDatasource, vpfRecordData, g_iBlockSize );
-	oBufferRec.Transfer( nRecordSamples );
-	//WriteFromDatasourceToFile( pdsRecordDatasource, sOutputFileName, (unsigned int)(5*g_dSampleRate), 1.0, true, true );
+	//ITABufferDataSink oBufferRec( pdsRecordDatasource, vpfRecordData, g_iBlockSize );
+	//oBufferRec.Transfer( nRecordSamples );
+	WriteFromDatasourceToFile( pdsRecordDatasource, g_sOutputFileName, (unsigned int)(5*g_dSampleRate), 1.0, true, true );
 	ITAPA.Stop();
 
 	ITAPA.Close();
