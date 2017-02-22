@@ -18,13 +18,6 @@ int main(int argc, char* argv[])
 	
 	if (argc != 7)
 	{
-		cout << "argc = " << argc << endl;
-		cout << "sServerName = " << argv[1] << endl;
-		cout << "iServerPort = " << argv[2] << endl;
-		cout << "dSampleRate = " << argv[3] << endl;
-		cout << "iBlockLength = " << argv[4] << endl;
-		cout << "iChannels = " << argv[5] << endl;
-		cout << "iBufferSize = " << argv[6] << endl;
 		fprintf(stderr, "Fehler: Syntax = ServerName ServerPort SampleRate BufferSize Channel RingBufferSize!\n");
 	}
 	
@@ -47,7 +40,7 @@ int main(int argc, char* argv[])
 	int N = int( oNetAudioStream.GetNumberOfChannels( ) );
 	for ( int i = 0; i < N; i++ )
 		oPatchbay.ConnectChannels( 0, i, 0, i % 2, 1 / double( N ) );
-
+	
 	ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.stream.wav" );
 
 
@@ -140,7 +133,6 @@ int main(int argc, char* argv[])
 
 		return 255;
 	}
-
 	ITAsioFinalizeLibrary();
 	
 	return 0;
