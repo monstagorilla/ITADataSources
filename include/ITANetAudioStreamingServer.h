@@ -86,8 +86,7 @@ private:
 	VistaConnectionIP* m_pConnection;
 
 	CITANetAudioProtocol::StreamingParameters m_oServerParams;
-	CITANetAudioMessage* m_pIncomingMessage;
-	CITANetAudioMessage* m_pOutgoingMessage;
+	CITANetAudioMessage* m_pMessage;
 
 	int m_iUpdateStrategy;
 	int m_iClientRingBufferFreeSamples;

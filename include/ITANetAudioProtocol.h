@@ -60,6 +60,7 @@ public:
 	static const int NP_SERVER_OPEN = 201;
 	static const int NP_SERVER_GET_RINGBUFFER_SIZE = 210;
 	static const int NP_SERVER_GET_RINGBUFFER_FREE = 211;
+	static const int NP_SERVER_WAITING_FOR_TRIGGER = 221;
 	static const int NP_SERVER_SEND_SAMPLES = 222;
 
 	inline CITANetAudioProtocol() {};

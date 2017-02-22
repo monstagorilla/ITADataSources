@@ -67,9 +67,7 @@ private:
 	CITANetAudioStream* m_pStream;
 
 	CITANetAudioProtocol* m_pProtocol;
-	CITANetAudioMessage* m_pIncomingMessage;
-	CITANetAudioMessage* m_pOutgoingMessage;
-
+	CITANetAudioMessage* m_pMessage;
 	VistaConnectionIP* m_pConnection;
 
 	VistaThreadEvent m_oBlockIncrementEvent;

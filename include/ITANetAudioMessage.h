@@ -48,13 +48,16 @@ class VistaConnectionIP;
 class ITA_DATA_SOURCES_API CITANetAudioMessage
 {
 public:
-	CITANetAudioMessage( VistaConnectionIP* );
+	CITANetAudioMessage( VistaSerializingToolset::ByteOrderSwapBehavior bSwapBuffers );
 
+	void SetConnection( VistaConnectionIP* );
 	VistaConnectionIP* GetConnection() const;
 	void ClearConnection();
 
 	void WriteMessage();
-	bool TryReadMessage();
+	void ReadMessage();
+	void WriteAnswer();
+	void ReadAnswer();
 
 	void ResetMessage();
 
@@ -63,7 +66,10 @@ public:
 	bool GetOutgoingMessageHasData() const;
 
 	void SetMessageType( int nType );
+	void SetAnswerType( int nType );
 	int GetMessageType() const;
+	int GetAnswerType() const;
+
 
 	void WriteInt( const int );
 	void WriteBool( const bool );
@@ -94,11 +100,11 @@ public:
 private:
 	int m_nMessageType;
 	int m_nMessageId;
+	int m_nAnswerType;
 	VistaByteBufferSerializer m_oOutgoing; //!< Serialization buffer for messages
 	VistaByteBufferDeSerializer m_oIncoming; //!< Deserialization buffer for messages
 	std::vector< VistaType::byte > m_vecIncomingBuffer; // Net IO buffer
 
-	int m_nTimeoutMilliseconds; //!< Timeout for try-read message
 	VistaConnectionIP* m_pConnection;
 };
 

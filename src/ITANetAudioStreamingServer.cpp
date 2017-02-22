@@ -38,86 +38,105 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 
 	m_pConnection = m_pNetAudioServer->GetConnection();
 
-	m_pIncomingMessage = new CITANetAudioMessage( m_pConnection );
-	m_pOutgoingMessage = new CITANetAudioMessage( m_pConnection );
+	m_pMessage = new CITANetAudioMessage( m_pConnection->GetByteorderSwapFlag() );
+	m_pMessage->ResetMessage();
+	m_pMessage->SetConnection( m_pConnection );
+	m_pMessage->ReadMessage(); // blocking
 
-	Run();
+	assert( m_pMessage->GetMessageType() == CITANetAudioProtocol::NP_CLIENT_OPEN );
+	CITANetAudioProtocol::StreamingParameters oClientParams = m_pMessage->ReadStreamingParameters();
 
-	return true;
+	bool bOK = false;
+	if( m_oServerParams == oClientParams )
+	{
+		bOK = true;
+#ifdef NET_AUDIO_SHOW_TRAFFIC
+		vstr::out() << "[ITANetAudioStreamingServer] Server and client parameters matched. Will resume with streaming" << std::endl;
+	}
+	else
+	{
+		vstr::out() << "[ITANetAudioStreamingServer] Server and client parameters mismatch detected. Will notify client and stop." << std::endl;
+#endif
+	}
+
+	m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_OPEN );
+	m_pMessage->WriteBool( bOK );
+	m_pMessage->WriteAnswer();
+
+	if( bOK )
+		Run();
+
+	return bOK;
 }
 
 bool CITANetAudioStreamingServer::LoopBody()
 {
-	m_pIncomingMessage->ResetMessage();
+	m_pMessage->ResetMessage();
+	m_pMessage->SetConnection( m_pConnection );
+	m_pMessage->ReadMessage(); // blocking
 
-	if( m_pIncomingMessage->TryReadMessage() )
+	int iMsgType = m_pMessage->GetMessageType();
+	switch( iMsgType )
 	{
-		int iMsgType = m_pIncomingMessage->GetMessageType();
-		switch( iMsgType )
-		{
-		case CITANetAudioProtocol::NP_CLIENT_OPEN:
-			vstr::out() << m_pIncomingMessage->ReadStreamingParameters().dSampleRate << std::endl;
-			break;
+	case CITANetAudioProtocol::NP_CLIENT_WAITING_FOR_SAMPLES:
+	{
+		int iFreeSamples = m_pMessage->ReadInt();
 
-		case CITANetAudioProtocol::NP_CLIENT_WAITING_FOR_SAMPLES:
+		if( iFreeSamples >= int( m_pInputStream->GetBlocklength() ) )
 		{
-			int iFreeSamples = m_pIncomingMessage->ReadInt();
-
-			if( iFreeSamples >= int( m_pInputStream->GetBlocklength() ) )
+			// Send Samples
+			for( int i = 0; i < int( m_pInputStream->GetNumberOfChannels() ); i++ )
 			{
-				// Send Samples
-				for( int i = 0; i < int( m_pInputStream->GetNumberOfChannels() ); i++ )
-				{
-					ITAStreamInfo oStreamInfo;
-					oStreamInfo.nSamples = m_sfTempTransmitBuffer.GetLength();
-					const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
-					if( pfData != 0 )
-						m_sfTempTransmitBuffer[ i ].write( pfData, m_sfTempTransmitBuffer.GetLength() );
-				}
-				m_pInputStream->IncrementBlockPointer();
-				
-				m_pOutgoingMessage->ResetMessage();
-				m_pOutgoingMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES );
-				m_pIncomingMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
-				m_pIncomingMessage->WriteMessage();
+				ITAStreamInfo oStreamInfo;
+				oStreamInfo.nSamples = m_sfTempTransmitBuffer.GetLength();
+				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
+				if( pfData != 0 )
+					m_sfTempTransmitBuffer[ i ].write( pfData, m_sfTempTransmitBuffer.GetLength() );
+			}
+			m_pInputStream->IncrementBlockPointer();
+			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_SEND_SAMPLES );
+			m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
+			m_pMessage->WriteAnswer();
 
 #ifdef NET_AUDIO_SHOW_TRAFFIC
-				vstr::out() << "[ITANetAudioStreamingServer] Transmitted "<< m_sfTempTransmitBuffer.GetLength() << " samples for " 
-					<< m_pInputStream->GetNumberOfChannels() << " channels" << std::endl;
+			vstr::out() << "[ITANetAudioStreamingServer] Transmitted "<< m_sfTempTransmitBuffer.GetLength() << " samples for " 
+				<< m_pInputStream->GetNumberOfChannels() << " channels" << std::endl;
 #endif
-			}
-			else
-			{
+		}
+		else
+		{
+			// Waiting for Trigger
+			m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_WAITING_FOR_TRIGGER );
+			m_pMessage->WriteAnswer();
 
 #ifdef NET_AUDIO_SHOW_TRAFFIC
-				vstr::out() << "[ITANetAudioStreamingServer] Not enough free samples in client buffer, continuing without sending samples" << std::endl;
+			vstr::out() << "[ITANetAudioStreamingServer] Not enough free samples in client buffer, requesting a trigger when more free samples available" << std::endl;
 #endif
-				break;
-			}
 
 			break;
 		}
-		case CITANetAudioProtocol::NP_CLIENT_CLOSE:
-		{
-			Stop();
-			return false;
-		}
-		default:
-		{
-			vstr::out() << "[ITANetAudioStreamingServer] Unkown protocol type : " << iMsgType << std::endl;
-			break;
-		}
-		}
+
+		break;
 	}
-	else
+	case CITANetAudioProtocol::NP_CLIENT_CLOSE:
 	{
-		// Request ringbuffer free sample size
-		m_pOutgoingMessage->ResetMessage();
-		m_pOutgoingMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE );
-		m_pOutgoingMessage->WriteMessage();
+		//m_pMessage->SetAnswerType( CITANetAudioProtocol::NP_SERVER_CLOSE );
+		//m_pMessage->WriteAnswer();
+		StopGently(false);
+		//m_pConnection = NULL;
+		
+		Stop();
+
+		return false;
+	}
+	default:
+	{
+		vstr::out() << "[ITANetAudioStreamingServer] Unkown protocol type : " << iMsgType << std::endl;
+		break;
+	}
 	}
 
-	return false;
+	return true;
 }
 
 void CITANetAudioStreamingServer::SetInputStream( ITADatasource* pInStream )
