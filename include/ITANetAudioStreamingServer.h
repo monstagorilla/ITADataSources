@@ -61,7 +61,7 @@ public:
 	};
 
 	CITANetAudioStreamingServer();
-	virtual ~CITANetAudioStreamingServer() {};
+	~CITANetAudioStreamingServer();
 
 	bool Start( const std::string& sAddress, int iPort );
 	bool IsClientConnected() const;

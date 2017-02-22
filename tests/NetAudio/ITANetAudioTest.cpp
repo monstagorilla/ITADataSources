@@ -100,7 +100,7 @@ int main( int, char** )
 	vstr::out() << "[ NetAudioTestClient ] Connected." << endl;
 
 	// Playback
-	float fSeconds = 5.0f;
+	float fSeconds = 10.0f;
 	vstr::out() << "[ NetAudioTestClient ] Playback started, waiting " << fSeconds << " seconds" << endl;
 	ITAPA.Sleep( fSeconds ); // blocking
 	vstr::out() << "[ NetAudioTestClient ] Done." << endl;
@@ -114,6 +114,8 @@ int main( int, char** )
 	ITAPA.Stop( );
 	ITAPA.Close( );
 	ITAPA.Finalize( );
+
+	delete pServer;
 
 	return 0;
 }

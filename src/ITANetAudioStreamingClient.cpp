@@ -124,8 +124,17 @@ bool CITANetAudioStreamingClient::LoopBody()
 		m_pMessage->ResetMessage();
 		m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_CLOSE );
 		m_pMessage->WriteMessage();
+
+		while( true )
+		{
+			m_pMessage->ResetMessage();
+			m_pMessage->ReadMessage( 0 );
+			int iMsgType = m_pMessage->GetMessageType();
+			if( iMsgType == CITANetAudioProtocol::NP_SERVER_CLOSE )
+				break;
+		}
+
 		m_bStopped = true;
-		
 		m_pMessage->SetConnection( NULL );
 
 		while( GetIsConnected() )

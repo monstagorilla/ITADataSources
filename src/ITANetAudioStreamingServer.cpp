@@ -63,6 +63,12 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer( )
 	m_iClientRingBufferFreeSamples = 0;
 }
 
+CITANetAudioStreamingServer::~CITANetAudioStreamingServer()
+{
+	delete m_pNetAudioServer;
+	delete m_pServerLogger;
+}
+
 bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort )
 {
 	if ( !m_pInputStream )
@@ -196,11 +202,15 @@ bool CITANetAudioStreamingServer::LoopBody( )
 		{
 			case CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES:
 			{
-				m_iClientRingBufferFreeSamples = m_pMessage->ReadInt( );	
+				m_iClientRingBufferFreeSamples = m_pMessage->ReadInt( );
 				break;
 			}
 			case CITANetAudioProtocol::NP_CLIENT_CLOSE:
 			{
+				m_pMessage->ResetMessage();
+				m_pMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_CLOSE );
+				m_pMessage->WriteMessage();
+
 				StopGently( false );
 				m_pConnection = NULL;
 				Stop( );
@@ -273,8 +283,6 @@ std::string CITANetAudioStreamingServer::GetNetworkAddress( ) const
 	return m_pNetAudioServer->GetServerAddress( );
 }
 
-
-
 int CITANetAudioStreamingServer::GetNetworkPort( ) const
 {
 	return m_pNetAudioServer->GetNetworkPort( );
@@ -282,6 +290,5 @@ int CITANetAudioStreamingServer::GetNetworkPort( ) const
 
 void CITANetAudioStreamingServer::Stop( )
 {
-	delete m_pServerLogger;
 	m_pNetAudioServer->Stop( );
 }

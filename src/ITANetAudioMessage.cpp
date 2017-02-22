@@ -121,11 +121,9 @@ bool CITANetAudioMessage::ReadMessage( int timeout)
 	// TODO Timer entfernen
 	if (nIncomingBytes == -1)
 		return false;
-	else
-		int a = 5;
 
-	if (timeout != 0)
-		nIncomingBytes = m_pConnection->WaitForIncomingData( 0 );
+	//if (timeout != 0)
+		//nIncomingBytes = m_pConnection->WaitForIncomingData( 0 );
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] " << nIncomingBytes << " bytes incoming" << std::endl;
 #endif
