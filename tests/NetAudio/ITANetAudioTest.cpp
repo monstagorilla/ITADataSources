@@ -61,7 +61,7 @@ private:
 int main( int, char** )
 {
 	// Sample server (forked away into a thread)
-	CServer oServer( g_sInputFilePath );
+	CServer* pServer = new CServer( g_sInputFilePath );
 
 	// Client dumping received stream and mixing down to two channels
 	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBlockLength, 100 * g_iBlockLength );
@@ -104,6 +104,8 @@ int main( int, char** )
 	vstr::out() << "[ NetAudioTestClient ] Playback started, waiting " << fSeconds << " seconds" << endl;
 	ITAPA.Sleep( fSeconds ); // blocking
 	vstr::out() << "[ NetAudioTestClient ] Done." << endl;
+
+	oNetAudioStream.Disconnect();
 
 	vstr::out() << "[ NetAudioTestClient ] Will now disconnect from net audio server '" << g_sServerName << "' and port " << g_iServerPort << endl;
 	vstr::out() << "[ NetAudioTestClient ] Closing in 1 second (net audio stream not connected and playing back zeros)" << endl;

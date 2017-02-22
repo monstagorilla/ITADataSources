@@ -6,12 +6,13 @@
 
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
 #include <VistaBase/VistaStreamUtils.h>
+#include <VistaBase/VistaTimeUtils.h>
 
 CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pParent )
-	: m_oBlockIncrementEvent( VistaThreadEvent::WAITABLE_EVENT )
-	, m_pStream( pParent )
+	: m_pStream( pParent )
 	, m_pConnection( NULL )
 	, m_bStopIndicated( false )
+	, m_bStopped( false )
 {
 	m_pClient = new CITANetAudioClient();
 
@@ -24,14 +25,14 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 
 CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 {
-	if( m_pConnection )
-	{
-		m_pMessage->ResetMessage();
-		m_pMessage->SetConnection( m_pConnection );
-		m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_CLOSE );
-		m_pMessage->WriteMessage();
-		m_pClient->Disconnect();
-	}
+	if( GetIsConnected() )
+		Disconnect();
+
+	StopGently( true );
+
+	delete m_pClientLogger;
+	delete m_pClient;
+	delete m_pMessage;
 }
 
 bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPort )
@@ -66,10 +67,27 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 
 bool CITANetAudioStreamingClient::LoopBody()
 {
-	if( m_bStopIndicated )
+	if( !GetIsConnected() )
 		return true;
 
-	// Send message to server that samples can be received
+	ITAClientLog oLog;
+	oLog.uiBlockId = ++iStreamingBlockId;
+
+	if( m_bStopIndicated && !m_bStopped )
+	{
+		m_pMessage->ResetMessage();
+		m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_CLOSE );
+		m_pMessage->WriteMessage();
+		m_bStopped = true;
+		
+		m_pMessage->SetConnection( NULL );
+
+		while( GetIsConnected() )
+			VistaTimeUtils::Sleep( 100 );
+
+		return true;
+	}
+	
 	m_pMessage->ResetMessage();
 	m_pMessage->SetConnection( m_pConnection );
 	m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_WAITING_FOR_SAMPLES );
@@ -79,11 +97,11 @@ bool CITANetAudioStreamingClient::LoopBody()
 	m_pMessage->WriteInt( iFreeSamplesUntilAllowedReached );
 	m_pMessage->WriteMessage();
 
-	// Wait for answer of server
-	m_pMessage->ReadAnswer();
-	int iAnswerType = m_pMessage->GetAnswerType();
-	switch( iAnswerType )
+	// Read answer (blocking)
+	m_pMessage->ResetMessage( );
+	if ( m_pMessage->ReadMessage( 0 ) )
 	{
+		int iMsgType = m_pMessage->GetMessageType( );
 
 	case CITANetAudioProtocol::NP_INVALID:
 		// Something went wrong
@@ -112,11 +130,6 @@ bool CITANetAudioStreamingClient::LoopBody()
 	return true;
 }
 
-void CITANetAudioStreamingClient::TriggerBlockIncrement()
-{
-	m_oBlockIncrementEvent.SignalEvent();
-}
-
 bool CITANetAudioStreamingClient::GetIsConnected() const
 {
 	return m_pClient->GetIsConnected();
@@ -125,10 +138,12 @@ bool CITANetAudioStreamingClient::GetIsConnected() const
 void CITANetAudioStreamingClient::Disconnect()
 {
 	m_bStopIndicated = true;
-	StopGently( true );
 
-	delete m_pConnection;
+	while( !m_bStopped )
+		VistaTimeUtils::Sleep( 100 );
+	
 	m_pConnection = NULL;
-
+	m_pClient->Disconnect();
 	m_bStopIndicated = false;
+	m_bStopped = false;
 }

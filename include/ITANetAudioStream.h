@@ -78,6 +78,8 @@ public:
 	  */
 	bool Connect( const std::string& sAddress, int iPort = 12480 );
 
+	void Disconnect();
+
 	//! Returns the connection status
 	/**
 	  * @return True, if connected

@@ -126,6 +126,11 @@ bool CITANetAudioStream::Connect( const std::string& sAddress, int iPort )
 	return m_pNetAudioStreamingClient->Connect( sAddress, iPort );
 }
 
+void CITANetAudioStream::Disconnect()
+{
+	m_pNetAudioStreamingClient->Disconnect();
+}
+
 bool CITANetAudioStream::GetIsConnected() const
 {
 	return m_pNetAudioStreamingClient->GetIsConnected();
