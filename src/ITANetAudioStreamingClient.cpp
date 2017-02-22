@@ -137,31 +137,33 @@ bool CITANetAudioStreamingClient::LoopBody()
 
 	// Read answer (blocking)
 	m_pMessage->ResetMessage( );
-	if ( m_pMessage->ReadMessage( 0 ) )
+	if( m_pMessage->ReadMessage( 0 ) )
 	{
-		int iMsgType = m_pMessage->GetMessageType( );
-
-	case CITANetAudioProtocol::NP_INVALID:
-				m_pMessage->ReadSampleFrame( &m_sfReceivingBuffer );
-				if ( m_pStream->GetRingBufferFreeSamples( ) >= m_sfReceivingBuffer.GetLength( ) )
-					m_pStream->Transmit(m_sfReceivingBuffer, m_sfReceivingBuffer.GetLength());
+		int iMsgType = m_pMessage->GetMessageType();
+		switch( iMsgType )
+		{
+		case CITANetAudioProtocol::NP_SERVER_SENDING_SAMPLES:
+			m_pMessage->ReadSampleFrame( &m_sfReceivingBuffer );
+			if( m_pStream->GetRingBufferFreeSamples() >= m_sfReceivingBuffer.GetLength() )
+				m_pStream->Transmit( m_sfReceivingBuffer, m_sfReceivingBuffer.GetLength() );
 #ifdef NET_AUDIO_SHOW_TRAFFIC
-				vstr::out() << "[ITANetAudioStreamingClient] Recived " << m_sfReceivingBuffer.GetLength() << " samples" << std::endl;
+			vstr::out() << "[ITANetAudioStreamingClient] Recived " << m_sfReceivingBuffer.GetLength() << " samples" << std::endl;
 #endif
-				break;
-			case CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES:
-				m_pMessage->ReadBool();
-				m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES );
-				m_pMessage->WriteInt( m_pStream->GetRingBufferFreeSamples( ) );
-				m_pMessage->WriteMessage();
-				break;
-			case CITANetAudioProtocol::NP_SERVER_CLOSE:
-				Disconnect( );
-				break;
-			default:
-				vstr::out( ) << "[ITANetAudioStreamingServer] Unkown protocol type : " << iMsgType << std::endl;
-				break;
+			break;
+		case CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES:
+			m_pMessage->ReadBool();
+			m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES );
+			m_pMessage->WriteInt( m_pStream->GetRingBufferFreeSamples() );
+			m_pMessage->WriteMessage();
+			break;
+		case CITANetAudioProtocol::NP_SERVER_CLOSE:
+			Disconnect();
+			break;
+		default:
+			vstr::out() << "[ITANetAudioStreamingServer] Unkown protocol type : " << iMsgType << std::endl;
+			break;
 		}
+
 		oLog.iChannel = m_pStream->GetNumberOfChannels();
 		oLog.iProtocolStatus = iMsgType;
 		oLog.iFreeSamples = m_pStream->GetRingBufferFreeSamples();
