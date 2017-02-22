@@ -204,7 +204,7 @@ private:
 	int m_iWriteCursor; //!< Cursor where samples will be fed into ring buffer from net audio producer (always ahead)
 	bool m_bRingBufferFull; //!< Indicator if ring buffer is full (and read cursor equals write cursor)
 	ITASampleFrame m_sfRingBuffer; //!< Ring buffer
-	int m_iTargetSampleLatency; //!< Maximum allowed samples / target sample latency
+	int m_iTargetSampleLatencyServer; //!< Maximum allowed samples / target sample latency
 
 	int m_iStreamingStatus; //!< Current streaming status
 	double m_dLastStreamingTimeCode;

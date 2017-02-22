@@ -65,6 +65,7 @@ public:
 		double dSampleRate;
 		int iBlockSize;
 		int iRingBufferSize;
+		int iTargetSampleLatency;
 
 		inline StreamingParameters()
 		{
@@ -72,11 +73,16 @@ public:
 			dSampleRate = 0.0f;
 			iBlockSize = 0;
 			iRingBufferSize = 0;
+			iTargetSampleLatency = 0;
 		};
 
 		inline bool operator==( const StreamingParameters& rhs )
 		{
-			if ( ( iChannels == rhs.iChannels ) && ( dSampleRate == rhs.dSampleRate ) && ( iBlockSize == rhs.iBlockSize ) && ( iRingBufferSize == rhs.iRingBufferSize ) )
+			if ( ( iChannels == rhs.iChannels ) 
+				&& ( dSampleRate == rhs.dSampleRate ) 
+				&& (iBlockSize == rhs.iBlockSize)
+				&& (iRingBufferSize == rhs.iRingBufferSize)
+				&& (iTargetSampleLatency == rhs.iTargetSampleLatency))
 				return true;
 			else
 				return false;
