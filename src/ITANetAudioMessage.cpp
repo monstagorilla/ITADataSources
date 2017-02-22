@@ -4,6 +4,7 @@
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
 #include <VistaBase/VistaExceptionBase.h>
 #include <VistaBase/VistaStreamUtils.h>
+#include <ITAClock.h>
 
 #include <cstring>
 #include <algorithm>
@@ -13,14 +14,14 @@
 
 static int S_nMessageIds = 0;
 
-CITANetAudioMessage::CITANetAudioMessage( VistaConnectionIP* pConnection )
+CITANetAudioMessage::CITANetAudioMessage( VistaSerializingToolset::ByteOrderSwapBehavior bSwapBuffers )
 	: m_vecIncomingBuffer( 2048 )
 	, m_oOutgoing( 2048 )
-	, m_pConnection( pConnection )
-	, m_nTimeoutMilliseconds( 1 )
+	, m_pConnection( NULL )
+	, m_iBytesReceivedTotal(0)
 {
-	m_oOutgoing.SetByteorderSwapFlag( pConnection->GetByteorderSwapFlag() );
-	m_oIncoming.SetByteorderSwapFlag( pConnection->GetByteorderSwapFlag() );
+	m_oOutgoing.SetByteorderSwapFlag( bSwapBuffers );
+	m_oIncoming.SetByteorderSwapFlag( bSwapBuffers );
 	ResetMessage();
 }
 
@@ -44,11 +45,18 @@ void CITANetAudioMessage::ResetMessage()
 
 	m_oIncoming.SetBuffer( NULL, 0 );
 
-	m_nMessageType = CITANetAudioProtocol::NP_INVALID;
+	m_nMessageType = -1;
+
+	//m_pConnection = NULL;
 
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [Preparing] (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
 #endif
+}
+
+void CITANetAudioMessage::SetConnection( VistaConnectionIP* pConn )
+{
+	m_pConnection = pConn;
 }
 
 void CITANetAudioMessage::WriteMessage()
@@ -86,7 +94,6 @@ void CITANetAudioMessage::WriteMessage()
 	{
 		// It appears safe to send even very big data payload, so we will send at once
 		int iRawBufferSize = m_oOutgoing.GetBufferSize();
-		assert( iRawBufferSize > 4 );
 		int nRet = m_pConnection->Send( m_oOutgoing.GetBuffer(), iRawBufferSize );
 
 #if NET_AUDIO_SHOW_TRAFFIC
@@ -94,30 +101,31 @@ void CITANetAudioMessage::WriteMessage()
 #endif
 
 		m_pConnection->WaitForSendFinish();
-		if( nRet != m_oOutgoing.GetBufferSize() )
-			VISTA_THROW( "ITANetAudioMessage: could not send all data from output buffer via network connection", 255 );
+		//if( nRet != m_oOutgoing.GetBufferSize() )
+			//VISTA_THROW( "ITANetAudioMessage: could not send all data from output buffer via network connection", 255 );
 	}
-	catch( VistaExceptionBase& ex )
+	catch (VistaExceptionBase& ex)
 	{
 		ITA_EXCEPT1( NETWORK_ERROR, ex.GetExceptionText() );
 	}
 }
 
-bool CITANetAudioMessage::TryReadMessage()
+
+bool CITANetAudioMessage::ReadMessage( int timeout)
 {
 #if NET_AUDIO_SHOW_TRAFFIC
-	vstr::out() << "CITANetAudioMessage [ TryRead ] Waiting for incoming data for " << m_nTimeoutMilliseconds << std::endl;
+	vstr::out() << "CITANetAudioMessage [ Reading ] Waiting for incoming data" << std::endl;
 #endif
-	long nIncomingBytes = m_pConnection->WaitForIncomingData( m_nTimeoutMilliseconds );
-	if( nIncomingBytes <= 0 )
-	{
-#if NET_AUDIO_SHOW_TRAFFIC
-			vstr::out() << "CITANetAudioMessage [ TryRead ] nothing incoming" << std::endl;
-#endif
+	// WaitForIncomming Data int in ca ms
+	long nIncomingBytes = m_pConnection->WaitForIncomingData( timeout );
+	// TODO Timer entfernen
+	if (nIncomingBytes == -1)
 		return false;
-	}
-		
-	assert( nIncomingBytes >= 4 ); // we need at least the size of message
+	else
+		int a = 5;
+
+	if (timeout != 0)
+		nIncomingBytes = m_pConnection->WaitForIncomingData( 0 );
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] " << nIncomingBytes << " bytes incoming" << std::endl;
 #endif
@@ -128,23 +136,30 @@ bool CITANetAudioMessage::TryReadMessage()
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] Expecting " << nMessagePayloadSize << " bytes message payload" << std::endl;
 #endif
+	if (nMessagePayloadSize <= 0)
+		return false;
 	// we need at least the two protocol ints
 	//assert( nMessagePayloadSize >= 2 * sizeof( VistaType::sint32 ) );
 
 	if( nMessagePayloadSize > ( int ) m_vecIncomingBuffer.size() )
 		m_vecIncomingBuffer.resize( nMessagePayloadSize );
-
+	
 	// Receive all incoming data (potentially splitted)
-	int iBytesReceivedTotal = 0;
-	while( nMessagePayloadSize < iBytesReceivedTotal )
+	
+	while (nMessagePayloadSize > m_iBytesReceivedTotal)
 	{
 		int iIncommingBytes = m_pConnection->WaitForIncomingData( 0 );
-		int iBytesReceived = m_pConnection->Receive( &m_vecIncomingBuffer[ iBytesReceivedTotal ], iIncommingBytes );
-		iBytesReceivedTotal += iBytesReceived;
+		int iBytesReceived;
+		if ( nMessagePayloadSize < iIncommingBytes )
+			iBytesReceived = m_pConnection->Receive(&m_vecIncomingBuffer[m_iBytesReceivedTotal], nMessagePayloadSize - m_iBytesReceivedTotal);
+		else
+			iBytesReceived = m_pConnection->Receive(&m_vecIncomingBuffer[m_iBytesReceivedTotal], iIncommingBytes);
+		m_iBytesReceivedTotal += iBytesReceived;
 #if NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ CITANetAudioMessage ] " << std::setw( 3 ) << std::floor( iBytesReceivedTotal / float( nMessagePayloadSize ) * 100.0f ) << "% transmitted" << std::endl;
 #endif
 	}
+	m_iBytesReceivedTotal = 0;
 
 	// Transfer data into members
 	m_oIncoming.SetBuffer( &m_vecIncomingBuffer[ 0 ], nMessagePayloadSize, false );
@@ -154,7 +169,6 @@ bool CITANetAudioMessage::TryReadMessage()
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] Finished receiving " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
 #endif
-
 	return true;
 }
 
@@ -165,7 +179,7 @@ int CITANetAudioMessage::GetMessageType() const
 
 void CITANetAudioMessage::SetMessageType( int nType )
 {
-	assert( m_nMessageType == CITANetAudioProtocol::NP_INVALID ); // should only be set once
+	//assert( m_nMessageType == CITANetAudioProtocol::NP_INVALID ); // should only be set once
 	m_nMessageType = nType;
 }
 
@@ -305,8 +319,9 @@ CITANetAudioProtocol::StreamingParameters CITANetAudioMessage::ReadStreamingPara
 	CITANetAudioProtocol::StreamingParameters oParams;
 
 	oParams.iChannels = ReadInt();
-	oParams.dSampleRate = ReadDouble();
-	oParams.iBlockSize = ReadInt();
+	oParams.dSampleRate = ReadDouble( );
+	oParams.iBlockSize = ReadInt( );
+	oParams.iRingBufferSize = ReadInt( );
 
 	return oParams;
 }
@@ -316,6 +331,7 @@ void CITANetAudioMessage::WriteStreamingParameters( const CITANetAudioProtocol::
 	WriteInt( oParams.iChannels );
 	WriteDouble( oParams.dSampleRate );
 	WriteInt( oParams.iBlockSize );
+	WriteInt( oParams.iRingBufferSize );
 }
 
 int CITANetAudioMessage::ReadRingBufferSize()
@@ -342,7 +358,6 @@ void CITANetAudioMessage::ReadSampleFrame( ITASampleFrame* pSampleFrame )
 {
 	int iChannels = ReadInt();
 	int iSamples = ReadInt();
-
 	if( pSampleFrame->channels() != iChannels || pSampleFrame->GetLength() != iSamples )
 		pSampleFrame->init( iChannels, iSamples, false );
 
@@ -368,3 +383,4 @@ void CITANetAudioMessage::WriteSampleFrame( ITASampleFrame* pSamples )
 		}
 	}
 }
+

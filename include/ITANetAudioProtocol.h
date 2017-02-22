@@ -47,20 +47,14 @@ class CITANetAudioStream;
 class ITA_DATA_SOURCES_API CITANetAudioProtocol
 {
 public:
-	static const int NET_AUDIO_VERSION = 1;
-
-	static const int NP_INVALID = -1;
-	static const int NP_GET_VERSION_INFO = 1;
-
 	static const int NP_CLIENT_OPEN = 100;
 	static const int NP_CLIENT_CLOSE = 101;
-	static const int NP_CLIENT_WAITING_FOR_SAMPLES = 111;
+	static const int NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES = 111;
 
-	static const int NP_SERVER_CLOSE = 200;
-	static const int NP_SERVER_OPEN = 201;
-	static const int NP_SERVER_GET_RINGBUFFER_SIZE = 210;
-	static const int NP_SERVER_GET_RINGBUFFER_FREE = 211;
-	static const int NP_SERVER_SEND_SAMPLES = 222;
+	static const int NP_SERVER_OPEN = 200;
+	static const int NP_SERVER_CLOSE = 201;
+	static const int NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES = 211;
+	static const int NP_SERVER_SENDING_SAMPLES = 222;
 
 	inline CITANetAudioProtocol() {};
 	inline ~CITANetAudioProtocol() {};
@@ -70,17 +64,19 @@ public:
 		int iChannels;
 		double dSampleRate;
 		int iBlockSize;
+		int iRingBufferSize;
 
 		inline StreamingParameters()
 		{
 			iChannels = 0;
 			dSampleRate = 0.0f;
 			iBlockSize = 0;
+			iRingBufferSize = 0;
 		};
 
 		inline bool operator==( const StreamingParameters& rhs )
 		{
-			if( ( iChannels == rhs.iChannels ) && ( dSampleRate == rhs.dSampleRate ) && ( iBlockSize == rhs.iBlockSize ) )
+			if ( ( iChannels == rhs.iChannels ) && ( dSampleRate == rhs.dSampleRate ) && ( iBlockSize == rhs.iBlockSize ) && ( iRingBufferSize == rhs.iRingBufferSize ) )
 				return true;
 			else
 				return false;

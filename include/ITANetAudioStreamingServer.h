@@ -39,6 +39,8 @@ class CITANetAudioProtocol;
 class CITANetAudioServer;
 class CITANetAudioMessage;
 class VistaTCPSocket;
+class ITABufferedDataLoggerImplServer;
+
 
 //! Network audio sample server (for connecting a net audio stream)
 /**
@@ -86,11 +88,14 @@ private:
 	VistaConnectionIP* m_pConnection;
 
 	CITANetAudioProtocol::StreamingParameters m_oServerParams;
-	CITANetAudioMessage* m_pIncomingMessage;
-	CITANetAudioMessage* m_pOutgoingMessage;
+	CITANetAudioMessage* m_pMessage;
+
+	int iServerBlockId;
+	ITABufferedDataLoggerImplServer* m_pServerLogger;
 
 	int m_iUpdateStrategy;
 	int m_iClientRingBufferFreeSamples;
+	int m_iMaxSendBlocks;
 
 	friend class CITANetAudioServer;
 };
