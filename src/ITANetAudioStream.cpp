@@ -326,7 +326,7 @@ void CITANetAudioStream::IncrementBlockPointer()
 	oLog.dStreamingTimeCode = m_dLastStreamingTimeCode;
 	oLog.uiBlockId = ++iAudioStreamingBlockID;
 	oLog.iFreeSamples = GetRingBufferFreeSamples( );
-	//m_pStreamLogger->log( oLog );
+	m_pStreamLogger->log( oLog );
 	
 	//m_pNetAudioStreamingClient->TriggerBlockIncrement();
 }
