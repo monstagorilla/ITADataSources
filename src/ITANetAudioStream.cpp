@@ -124,7 +124,7 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	, m_bRingBufferFull( false )
 	, m_iStreamingStatus( INVALID )
 	, m_dLastStreamingTimeCode( 0.0f )
-	, m_iTargetSampleLatency( iRingBufferCapacity )
+	, m_iTargetSampleLatencyServer( iRingBufferCapacity )
 {
 	m_bRingBufferFull = false;
 	if( iBufferSize > iRingBufferCapacity )
@@ -157,7 +157,7 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	oLog.dSampleRate = m_dSampleRate;
 	oLog.iBufferSize = GetBlocklength();
 	oLog.iRingBufferSize = GetRingBufferSize();
-	oLog.iTargetSampleLatency = m_iTargetSampleLatency;
+	oLog.iTargetSampleLatency = m_iTargetSampleLatencyServer;
 	m_pAudioLogger->log( oLog );
 }
 
@@ -172,6 +172,11 @@ CITANetAudioStream::~CITANetAudioStream()
 bool CITANetAudioStream::Connect( const std::string& sAddress, int iPort )
 {
 	return m_pNetAudioStreamingClient->Connect( sAddress, iPort );
+}
+
+void CITANetAudioStream::Disconnect()
+{
+	m_pNetAudioStreamingClient->Disconnect();
 }
 
 bool CITANetAudioStream::GetIsConnected() const
@@ -202,17 +207,17 @@ void CITANetAudioStream::SetAllowedLatencySamples( int iLatencySamples )
 	if( iLatencySamples > GetMaximumLatencySamples() )
 		ITA_EXCEPT1( INVALID_PARAMETER, "Can not set latency greater than the maximum possible" );
 
-	m_iTargetSampleLatency = iLatencySamples;
+	m_iTargetSampleLatencyServer = iLatencySamples;
 }
 
 float CITANetAudioStream::GetAllowedLatencySeconds() const
 {
-	return float( m_iTargetSampleLatency / GetSampleRate() );
+	return float(m_iTargetSampleLatencyServer / GetSampleRate());
 }
 
 int CITANetAudioStream::GetAllowedLatencySamples() const
 {
-	return m_iTargetSampleLatency;
+	return m_iTargetSampleLatencyServer;
 }
 
 int CITANetAudioStream::GetMinimumLatencySamples() const
@@ -321,7 +326,7 @@ void CITANetAudioStream::IncrementBlockPointer()
 	oLog.dStreamingTimeCode = m_dLastStreamingTimeCode;
 	oLog.uiBlockId = ++iAudioStreamingBlockID;
 	oLog.iFreeSamples = GetRingBufferFreeSamples( );
-	//m_pStreamLogger->log( oLog );
+	m_pStreamLogger->log( oLog );
 	
 	//m_pNetAudioStreamingClient->TriggerBlockIncrement();
 }

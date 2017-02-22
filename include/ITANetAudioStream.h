@@ -79,6 +79,8 @@ public:
 	  */
 	bool Connect( const std::string& sAddress, int iPort = 12480 );
 
+	void Disconnect();
+
 	//! Returns the connection status
 	/**
 	  * @return True, if connected
@@ -204,7 +206,7 @@ private:
 	int m_iWriteCursor; //!< Cursor where samples will be fed into ring buffer from net audio producer (always ahead)
 	bool m_bRingBufferFull; //!< Indicator if ring buffer is full (and read cursor equals write cursor)
 	ITASampleFrame m_sfRingBuffer; //!< Ring buffer
-	int m_iTargetSampleLatency; //!< Maximum allowed samples / target sample latency
+	int m_iTargetSampleLatencyServer; //!< Maximum allowed samples / target sample latency
 
 	int m_iStreamingStatus; //!< Current streaming status
 	double m_dLastStreamingTimeCode;

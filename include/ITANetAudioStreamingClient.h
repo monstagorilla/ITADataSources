@@ -70,13 +70,14 @@ private:
 	CITANetAudioMessage* m_pMessage;
 	VistaConnectionIP* m_pConnection;
 
-	VistaThreadEvent m_oBlockIncrementEvent;
+	//VistaThreadEvent m_oBlockIncrementEvent;
 
 	ITASampleFrame m_sfReceivingBuffer; //!< Buffer incoming data
 
 	CITANetAudioProtocol::StreamingParameters m_oParams;
 
 	bool m_bStopIndicated;
+	bool m_bStopped;
 	int iStreamingBlockId;
 	ITABufferedDataLoggerImplClient* m_pClientLogger;
 

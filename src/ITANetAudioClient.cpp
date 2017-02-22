@@ -46,5 +46,5 @@ void CITANetAudioClient::Disconnect()
 
 bool CITANetAudioClient::GetIsConnected() const
 {
-	return m_pConnection ? true : false;
+	return ( m_pConnection != NULL ) ? true : false;
 }
