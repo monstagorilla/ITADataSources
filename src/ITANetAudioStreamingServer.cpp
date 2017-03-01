@@ -216,7 +216,7 @@ bool CITANetAudioStreamingServer::LoopBody( )
 	{
 		ITAServerLog oLog;
 		oLog.uiBlockId = ++iServerBlockId;
-		// Neue Sample bei ca 1ms (0,9ms) warten
+		// Neue Samples, bei ca 1ms warten
 		double dTimeDiff = ITAClock::getDefaultClock()->getTime() - m_dLastTimeStamp;
 		float dSamples = dTimeDiff * m_pInputStream->GetSampleRate();
 		m_dLastTimeStamp = ITAClock::getDefaultClock()->getTime();
