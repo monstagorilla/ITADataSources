@@ -2,7 +2,7 @@
 close all;
 clear all;
 BlockSize = '32';
-plotServer = 0;
+plotServer = 1;
 maxSamples = 20*3;
 
 %% Einlesen der Logs
@@ -36,9 +36,9 @@ end
 NetAudioStreamTab = readtable('NetAudioLogStream_BS32_Ch2.txt', 'FileType', 'text', 'Delimiter', '\t');
 minTimeClient = min(minTimeClient, NetAudioStreamTab.WorldTimeStamp(1));
 
-NetAudioStreamTab.WorldTimeStamp = NetAudioStreamTab.WorldTimeStamp - minTimeClient;
-NetAudioLogClientTab.WorldTimeStamp = NetAudioLogClientTab.WorldTimeStamp - minTimeClient;
-NetAudioLogServerTab.WorldTimeStamp = NetAudioLogServerTab.WorldTimeStamp - minTimeServer;
+NetAudioStreamTab.WorldTimeStamp = (NetAudioStreamTab.WorldTimeStamp - minTimeClient) * 1000;
+NetAudioLogClientTab.WorldTimeStamp = (NetAudioLogClientTab.WorldTimeStamp - minTimeClient) * 1000;
+NetAudioLogServerTab.WorldTimeStamp = (NetAudioLogServerTab.WorldTimeStamp - minTimeServer) * 1000;
 
 Streaming = NetAudioStreamTab.WorldTimeStamp(find(NetAudioStreamTab.StreamingStatus == 2));
 Underruns = NetAudioStreamTab.WorldTimeStamp(find(NetAudioStreamTab.StreamingStatus == 3));
@@ -50,7 +50,8 @@ Protocol = {'100', 'NP CLIENT OPEN';...
     '200', 'NP SERVER OPEN';...
     '201', 'NP SERVER CLOSE';...
     '211', 'NP SERVER GET RINGBUFFER FREE SAMPLES';...
-    '222', 'NP SERVER SENDING SAMPLES'};
+    '222', 'NP SERVER SENDING SAMPLES';...
+    '222', 'NP SERVER CALCULATE'};
 
 %% Daten sammlen Client
 Time100 = NetAudioLogClientTab.WorldTimeStamp(find(NetAudioLogClientTab.ProtocolStatus == 100));
@@ -96,7 +97,7 @@ else
 end
 i = 3;
 j = 4;
-for k = (1:7)
+for k = (1:8)
     if plotServer == 1
         if size(TimeServer{k}, 1) ~= 0
             plots1{i} = plot(TimeServer{k}, maxSamples*ones(size(TimeServer{k})),'.');

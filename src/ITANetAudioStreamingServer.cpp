@@ -214,6 +214,7 @@ bool CITANetAudioStreamingServer::LoopBody( )
 	}
 	else
 	{
+		/*
 		ITAServerLog oLog;
 		oLog.uiBlockId = ++iServerBlockId;
 		// Neue Samples, bei ca 1ms warten
@@ -227,7 +228,7 @@ bool CITANetAudioStreamingServer::LoopBody( )
 		oLog.iProtocolStatus = 555;
 		oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
 		m_pServerLogger->log(oLog);
-		
+		*/
 	}
 
 	bAskClient = false;
