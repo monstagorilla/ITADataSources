@@ -117,18 +117,18 @@ class ITABufferedDataLoggerImplStream : public ITABufferedDataLogger < ITAStream
 class ITABufferedDataLoggerImplNet : public ITABufferedDataLogger < ITANetLog > {};
 
 
-CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity )
+CITANetAudioStream::CITANetAudioStream(int iChannels, double dSamplingRate, int iBufferSize, int iTargetSampleLatencyServer)
 	: m_sfOutputStreamBuffer( iChannels, iBufferSize, true )
 	, m_dSampleRate( dSamplingRate )
-	, m_sfRingBuffer( iChannels, iRingBufferCapacity, true )
+	, m_sfRingBuffer(iChannels, iTargetSampleLatencyServer * 3, true)
 	, m_bRingBufferFull( false )
 	, m_iStreamingStatus( INVALID )
 	, m_dLastStreamingTimeCode( 0.0f )
-	, m_iTargetSampleLatencyServer( iRingBufferCapacity )
+	, m_iTargetSampleLatencyServer( iTargetSampleLatencyServer )
 {
 	m_bRingBufferFull = false;
-	if( iBufferSize > iRingBufferCapacity )
-		ITA_EXCEPT1( INVALID_PARAMETER, "Ring buffer capacity can not be smaller than buffer size." );
+	if (iBufferSize > iTargetSampleLatencyServer)
+		ITA_EXCEPT1( INVALID_PARAMETER, "Ring buffer capacity can not be smaller than Target Sample Latency." );
 
 	m_pNetAudioStreamingClient = new CITANetAudioStreamingClient( this );
 	m_iReadCursor = 0;
@@ -397,7 +397,7 @@ int CITANetAudioStream::GetRingBufferFreeSamples() const
 	if( m_bRingBufferFull )
 		return 0;
 
-	int iFreeSamples = GetRingBufferSize() - ( ( m_iWriteCursor - m_iReadCursor + GetRingBufferSize() ) % GetRingBufferSize() );
+	int iFreeSamples = GetRingBufferSize() - ((m_iWriteCursor - m_iReadCursor + GetRingBufferSize()) % GetRingBufferSize());
 	assert( iFreeSamples > 0 );
 	return iFreeSamples;
 }

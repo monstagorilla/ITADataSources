@@ -2,7 +2,8 @@
 close all;
 clear all;
 BlockSize = '32';
-plotServer = 2;
+plotServer = 0;
+maxSamples = 20*3;
 
 %% Einlesen der Logs
 NetAudioLogServer = dir(['NetAudioLogServer_BS' BlockSize '*.txt']);
@@ -15,8 +16,8 @@ channel = NetAudioLogServer{1}(28:end-4);
 for k=2:numel(NetAudioLogServer) 
     temp = readtable(NetAudioLogServer{k}, 'FileType', 'text', 'Delimiter', '\t');
     NetAudioLogServerTab = [NetAudioLogServerTab; temp];
-    minTimeServer = min(minTime, temp.WorldTimeStamp(1));
-    maxTimeServer = max(maxTime, temp.WorldTimeStamp(end));
+    minTimeServer = min(minTimeServer, temp.WorldTimeStamp(1));
+    maxTimeServer = max(maxTimeServer, temp.WorldTimeStamp(end));
     channel = [channel; NetAudioLogServer{k}(28:end-4)];
 end
 
@@ -28,13 +29,20 @@ maxTimeClient = NetAudioLogClientTab.WorldTimeStamp(end);
 for k=2:numel(NetAudioLogClient) 
     temp = readtable(NetAudioLogClient{k}, 'FileType', 'text', 'Delimiter', '\t');
     NetAudioLogClientTab = [NetAudioLogClientTab; temp];
-    minTimeClient = min(minTime, temp.WorldTimeStamp(1));
-    maxTimeClient = max(maxTime, temp.WorldTimeStamp(end));
+    minTimeClient = min(minTimeClient, temp.WorldTimeStamp(1));
+    maxTimeClient = max(maxTimeClient, temp.WorldTimeStamp(end));
 end
+
+NetAudioStreamTab = readtable('NetAudioLogStream_BS32_Ch2.txt', 'FileType', 'text', 'Delimiter', '\t');
+minTimeClient = min(minTimeClient, NetAudioStreamTab.WorldTimeStamp(1));
+
+NetAudioStreamTab.WorldTimeStamp = NetAudioStreamTab.WorldTimeStamp - minTimeClient;
 NetAudioLogClientTab.WorldTimeStamp = NetAudioLogClientTab.WorldTimeStamp - minTimeClient;
 NetAudioLogServerTab.WorldTimeStamp = NetAudioLogServerTab.WorldTimeStamp - minTimeServer;
 
-
+Streaming = NetAudioStreamTab.WorldTimeStamp(find(NetAudioStreamTab.StreamingStatus == 2));
+Underruns = NetAudioStreamTab.WorldTimeStamp(find(NetAudioStreamTab.StreamingStatus == 3));
+Overruns = NetAudioStreamTab.WorldTimeStamp(find(NetAudioStreamTab.StreamingStatus == 4));
 %% Protocolstatus ersetzten
 Protocol = {'100', 'NP CLIENT OPEN';...
     '101', 'NP CLIENT CLOSE';...
@@ -43,7 +51,6 @@ Protocol = {'100', 'NP CLIENT OPEN';...
     '201', 'NP SERVER CLOSE';...
     '211', 'NP SERVER GET RINGBUFFER FREE SAMPLES';...
     '222', 'NP SERVER SENDING SAMPLES'};
-%NumPro = zeros(size(NetAudioLogServerTab.ProtocolStatus));
 
 %% Daten sammlen Client
 Time100 = NetAudioLogClientTab.WorldTimeStamp(find(NetAudioLogClientTab.ProtocolStatus == 100));
@@ -64,33 +71,35 @@ Time200 = NetAudioLogServerTab.WorldTimeStamp(find(NetAudioLogServerTab.Protocol
 Time201 = NetAudioLogServerTab.WorldTimeStamp(find(NetAudioLogServerTab.ProtocolStatus == 201));
 Time211 = NetAudioLogServerTab.WorldTimeStamp(find(NetAudioLogServerTab.ProtocolStatus == 211));
 Time222 = NetAudioLogServerTab.WorldTimeStamp(find(NetAudioLogServerTab.ProtocolStatus == 222));
+Time555 = NetAudioLogServerTab.WorldTimeStamp(find(NetAudioLogServerTab.ProtocolStatus == 555));
 
-TimeServer = {Time100 Time101 Time111 Time200 Time201 Time211 Time222};
+TimeServer = {Time100 Time101 Time111 Time200 Time201 Time211 Time222 Time555};
 
 %% Plot Protocol
 legende = {};
 if plotServer == 1
     % Plot Server Samples
-    plots1{1} = plot([10 0],[3200 3200]);
-    hold on
-    plots1{2} = plot(NetAudioLogServerTab.WorldTimeStamp, NetAudioLogServerTab.FreeSamples, '-*');
+    plots1{1} = plot([10 0],[maxSamples maxSamples]);
     legende{1} = 'Maximal Freie Samples';
+    hold on
+    plots1{2} = plot(NetAudioLogServerTab.WorldTimeStamp, NetAudioLogServerTab.FreeSamples/32, '-*');
     legende{2} = 'Freie Samples Server';
 else
     % Plot Client Samples
-    maxSamples = 3200;
-    plots2{1} = plot([10 0],[3200 3200]);
-    hold on;
-    plots2{2} = plot(NetAudioLogClientTab.WorldTimeStamp, NetAudioLogClientTab.FreeSamples, '-*');
+    plots2{1} = plot([10 0],[maxSamples maxSamples]);
     legende{1} = 'Maximal Freie Samples';
+    hold on;
+    plots2{2} = plot(NetAudioLogClientTab.WorldTimeStamp, NetAudioLogClientTab.FreeSamples/32, '-*');
     legende{2} = 'Freie Samples Client';
+    plot(Underruns, maxSamples*ones(size(Underruns)), '*')
+    legende{3} = 'Underruns';
 end
 i = 3;
-j = 3;
+j = 4;
 for k = (1:7)
     if plotServer == 1
         if size(TimeServer{k}, 1) ~= 0
-            plots1{i} = plot(TimeServer{k}, ones(size(TimeServer{k})),'.');
+            plots1{i} = plot(TimeServer{k}, maxSamples*ones(size(TimeServer{k})),'.');
             legende{i} = Protocol{k,2};
             i = i + 1;
             
@@ -102,7 +111,7 @@ for k = (1:7)
             if k == 3
                 p = 1500;
             end
-            plots2{j} = plot(TimeClient{k}, ones(size(TimeClient{k})),'.');
+            plots2{j} = plot(TimeClient{k}, maxSamples*ones(size(TimeClient{k})),'.');
             legende{j} = Protocol{k,2};
             j = j + 1;
         end

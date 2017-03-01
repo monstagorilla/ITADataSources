@@ -96,6 +96,7 @@ private:
 	int m_iUpdateStrategy;
 	int m_iClientRingBufferFreeSamples;
 	int m_iMaxSendBlocks;
+	double m_dLastTimeStamp;
 
 	friend class CITANetAudioServer;
 };

@@ -64,7 +64,7 @@ int main( int, char** )
 	CServer* pServer = new CServer( g_sInputFilePath );
 
 	// Client dumping received stream and mixing down to two channels
-	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBlockLength, 100 * g_iBlockLength );
+	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBlockLength, 20 * g_iBlockLength );
 
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBlockLength );
 	oPatchbay.AddInput( &oNetAudioStream );

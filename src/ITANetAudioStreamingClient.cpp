@@ -56,8 +56,9 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 
 	m_oParams.iChannels = pParent->GetNumberOfChannels();
 	m_oParams.dSampleRate = pParent->GetSampleRate( );
-	m_oParams.iBlockSize = pParent->GetBlocklength( );
-	m_oParams.iRingBufferSize = pParent->GetRingBufferSize( );
+	m_oParams.iBlockSize = pParent->GetBlocklength();
+	m_oParams.iRingBufferSize = pParent->GetRingBufferSize();
+	m_oParams.iTargetSampleLatency = pParent->GetAllowedLatencySamples();
 
 	std::string paras = std::string("NetAudioLogClient") + std::string("_BS") + std::to_string(pParent->GetBlocklength()) + std::string("_Ch") + std::to_string(pParent->GetNumberOfChannels()) + std::string(".txt");
 	m_pClientLogger = new ITABufferedDataLoggerImplClient( );
@@ -146,7 +147,7 @@ bool CITANetAudioStreamingClient::LoopBody()
 
 	// Read answer (blocking)
 	m_pMessage->ResetMessage( );
-	if( m_pMessage->ReadMessage( 0 ) )
+	if( m_pMessage->ReadMessage( 1 ) )
 	{
 		int iMsgType = m_pMessage->GetMessageType();
 		switch( iMsgType )
@@ -178,6 +179,13 @@ bool CITANetAudioStreamingClient::LoopBody()
 		oLog.iFreeSamples = m_pStream->GetRingBufferFreeSamples();
 		oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
 		m_pClientLogger->log( oLog );
+	}
+	else 
+	{
+		// sende mal freie samples
+		m_pMessage->SetMessageType(CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES);
+		m_pMessage->WriteInt(m_pStream->GetRingBufferFreeSamples());
+		m_pMessage->WriteMessage();
 	}
 	return false;
 }

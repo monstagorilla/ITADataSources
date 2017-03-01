@@ -52,11 +52,12 @@ struct ITAServerLog : public ITALogDataBase
 
 class ITABufferedDataLoggerImplServer : public ITABufferedDataLogger < ITAServerLog > {};
 
-CITANetAudioStreamingServer::CITANetAudioStreamingServer( )
-: m_pInputStream( NULL )
-, m_iUpdateStrategy( AUTO )
-, m_pConnection( NULL )
-, m_pNetAudioServer( new CITANetAudioServer( ) )
+CITANetAudioStreamingServer::CITANetAudioStreamingServer()
+	: m_pInputStream(NULL)
+	, m_iUpdateStrategy(AUTO)
+	, m_pConnection(NULL)
+	, m_pNetAudioServer(new CITANetAudioServer())
+	, m_dLastTimeStamp(0)
 {
 	iServerBlockId = 0;
 	m_iMaxSendBlocks = 40;
@@ -89,7 +90,10 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 
 	bool bOK = false;
 	m_oServerParams.iRingBufferSize = oClientParams.iRingBufferSize;
-	m_iClientRingBufferFreeSamples = m_oServerParams.iRingBufferSize;
+	m_oServerParams.iTargetSampleLatency = oClientParams.iTargetSampleLatency;
+	m_iClientRingBufferFreeSamples = m_oServerParams.iTargetSampleLatency;
+
+	m_dLastTimeStamp = ITAClock::getDefaultClock()->getTime();
 	if ( m_oServerParams == oClientParams )
 	{
 		bOK = true;
@@ -128,12 +132,13 @@ bool CITANetAudioStreamingServer::LoopBody( )
 	int iMsgType;
 	// Sending Samples 
 	unsigned int uiBlockLength = m_pInputStream->GetBlocklength( );
-
-	if ( m_iClientRingBufferFreeSamples >= uiBlockLength )
+	int iClientRingBufferTargetFreeSamples = m_iClientRingBufferFreeSamples - (m_oServerParams.iRingBufferSize - m_oServerParams.iTargetSampleLatency);
+	if (iClientRingBufferTargetFreeSamples < 0)
+		iClientRingBufferTargetFreeSamples = 0;
+	if (iClientRingBufferTargetFreeSamples >= uiBlockLength)
 	{
 		// Send Samples
-		// Sende max 10 * Blocklänge aufeinmal
-		int iSendBlocks = m_iClientRingBufferFreeSamples / uiBlockLength;
+		int iSendBlocks = iClientRingBufferTargetFreeSamples / uiBlockLength;
 		bAskClient = true;
 		
 		if ( m_sfTempTransmitBuffer.GetLength( ) != iSendBlocks * uiBlockLength )
@@ -180,6 +185,7 @@ bool CITANetAudioStreamingServer::LoopBody( )
 			case CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES:
 			{
 				m_iClientRingBufferFreeSamples = m_pMessage->ReadInt( );
+				m_dLastTimeStamp = ITAClock::getDefaultClock()->getTime();
 				bAskClient = false;
 				break;
 			}
@@ -208,16 +214,23 @@ bool CITANetAudioStreamingServer::LoopBody( )
 	}
 	else
 	{
-		/*
+		ITAServerLog oLog;
+		oLog.uiBlockId = ++iServerBlockId;
 		// Neue Sample bei ca 1ms (0,9ms) warten
-		float dSamples = 0.0009 * m_pInputStream->GetSampleRate();
+		double dTimeDiff = ITAClock::getDefaultClock()->getTime() - m_dLastTimeStamp;
+		float dSamples = dTimeDiff * m_pInputStream->GetSampleRate();
+		m_dLastTimeStamp = ITAClock::getDefaultClock()->getTime();
 		int iSamples = ( int ) dSamples;
 		int offset = iSamples % m_pInputStream->GetBlocklength( );
 		m_iClientRingBufferFreeSamples += iSamples - offset;
-		*/
+		oLog.iFreeSamples = m_iClientRingBufferFreeSamples;
+		oLog.iProtocolStatus = 555;
+		oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
+		m_pServerLogger->log(oLog);
+		
 	}
 
-
+	bAskClient = false;
 	if (bAskClient)
 	{
 #ifdef NET_AUDIO_SHOW_TRAFFIC

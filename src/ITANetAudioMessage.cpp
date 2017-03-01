@@ -318,8 +318,9 @@ CITANetAudioProtocol::StreamingParameters CITANetAudioMessage::ReadStreamingPara
 
 	oParams.iChannels = ReadInt();
 	oParams.dSampleRate = ReadDouble( );
-	oParams.iBlockSize = ReadInt( );
-	oParams.iRingBufferSize = ReadInt( );
+	oParams.iBlockSize = ReadInt();
+	oParams.iRingBufferSize = ReadInt();
+	oParams.iTargetSampleLatency = ReadInt();
 
 	return oParams;
 }
@@ -328,8 +329,9 @@ void CITANetAudioMessage::WriteStreamingParameters( const CITANetAudioProtocol::
 {
 	WriteInt( oParams.iChannels );
 	WriteDouble( oParams.dSampleRate );
-	WriteInt( oParams.iBlockSize );
-	WriteInt( oParams.iRingBufferSize );
+	WriteInt(oParams.iBlockSize);
+	WriteInt(oParams.iRingBufferSize);
+	WriteInt(oParams.iTargetSampleLatency);
 }
 
 int CITANetAudioMessage::ReadRingBufferSize()
