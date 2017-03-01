@@ -1,7 +1,10 @@
-%% Einlesen der Logs
+%% Konfig Kram
 close all;
 clear all;
 BlockSize = '32';
+plotServer = 2;
+
+%% Einlesen der Logs
 NetAudioLogServer = dir(['NetAudioLogServer_BS' BlockSize '*.txt']);
 NetAudioLogServer = {NetAudioLogServer.name};
 NetAudioLogServerTab = readtable(NetAudioLogServer{1}, 'FileType', 'text', 'Delimiter', '\t');
@@ -41,6 +44,8 @@ Protocol = {'100', 'NP CLIENT OPEN';...
     '211', 'NP SERVER GET RINGBUFFER FREE SAMPLES';...
     '222', 'NP SERVER SENDING SAMPLES'};
 %NumPro = zeros(size(NetAudioLogServerTab.ProtocolStatus));
+
+%% Daten sammlen Client
 Time100 = NetAudioLogClientTab.WorldTimeStamp(find(NetAudioLogClientTab.ProtocolStatus == 100));
 Time101 = NetAudioLogClientTab.WorldTimeStamp(find(NetAudioLogClientTab.ProtocolStatus == 101));
 Time111 = NetAudioLogClientTab.WorldTimeStamp(find(NetAudioLogClientTab.ProtocolStatus == 111));
@@ -51,6 +56,7 @@ Time222 = NetAudioLogClientTab.WorldTimeStamp(find(NetAudioLogClientTab.Protocol
 
 TimeClient = {Time100 Time101 Time111 Time200 Time201 Time211 Time222};
 
+%% Daten sammeln Server
 Time100 = NetAudioLogServerTab.WorldTimeStamp(find(NetAudioLogServerTab.ProtocolStatus == 100));
 Time101 = NetAudioLogServerTab.WorldTimeStamp(find(NetAudioLogServerTab.ProtocolStatus == 101));
 Time111 = NetAudioLogServerTab.WorldTimeStamp(find(NetAudioLogServerTab.ProtocolStatus == 111));
@@ -62,52 +68,48 @@ Time222 = NetAudioLogServerTab.WorldTimeStamp(find(NetAudioLogServerTab.Protocol
 TimeServer = {Time100 Time101 Time111 Time200 Time201 Time211 Time222};
 
 %% Plot Protocol
-%plot(NetAudioLogServerTab.WorldTimeStamp, NetAudioLogServerTab.ProtocolStatus)
-plots1 = {};
-plots2 = {};
-subplot(2,2,1:2)
-
-plots1{1} = plot([10 0],[3200 3200]);
-hold on
-plots1{2} = plot(NetAudioLogServerTab.WorldTimeStamp, NetAudioLogServerTab.FreeSamples, '-*');
-
-subplot(2,2,3:4)
-maxSamples = 3200;
-plots2{1} = plot([10 0],[3200 3200]);
-hold on;
-plots2{2} = plot(NetAudioLogClientTab.WorldTimeStamp, NetAudioLogClientTab.FreeSamples, '-*');
-legendeServer = {};
-legendeClient = {};
-legendeServer{1} = 'Maximal Freie Samples';
-legendeServer{2} = 'Freie Samples Server';
-legendeClient{1} = 'Maximal Freie Samples';
-legendeClient{2} = 'Freie Samples Client';
-
+legende = {};
+if plotServer == 1
+    % Plot Server Samples
+    plots1{1} = plot([10 0],[3200 3200]);
+    hold on
+    plots1{2} = plot(NetAudioLogServerTab.WorldTimeStamp, NetAudioLogServerTab.FreeSamples, '-*');
+    legende{1} = 'Maximal Freie Samples';
+    legende{2} = 'Freie Samples Server';
+else
+    % Plot Client Samples
+    maxSamples = 3200;
+    plots2{1} = plot([10 0],[3200 3200]);
+    hold on;
+    plots2{2} = plot(NetAudioLogClientTab.WorldTimeStamp, NetAudioLogClientTab.FreeSamples, '-*');
+    legende{1} = 'Maximal Freie Samples';
+    legende{2} = 'Freie Samples Client';
+end
 i = 3;
 j = 3;
 for k = (1:7)
-    if size(TimeServer{k}, 1) ~= 0
-        subplot(2,2,1:2)
-        plots1{i} = plot(TimeServer{k}, ones(size(TimeServer{k})),'.');
-        legendeServer{i} = Protocol{k,2};
-        i = i + 1;
-    end
-    if size(TimeClient{k}, 1) ~= 0
-        subplot(2,2,3:4)
-        p = 1;
-        if k == 3
-            p = 1500;
+    if plotServer == 1
+        if size(TimeServer{k}, 1) ~= 0
+            plots1{i} = plot(TimeServer{k}, ones(size(TimeServer{k})),'.');
+            legende{i} = Protocol{k,2};
+            i = i + 1;
+            
         end
-        plots2{j} = plot(TimeClient{k}, ones(size(TimeClient{k})),'.');
-        legendeClient{j} = Protocol{k,2};
-        j = j + 1;
+        titel = 'Protokolstatus Server';
+    else
+        if size(TimeClient{k}, 1) ~= 0
+            p = 1;
+            if k == 3
+                p = 1500;
+            end
+            plots2{j} = plot(TimeClient{k}, ones(size(TimeClient{k})),'.');
+            legende{j} = Protocol{k,2};
+            j = j + 1;
+        end
+        titel = 'Protokolstatus Client';
     end
 end
-subplot(2,2,1:2)
-title(['Protokolstatus Server'])
+title(titel)
 xlabel('Zeit in s')
-legend([plots1, plots2], {legendeServer, legendeClient});
-subplot(2,2,3:4)
-title(['Protokolstatus Client'])
-xlabel('Zeit in s')
+legend(legende);
 legend('show');
