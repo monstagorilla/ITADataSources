@@ -59,7 +59,7 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer( )
 , m_pNetAudioServer( new CITANetAudioServer( ) )
 {
 	iServerBlockId = 0;
-	m_iMaxSendBlocks = 20;
+	m_iMaxSendBlocks = 40;
 	m_iClientRingBufferFreeSamples = 0;
 }
 
@@ -128,18 +128,14 @@ bool CITANetAudioStreamingServer::LoopBody( )
 	int iMsgType;
 	// Sending Samples 
 	unsigned int uiBlockLength = m_pInputStream->GetBlocklength( );
+
 	if ( m_iClientRingBufferFreeSamples >= uiBlockLength )
 	{
 		// Send Samples
 		// Sende max 10 * Blocklänge aufeinmal
-		int iSendBlocks;
-		if ( m_iClientRingBufferFreeSamples > m_iMaxSendBlocks * uiBlockLength )
-			iSendBlocks = m_iMaxSendBlocks;
-		else
-		{
-			iSendBlocks = m_iClientRingBufferFreeSamples / uiBlockLength;
-			bAskClient = true;
-		}
+		int iSendBlocks = m_iClientRingBufferFreeSamples / uiBlockLength;
+		bAskClient = true;
+		
 		if ( m_sfTempTransmitBuffer.GetLength( ) != iSendBlocks * uiBlockLength )
 			m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels( ), iSendBlocks * uiBlockLength, false );
 		
@@ -157,37 +153,18 @@ bool CITANetAudioStreamingServer::LoopBody( )
 			m_pInputStream->IncrementBlockPointer( );
 		}
 		iMsgType = CITANetAudioProtocol::NP_SERVER_SENDING_SAMPLES;
-		m_pMessage->SetMessageType( iMsgType );
-		m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
-		m_pMessage->WriteMessage( );
+		m_pMessage->SetMessageType(iMsgType);
+		m_pMessage->WriteSampleFrame(&m_sfTempTransmitBuffer);
+		m_pMessage->WriteMessage();
 		m_iClientRingBufferFreeSamples -= iSendBlocks * uiBlockLength;
 #ifdef NET_AUDIO_SHOW_TRAFFIC
-		vstr::out( ) << "[ITANetAudioStreamingServer] Transmitted " << iSendSamples << " samples for "
-			<< m_pInputStream->GetNumberOfChannels( ) << " channels" << std::endl;
+		vstr::out() << "[ITANetAudioStreamingServer] Transmitted " << iSendSamples << " samples for "
+			<< m_pInputStream->GetNumberOfChannels() << " channels" << std::endl;
 #endif
-		
 	}
 	else
 		bAskClient = true;
 
-	if ( bAskClient )
-	{
-		// Waiting for Trigger
-#ifdef NET_AUDIO_SHOW_TRAFFIC
-		vstr::out( ) << "[ITANetAudioStreamingServer] Not enough free samples in client buffer, requesting a trigger when more free samples available" << std::endl;
-#endif
-		ITAServerLog oLog;
-		oLog.uiBlockId = ++iServerBlockId;
-		m_pMessage->ResetMessage( );
-		iMsgType = CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES;
-		m_pMessage->SetMessageType( iMsgType );
-		m_pMessage->WriteBool( true );
-		m_pMessage->WriteMessage( );
-		oLog.iProtocolStatus = iMsgType;
-		oLog.iFreeSamples = m_iClientRingBufferFreeSamples;
-		oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
-		m_pServerLogger->log( oLog );
-	}
 
 
 	// Try to Empfange Daten
@@ -203,6 +180,7 @@ bool CITANetAudioStreamingServer::LoopBody( )
 			case CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES:
 			{
 				m_iClientRingBufferFreeSamples = m_pMessage->ReadInt( );
+				bAskClient = false;
 				break;
 			}
 			case CITANetAudioProtocol::NP_CLIENT_CLOSE:
@@ -214,6 +192,7 @@ bool CITANetAudioStreamingServer::LoopBody( )
 				StopGently( false );
 				m_pConnection = NULL;
 				Stop( );
+				bAskClient = false;
 				break;
 			}
 			default:
@@ -236,6 +215,25 @@ bool CITANetAudioStreamingServer::LoopBody( )
 		int offset = iSamples % m_pInputStream->GetBlocklength( );
 		m_iClientRingBufferFreeSamples += iSamples - offset;
 		*/
+	}
+
+
+	if (bAskClient)
+	{
+#ifdef NET_AUDIO_SHOW_TRAFFIC
+		vstr::out() << "[ITANetAudioStreamingServer] Not enough free samples in client buffer, requesting a trigger when more free samples available" << std::endl;
+#endif
+		ITAServerLog oLog;
+		oLog.uiBlockId = ++iServerBlockId;
+		m_pMessage->ResetMessage();
+		iMsgType = CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES;
+		m_pMessage->SetMessageType(iMsgType);
+		m_pMessage->WriteBool(true);
+		m_pMessage->WriteMessage();
+		oLog.iProtocolStatus = iMsgType;
+		oLog.iFreeSamples = m_iClientRingBufferFreeSamples;
+		oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
+		m_pServerLogger->log(oLog);
 	}
 
 

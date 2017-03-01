@@ -33,7 +33,7 @@ void CITANetAudioMessage::ResetMessage()
 	// wait till sending is complete -> this prevents us
 	// from deleting the buffer while it is still being read
 	// by the connection
-	if( m_pConnection )
+	if (m_pConnection != NULL)
 		m_pConnection->WaitForSendFinish();
 
 	m_nMessageId = S_nMessageIds++;
