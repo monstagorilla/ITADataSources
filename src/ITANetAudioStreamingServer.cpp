@@ -91,6 +91,7 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 	bool bOK = false;
 	m_oServerParams.iRingBufferSize = oClientParams.iRingBufferSize;
 	m_oServerParams.iTargetSampleLatency = oClientParams.iTargetSampleLatency;
+	m_oServerParams.iBlockSize = oClientParams.iBlockSize;
 	m_iClientRingBufferFreeSamples = m_oServerParams.iTargetSampleLatency;
 
 	m_dLastTimeStamp = ITAClock::getDefaultClock()->getTime();
@@ -99,9 +100,11 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 		bOK = true;
 #ifdef NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ITANetAudioStreamingServer] Server and client parameters matched. Will resume with streaming" << std::endl;
+#endif
 	}
 	else
 	{
+#ifdef NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ITANetAudioStreamingServer] Server and client parameters mismatch detected. Will notify client and stop." << std::endl;
 #endif
 	}
