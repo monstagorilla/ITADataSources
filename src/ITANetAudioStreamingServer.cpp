@@ -109,7 +109,7 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 #endif
 	}
 
-	std::string paras = std::string( "NetAudioLogServer" ) + std::string( "_BS" ) + std::to_string( m_oServerParams.iBlockSize ) + std::string( "_Ch" ) + std::to_string( m_oServerParams.iChannels ) + std::string( ".txt" );
+	std::string paras = std::string("NetAudioLogServer") + std::string("_BS") + std::to_string(m_oServerParams.iBlockSize) + std::string("_Ch") + std::to_string(m_oServerParams.iChannels) + std::string("_tl") + std::to_string(m_oServerParams.iTargetSampleLatency) + std::string(".txt");
 	m_pServerLogger = new ITABufferedDataLoggerImplServer( );
 	m_pServerLogger->setOutputFile( paras );
 

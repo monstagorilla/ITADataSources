@@ -137,18 +137,16 @@ CITANetAudioStream::CITANetAudioStream(int iChannels, double dSamplingRate, int 
 	m_iStreamingStatus = STOPPED;
 
 	// Logging
-	std::string paras = std::string("NetAudioLogBaseData") + std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string(".txt");
+	std::string paras = std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string("_tl") + std::to_string(iTargetSampleLatencyServer) + std::string(".txt");
 	m_pAudioLogger = new ITABufferedDataLoggerImplAudio( );
-	m_pAudioLogger->setOutputFile(paras);
+	m_pAudioLogger->setOutputFile(std::string("NetAudioLogBaseData") + paras);
 
-	paras = std::string("NetAudioLogStream") + std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string(".txt");
 	m_pStreamLogger = new ITABufferedDataLoggerImplStream();
-	m_pStreamLogger->setOutputFile(paras);
+	m_pStreamLogger->setOutputFile(std::string("NetAudioLogStream") + paras);
 	iAudioStreamingBlockID = 0;
 
-	paras = std::string("NetAudioLogNet") + std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string(".txt");
 	m_pNetLogger = new ITABufferedDataLoggerImplNet();
-	m_pNetLogger->setOutputFile(paras);
+	m_pNetLogger->setOutputFile(std::string("NetAudioLogNet") + paras);
 	iNetStreamingBlockID = 0;
 
 	// Logging Base Data

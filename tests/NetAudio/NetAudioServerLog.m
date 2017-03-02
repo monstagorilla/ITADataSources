@@ -3,7 +3,7 @@ close all;
 clear all;
 BlockSize = '32';
 plotServer = 1;
-maxSamples = 20*3;
+maxSamples = 5*3*2;
 
 %% Einlesen der Logs
 NetAudioLogServer = dir(['NetAudioLogServer_BS' BlockSize '*.txt']);

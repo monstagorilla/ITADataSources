@@ -60,7 +60,7 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	m_oParams.iRingBufferSize = pParent->GetRingBufferSize();
 	m_oParams.iTargetSampleLatency = pParent->GetAllowedLatencySamples();
 
-	std::string paras = std::string("NetAudioLogClient") + std::string("_BS") + std::to_string(pParent->GetBlocklength()) + std::string("_Ch") + std::to_string(pParent->GetNumberOfChannels()) + std::string(".txt");
+	std::string paras = std::string("NetAudioLogClient") + std::string("_BS") + std::to_string(pParent->GetBlocklength()) + std::string("_Ch") + std::to_string(pParent->GetNumberOfChannels()) + std::string("_tl") + std::to_string(pParent->GetAllowedLatencySamples()) + std::string(".txt");
 	m_pClientLogger = new ITABufferedDataLoggerImplClient( );
 	m_pClientLogger->setOutputFile(paras);
 	iStreamingBlockId = 0;
