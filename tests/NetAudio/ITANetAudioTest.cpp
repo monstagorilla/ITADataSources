@@ -21,8 +21,8 @@ const static string g_sServerName = "localhost";
 const static string g_sInputFilePath = "gershwin-mono.wav";
 const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
-const static int g_iBlockLength = 1024;
-const static int g_iChannels = 100;
+const static int g_iBlockLength = 32;
+const static int g_iChannels = 2;
 
 class CServer : public VistaThread
 {
@@ -64,7 +64,7 @@ int main( int, char** )
 	CServer* pServer = new CServer( g_sInputFilePath );
 
 	// Client dumping received stream and mixing down to two channels
-	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBlockLength, 100 * g_iBlockLength );
+	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBlockLength, 20 * g_iBlockLength );
 
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBlockLength );
 	oPatchbay.AddInput( &oNetAudioStream );

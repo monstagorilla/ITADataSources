@@ -117,18 +117,18 @@ class ITABufferedDataLoggerImplStream : public ITABufferedDataLogger < ITAStream
 class ITABufferedDataLoggerImplNet : public ITABufferedDataLogger < ITANetLog > {};
 
 
-CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity )
+CITANetAudioStream::CITANetAudioStream(int iChannels, double dSamplingRate, int iBufferSize, int iTargetSampleLatencyServer)
 	: m_sfOutputStreamBuffer( iChannels, iBufferSize, true )
 	, m_dSampleRate( dSamplingRate )
-	, m_sfRingBuffer( iChannels, iRingBufferCapacity, true )
+	, m_sfRingBuffer(iChannels, iTargetSampleLatencyServer * 3, true)
 	, m_bRingBufferFull( false )
 	, m_iStreamingStatus( INVALID )
 	, m_dLastStreamingTimeCode( 0.0f )
-	, m_iTargetSampleLatencyServer( iRingBufferCapacity )
+	, m_iTargetSampleLatencyServer( iTargetSampleLatencyServer )
 {
 	m_bRingBufferFull = false;
-	if( iBufferSize > iRingBufferCapacity )
-		ITA_EXCEPT1( INVALID_PARAMETER, "Ring buffer capacity can not be smaller than buffer size." );
+	if (iBufferSize > iTargetSampleLatencyServer)
+		ITA_EXCEPT1( INVALID_PARAMETER, "Ring buffer capacity can not be smaller than Target Sample Latency." );
 
 	m_pNetAudioStreamingClient = new CITANetAudioStreamingClient( this );
 	m_iReadCursor = 0;
@@ -137,18 +137,16 @@ CITANetAudioStream::CITANetAudioStream( int iChannels, double dSamplingRate, int
 	m_iStreamingStatus = STOPPED;
 
 	// Logging
-	std::string paras = std::string("NetAudioLogBaseData") + std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string(".txt");
+	std::string paras = std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string("_tl") + std::to_string(iTargetSampleLatencyServer) + std::string(".txt");
 	m_pAudioLogger = new ITABufferedDataLoggerImplAudio( );
-	m_pAudioLogger->setOutputFile(paras);
+	m_pAudioLogger->setOutputFile(std::string("NetAudioLogBaseData") + paras);
 
-	paras = std::string("NetAudioLogStream") + std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string(".txt");
 	m_pStreamLogger = new ITABufferedDataLoggerImplStream();
-	m_pStreamLogger->setOutputFile(paras);
+	m_pStreamLogger->setOutputFile(std::string("NetAudioLogStream") + paras);
 	iAudioStreamingBlockID = 0;
 
-	paras = std::string("NetAudioLogNet") + std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string(".txt");
 	m_pNetLogger = new ITABufferedDataLoggerImplNet();
-	m_pNetLogger->setOutputFile(paras);
+	m_pNetLogger->setOutputFile(std::string("NetAudioLogNet") + paras);
 	iNetStreamingBlockID = 0;
 
 	// Logging Base Data
@@ -397,7 +395,7 @@ int CITANetAudioStream::GetRingBufferFreeSamples() const
 	if( m_bRingBufferFull )
 		return 0;
 
-	int iFreeSamples = GetRingBufferSize() - ( ( m_iWriteCursor - m_iReadCursor + GetRingBufferSize() ) % GetRingBufferSize() );
+	int iFreeSamples = GetRingBufferSize() - ((m_iWriteCursor - m_iReadCursor + GetRingBufferSize()) % GetRingBufferSize());
 	assert( iFreeSamples > 0 );
 	return iFreeSamples;
 }
