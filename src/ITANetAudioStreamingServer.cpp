@@ -115,7 +115,7 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 	m_pServerLogger->setOutputFile( paras );
 
 	m_pMessage->SetMessageType(CITANetAudioProtocol::NP_SERVER_OPEN);
-	m_pMessage->WriteStreamingParameters(m_oServerParams);
+	m_pMessage->WriteDouble( dTimeIntervalCientSendStatus );
 	m_pMessage->WriteMessage( );
 
 	m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels( ), m_oServerParams.iRingBufferSize, true );
@@ -135,28 +135,28 @@ bool CITANetAudioStreamingServer::LoopBody( )
 	oLog.uiBlockId = ++iServerBlockId;
 	int iMsgType;
 	// Sending Samples 
-	unsigned int uiBlockLength = m_pInputStream->GetBlocklength( );
+	int iBlockLength = m_pInputStream->GetBlocklength( );
 	int iClientRingBufferTargetLatencyFreeSamples = m_iClientRingBufferFreeSamples - (m_oServerParams.iRingBufferSize - m_oServerParams.iTargetSampleLatency);
 
-	if (iClientRingBufferTargetLatencyFreeSamples >= uiBlockLength)
+	if (iClientRingBufferTargetLatencyFreeSamples >= iBlockLength)
 	{
 		// Send Samples
-		int iSendBlocks = iClientRingBufferTargetLatencyFreeSamples / uiBlockLength;
+		int iSendBlocks = iClientRingBufferTargetLatencyFreeSamples / iBlockLength;
 		bAskClient = true;
 		
-		if ( m_sfTempTransmitBuffer.GetLength( ) != iSendBlocks * uiBlockLength )
-			m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels( ), iSendBlocks * uiBlockLength, false );
+		if ( m_sfTempTransmitBuffer.GetLength( ) != iSendBlocks * iBlockLength )
+			m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels( ), iSendBlocks * iBlockLength, false );
 		
 		for ( int j = 0; j < iSendBlocks; j++ )
 		{
 			for ( int i = 0; i < int( m_pInputStream->GetNumberOfChannels( ) ); i++ )
 			{
 				ITAStreamInfo oStreamInfo;
-				oStreamInfo.nSamples = uiBlockLength;
+				oStreamInfo.nSamples = iBlockLength;
 
 				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
 				if ( pfData != 0 )
-					m_sfTempTransmitBuffer[ i ].write( pfData, uiBlockLength, j * uiBlockLength );
+					m_sfTempTransmitBuffer[ i ].write( pfData, iBlockLength, j * iBlockLength );
 			}
 			m_pInputStream->IncrementBlockPointer( );
 		}
@@ -164,7 +164,7 @@ bool CITANetAudioStreamingServer::LoopBody( )
 		m_pMessage->SetMessageType(iMsgType);
 		m_pMessage->WriteSampleFrame(&m_sfTempTransmitBuffer);
 		m_pMessage->WriteMessage();
-		m_iClientRingBufferFreeSamples -= iSendBlocks * uiBlockLength;
+		m_iClientRingBufferFreeSamples -= iSendBlocks * iBlockLength;
 #ifdef NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ITANetAudioStreamingServer] Transmitted " << iSendSamples << " samples for "
 			<< m_pInputStream->GetNumberOfChannels() << " channels" << std::endl;
