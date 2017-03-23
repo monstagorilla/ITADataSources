@@ -102,12 +102,12 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 	while ( !m_pMessage->ReadMessage( 0 ) );
 	
 	assert( m_pMessage->GetMessageType( ) == CITANetAudioProtocol::NP_SERVER_OPEN );
-	CITANetAudioProtocol::StreamingParameters oServerParas = m_pMessage->ReadStreamingParameters();
-	m_oParams.dTimeIntervalSendInfos = oServerParas.dTimeIntervalSendInfos;
+	m_oParams.dTimeIntervalSendInfos = m_pMessage->ReadDouble();
 	
-	if (!(oServerParas == m_oParams))
+	if (m_oParams.dTimeIntervalSendInfos <= 0)
 		ITA_EXCEPT1( INVALID_PARAMETER, "Streaming server declined connection, detected streaming parameter mismatch." );
 
+	m_dLastAckknowlengementTimeStamp = 0;
 	Run();
 
 	return true;

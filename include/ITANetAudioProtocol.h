@@ -66,7 +66,7 @@ public:
 		int iBlockSize;
 		int iRingBufferSize;
 		int iTargetSampleLatency;
-		int dTimeIntervalSendInfos;
+		double dTimeIntervalSendInfos;
 
 		inline StreamingParameters()
 		{
