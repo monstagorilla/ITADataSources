@@ -102,9 +102,10 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 	while ( !m_pMessage->ReadMessage( 0 ) );
 	
 	assert( m_pMessage->GetMessageType( ) == CITANetAudioProtocol::NP_SERVER_OPEN );
-	bool bOK = m_pMessage->ReadBool();
+	CITANetAudioProtocol::StreamingParameters oServerParas = m_pMessage->ReadStreamingParameters();
+	m_oParams.dTimeIntervalSendInfos = oServerParas.dTimeIntervalSendInfos;
 	
-	if( !bOK )
+	if (!(oServerParas == m_oParams))
 		ITA_EXCEPT1( INVALID_PARAMETER, "Streaming server declined connection, detected streaming parameter mismatch." );
 
 	Run();
@@ -182,10 +183,14 @@ bool CITANetAudioStreamingClient::LoopBody()
 	}
 	else 
 	{
-		// sende mal freie samples
-		m_pMessage->SetMessageType(CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES);
-		m_pMessage->WriteInt(m_pStream->GetRingBufferFreeSamples());
-		m_pMessage->WriteMessage();
+		if ((m_dLastAckknowlengementTimeStamp + m_oParams.dTimeIntervalSendInfos) < ITAClock::getDefaultClock()->getTime() )
+		{
+			// sende mal freie samples
+			m_pMessage->SetMessageType(CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES);
+			m_pMessage->WriteInt(m_pStream->GetRingBufferFreeSamples());
+			m_pMessage->WriteMessage();
+			m_dLastAckknowlengementTimeStamp = ITAClock::getDefaultClock()->getTime();
+		}
 	}
 	return false;
 }

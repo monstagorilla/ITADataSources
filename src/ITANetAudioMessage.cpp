@@ -321,6 +321,7 @@ CITANetAudioProtocol::StreamingParameters CITANetAudioMessage::ReadStreamingPara
 	oParams.iBlockSize = ReadInt();
 	oParams.iRingBufferSize = ReadInt();
 	oParams.iTargetSampleLatency = ReadInt();
+	oParams.dTimeIntervalSendInfos = ReadDouble();
 
 	return oParams;
 }
@@ -332,6 +333,7 @@ void CITANetAudioMessage::WriteStreamingParameters( const CITANetAudioProtocol::
 	WriteInt(oParams.iBlockSize);
 	WriteInt(oParams.iRingBufferSize);
 	WriteInt(oParams.iTargetSampleLatency);
+	WriteDouble(oParams.dTimeIntervalSendInfos);
 }
 
 int CITANetAudioMessage::ReadRingBufferSize()

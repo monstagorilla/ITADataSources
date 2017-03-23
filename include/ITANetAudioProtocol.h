@@ -66,6 +66,7 @@ public:
 		int iBlockSize;
 		int iRingBufferSize;
 		int iTargetSampleLatency;
+		int dTimeIntervalSendInfos;
 
 		inline StreamingParameters()
 		{
@@ -74,6 +75,7 @@ public:
 			iBlockSize = 0;
 			iRingBufferSize = 0;
 			iTargetSampleLatency = 0;
+			dTimeIntervalSendInfos = 0;
 		};
 
 		inline bool operator==( const StreamingParameters& rhs )
@@ -82,7 +84,8 @@ public:
 				&& ( dSampleRate == rhs.dSampleRate ) 
 				&& (iBlockSize == rhs.iBlockSize)
 				&& (iRingBufferSize == rhs.iRingBufferSize)
-				&& (iTargetSampleLatency == rhs.iTargetSampleLatency))
+				&& (iTargetSampleLatency == rhs.iTargetSampleLatency)
+				&& (dTimeIntervalSendInfos == rhs.dTimeIntervalSendInfos))
 				return true;
 			else
 				return false;

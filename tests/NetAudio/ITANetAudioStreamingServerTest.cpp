@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 	oStreamingServer.SetInputStream( &oMuliplier );
 
 	cout << "Starting net audio server and waiting for connections on '" << sServerName << "' on port " << iServerPort << endl;
-	oStreamingServer.Start( sServerName, iServerPort );
+	oStreamingServer.Start( sServerName, iServerPort , 100);
 
 	while (!oStreamingServer.IsClientConnected())
 	{

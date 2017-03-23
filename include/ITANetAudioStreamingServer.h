@@ -63,7 +63,7 @@ public:
 	CITANetAudioStreamingServer();
 	~CITANetAudioStreamingServer();
 
-	bool Start( const std::string& sAddress, int iPort );
+	bool Start(const std::string& sAddress, int iPort, double dTimeIntervalCientSendStatus);
 	bool IsClientConnected() const;
 	std::string GetNetworkAddress() const;
 	int GetNetworkPort() const;
