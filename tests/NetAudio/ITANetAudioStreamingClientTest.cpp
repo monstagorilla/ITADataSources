@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 	for ( int i = 0; i < N; i++ )
 		oPatchbay.ConnectChannels( 0, i, 0, i % 2, 1 / double( N ) );
 	
-	ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.stream.wav" );
+	//ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.stream.wav" );
 
 
 	ITAsioInitializeLibrary();
@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
 		}
 
 		
-		ITAsioSetPlaybackDatasource(&oProbe);
+		ITAsioSetPlaybackDatasource(oPatchbay.GetOutputDatasource(iOutputID));
 
 		if (ITAsioStart() != ASE_OK) {
 			ITAsioFinalizeLibrary();

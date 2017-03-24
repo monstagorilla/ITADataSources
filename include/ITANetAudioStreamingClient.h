@@ -79,6 +79,7 @@ private:
 	bool m_bStopIndicated;
 	bool m_bStopped;
 	double m_dLastAckknowlengementTimeStamp;
+	int n;
 	int iStreamingBlockId;
 	ITABufferedDataLoggerImplClient* m_pClientLogger;
 

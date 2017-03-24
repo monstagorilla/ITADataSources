@@ -53,7 +53,7 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	, m_bStopped( false )
 {
 	m_pClient = new CITANetAudioClient();
-
+	n = 0;
 	m_oParams.iChannels = pParent->GetNumberOfChannels();
 	m_oParams.dSampleRate = pParent->GetSampleRate( );
 	m_oParams.iBlockSize = pParent->GetBlocklength();
@@ -160,6 +160,7 @@ bool CITANetAudioStreamingClient::LoopBody()
 #ifdef NET_AUDIO_SHOW_TRAFFIC
 			vstr::out() << "[ITANetAudioStreamingClient] Recived " << m_sfReceivingBuffer.GetLength() << " samples" << std::endl;
 #endif
+			n++;
 			break;
 		case CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES:
 			m_pMessage->ReadBool();
