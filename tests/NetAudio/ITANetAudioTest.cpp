@@ -49,7 +49,7 @@ public:
 	void ThreadBody( )
 	{
 		vstr::out() << "[ NetAudioTestServer ] Starting net audio server and waiting for client connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
-		pStreamingServer->Start( g_sServerName, g_iServerPort );		
+		pStreamingServer->Start( g_sServerName, g_iServerPort, 0.1 );		
 	};
 
 private:
