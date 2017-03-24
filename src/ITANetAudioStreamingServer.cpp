@@ -163,6 +163,7 @@ bool CITANetAudioStreamingServer::LoopBody( )
 			m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
 			m_pMessage->WriteMessage( );
 			m_iClientRingBufferFreeSamples -=  iBlockLength;
+			m_pMessage->ResetMessage( );
 		}
 #ifdef NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ITANetAudioStreamingServer] Transmitted " << iSendSamples << " samples for "
