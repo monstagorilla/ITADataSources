@@ -92,7 +92,6 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 	m_oServerParams.iRingBufferSize = oClientParams.iRingBufferSize;
 	m_oServerParams.iTargetSampleLatency = oClientParams.iTargetSampleLatency;
 	m_oServerParams.iBlockSize = oClientParams.iBlockSize;
-	m_oServerParams.dTimeIntervalSendInfos = dTimeIntervalCientSendStatus;
 	m_iClientRingBufferFreeSamples = m_oServerParams.iTargetSampleLatency;
 
 	m_dLastTimeStamp = ITAClock::getDefaultClock()->getTime();
@@ -144,8 +143,8 @@ bool CITANetAudioStreamingServer::LoopBody( )
 		int iSendBlocks = iClientRingBufferTargetLatencyFreeSamples / iBlockLength;
 		bAskClient = true;
 		
-		if ( m_sfTempTransmitBuffer.GetLength( ) != iSendBlocks * iBlockLength )
-			m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels( ), iSendBlocks * iBlockLength, false );
+		if ( m_sfTempTransmitBuffer.GetLength( ) != iBlockLength )
+			m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels( ), iBlockLength, false );
 		
 		for ( int j = 0; j < iSendBlocks; j++ )
 		{
@@ -156,15 +155,15 @@ bool CITANetAudioStreamingServer::LoopBody( )
 
 				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
 				if ( pfData != 0 )
-					m_sfTempTransmitBuffer[ i ].write( pfData, iBlockLength, j * iBlockLength );
+					m_sfTempTransmitBuffer[ i ].write( pfData, iBlockLength, 0 );
 			}
 			m_pInputStream->IncrementBlockPointer( );
+			iMsgType = CITANetAudioProtocol::NP_SERVER_SENDING_SAMPLES;
+			m_pMessage->SetMessageType( iMsgType );
+			m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
+			m_pMessage->WriteMessage( );
+			m_iClientRingBufferFreeSamples -=  iBlockLength;
 		}
-		iMsgType = CITANetAudioProtocol::NP_SERVER_SENDING_SAMPLES;
-		m_pMessage->SetMessageType(iMsgType);
-		m_pMessage->WriteSampleFrame(&m_sfTempTransmitBuffer);
-		m_pMessage->WriteMessage();
-		m_iClientRingBufferFreeSamples -= iSendBlocks * iBlockLength;
 #ifdef NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ITANetAudioStreamingServer] Transmitted " << iSendSamples << " samples for "
 			<< m_pInputStream->GetNumberOfChannels() << " channels" << std::endl;
