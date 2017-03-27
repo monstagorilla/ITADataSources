@@ -79,7 +79,11 @@ public:
 	void SetAutomaticUpdateRate();
 
 	void SetTargetLatencySamples( const int iTargetLatency );
-	void GetTargetLatencySamples() const;
+	int GetTargetLatencySamples() const;
+
+	void SetServerLogBaseName( const std::string& sBaseName );
+	std::string GetServerLogBaseName() const;
+	
 
 protected:
 	ITADatasource* GetInputStream() const;
@@ -95,6 +99,7 @@ private:
 
 	int iServerBlockId;
 	ITABufferedDataLoggerImplServer* m_pServerLogger;
+	std::string m_sServerLogBaseName;
 
 	int m_iUpdateStrategy;
 	int m_iClientRingBufferFreeSamples;

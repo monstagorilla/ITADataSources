@@ -1,12 +1,13 @@
-#include <iostream>
-#include <string>
-
 #include <ITANetAudioStreamingServer.h>
 #include <ITANetAudioServer.h>
 #include <ITAStreamFunctionGenerator.h>
 #include <ITAStreamMultiplier1N.h>
 #include <ITAFileDataSource.h>
 #include <VistaBase/VistaTimeUtils.h>
+
+#include <iostream>
+#include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -40,12 +41,20 @@ int main( int argc, char** argv )
 	}
 	catch( ITAException& )
 	{
-		cout << "Could not find file " << g_sFileName << ", will use sine signal instead." << endl;
+		cout << "Could not find file " << g_sFileName << ", will use SINE signal instead." << endl;
 		pSource = new ITAStreamFunctionGenerator( 1, g_dSampleRate, g_iBlockLength, ITAStreamFunctionGenerator::SINE, 250.0f, 0.7171f, true );
 	}
 
 	ITAStreamMultiplier1N oMuliplier( pSource, g_iChannels );
 	CITANetAudioStreamingServer oStreamingServer;
+
+	stringstream ss;
+	ss << "NetAudioStreamingServerTest";
+	ss << "_C" << g_iChannels;
+	ss << "_B" << g_iBlockLength;
+	ss << "_TL" << g_iTargetLatencySamples;
+	oStreamingServer.SetServerLogBaseName( ss.str() );
+
 	oStreamingServer.SetInputStream( &oMuliplier );
 	oStreamingServer.SetTargetLatencySamples( g_iTargetLatencySamples );
 
