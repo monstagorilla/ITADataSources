@@ -88,7 +88,7 @@ private:
 
 	ITABufferedDataLoggerImplClient* m_pClientLogger;
 	std::string m_sClientLoggerBaseName;
-	ITAStopWatch m_swTryReadStats;
+	ITAStopWatch m_swTryReadBlockStats, m_swTryReadAccessStats;
 
 	friend class CITANetAudioStream;
 };

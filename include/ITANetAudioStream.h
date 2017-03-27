@@ -202,6 +202,7 @@ private:
 	int iNetStreamingBlockID; //!< Network streaming block id
 	
 	friend class CITANetAudioStreamingClient;
+	static std::string GetStreamingStatusString( int iStreamingStatus );
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAM

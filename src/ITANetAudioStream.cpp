@@ -36,7 +36,7 @@ struct ITAAudioStreamLog : public ITALogDataBase
 		os << uiBlockId;
 		os << "\t" << std::setprecision( 12 ) << dWorldTimeStamp;
 		os << "\t" << std::setprecision( 12 ) << dStreamingTimeCode;
-		os << "\t" << iStreamingStatus;
+		os << "\t" << sStreamingStatus;
 		os << "\t" << iFreeSamples;
 		os << std::endl;
 		return os;
@@ -45,7 +45,7 @@ struct ITAAudioStreamLog : public ITALogDataBase
 	unsigned int uiBlockId; //!< Block identifier (audio streaming)
 	double dWorldTimeStamp;
 	double dStreamingTimeCode;
-	int iStreamingStatus; //!< ... usw
+	std::string sStreamingStatus;
 	int iFreeSamples;
 
 };
@@ -242,7 +242,7 @@ void CITANetAudioStream::IncrementBlockPointer()
 	m_bRingBufferFull = false;
 
 	ITAAudioStreamLog oLog;	
-	oLog.iStreamingStatus = m_iStreamingStatus;
+	oLog.sStreamingStatus = GetStreamingStatusString( m_iStreamingStatus );
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
 	oLog.dStreamingTimeCode = m_dLastStreamingTimeCode;
 	oLog.uiBlockId = ++iAudioStreamingBlockID;
@@ -321,6 +321,24 @@ int CITANetAudioStream::GetRingBufferFreeSamples() const
 	int iFreeSamples = GetRingBufferSize() - ((m_iWriteCursor - m_iReadCursor + GetRingBufferSize()) % GetRingBufferSize());
 	assert( iFreeSamples > 0 );
 	return iFreeSamples;
+}
+
+std::string CITANetAudioStream::GetStreamingStatusString( int iStreamingStatus )
+{
+	if( iStreamingStatus == CITANetAudioStream::INVALID )
+		return "INVALID";
+	if( iStreamingStatus == CITANetAudioStream::STOPPED )
+		return "STOPPED";
+	if( iStreamingStatus == CITANetAudioStream::CONNECTED )
+		return "CONNECTED";
+	if( iStreamingStatus == CITANetAudioStream::STREAMING )
+		return "STREAMING";
+	if( iStreamingStatus == CITANetAudioStream::BUFFER_UNDERRUN )
+		return "BUFFER_UNDERRUN";
+	if( iStreamingStatus == CITANetAudioStream::BUFFER_OVERRUN )
+		return "BUFFER_OVERRUN";
+	
+	return "UNKOWN";
 }
 
 std::string CITANetAudioStream::GetNetAudioStreamLoggerBaseName() const

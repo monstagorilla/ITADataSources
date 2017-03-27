@@ -19,7 +19,6 @@ struct ITAClientLog : public ITALogDataBase
 		os << "\t" << "WorldTimeStamp";
 		os << "\t" << "ProtocolStatus";
 		os << "\t" << "FreeSamples";
-		os << "\t" << "Channel";
 		os << std::endl;
 		return os;
 	};
@@ -30,7 +29,6 @@ struct ITAClientLog : public ITALogDataBase
 		os << "\t" << std::setprecision( 12 ) << dWorldTimeStamp;
 		os << "\t" << iProtocolStatus;
 		os << "\t" << iFreeSamples;
-		os << "\t" << iChannel;
 		os << std::endl;
 		return os;
 	};
@@ -39,7 +37,6 @@ struct ITAClientLog : public ITALogDataBase
 	double dWorldTimeStamp;
 	int iProtocolStatus; //!< ... usw
 	int iFreeSamples;
-	int iChannel;
 
 };
 
@@ -79,6 +76,9 @@ CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 	delete m_pClientLogger;
 	delete m_pClient;
 	delete m_pMessage;
+
+	vstr::out() << "Try-read block calc time (ms): " << m_swTryReadBlockStats.ToString() << endl;
+	vstr::out() << "Try-read access time         : " << m_swTryReadAccessStats.ToString() << endl;	
 }
 
 bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPort )
@@ -123,7 +123,6 @@ bool CITANetAudioStreamingClient::LoopBody()
 
 	ITAClientLog oLog;
 	oLog.uiBlockId = ++m_iStreamingBlockId;
-	oLog.iChannel = m_pStream->GetNumberOfChannels();
 	oLog.iFreeSamples = m_pStream->GetRingBufferFreeSamples();
 	oLog.iProtocolStatus = CITANetAudioProtocol::NP_CLIENT_IDLE;
 
@@ -155,10 +154,13 @@ bool CITANetAudioStreamingClient::LoopBody()
 
 	// Try-read message (blocking for a timeout of 1ms)
 	m_pMessage->ResetMessage();
-	m_swTryReadStats.start();
+	m_swTryReadBlockStats.start();
+	m_swTryReadAccessStats.start();
 	if( m_pMessage->ReadMessage( 1 ) )
 	{
-		m_swTryReadStats.stop();
+		double dAccessTime = m_swTryReadAccessStats.stop();
+
+
 		int iMsgType = m_pMessage->GetMessageType();
 		switch( iMsgType )
 		{
@@ -192,7 +194,7 @@ bool CITANetAudioStreamingClient::LoopBody()
 		oLog.iProtocolStatus = iMsgType;
 
 	}
-	m_swTryReadStats.stop();
+	m_swTryReadBlockStats.stop();
 
 	m_pClientLogger->log( oLog );
 
