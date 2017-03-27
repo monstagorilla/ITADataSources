@@ -55,27 +55,27 @@ CITANetAudioMessage::CITANetAudioMessage( VistaSerializingToolset::ByteOrderSwap
 	, m_pConnection( NULL )
 	, m_iBytesReceivedTotal(0)
 {
+	m_pProtocolLogger = new ITABufferedDataLoggerImplProtocol();
+	m_nMessageId = 0;
 	m_oOutgoing.SetByteorderSwapFlag( bSwapBuffers );
 	m_oIncoming.SetByteorderSwapFlag( bSwapBuffers );
 	ResetMessage();
-
-	m_pProtocolLogger = new ITABufferedDataLoggerImplProtocol();
 }
 
 void CITANetAudioMessage::ResetMessage()
 {
+
+	ITAProtocolLog oLog;
+	oLog.uiBlockId = m_nMessageId;
+	oLog.iMessageType = 0;
+	oLog.nMessagePayloadSize = 0;
+
+	oLog.iStatus = 2;
+	
 	if (m_oIncoming.GetTailSize() > 0)
 	{
 		vstr::err() << "CITANetAudioMessage::ResetMessage() called before message was fully processed!" << std::endl;
-
-		ITAProtocolLog oLog;
-		oLog.uiBlockId = m_nMessageId;
-		oLog.iMessageType = m_nMessageType;
-		oLog.iStatus = -1;
-		oLog.nMessagePayloadSize = 0;
-		oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
-
-		m_pProtocolLogger->log(oLog);
+		oLog.iStatus = -1;		
 	}
 
 	// wait till sending is complete -> this prevents us
@@ -94,6 +94,9 @@ void CITANetAudioMessage::ResetMessage()
 	m_oIncoming.SetBuffer( NULL, 0 );
 
 	m_nMessageType = -1;
+	oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
+
+	m_pProtocolLogger->log(oLog);
 
 	//m_pConnection = NULL;
 
