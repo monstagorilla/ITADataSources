@@ -302,4 +302,5 @@ int CITANetAudioStreamingServer::GetNetworkPort( ) const
 void CITANetAudioStreamingServer::Stop( )
 {
 	m_pNetAudioServer->Stop( );
+	m_pMessage->ClearConnection();
 }
