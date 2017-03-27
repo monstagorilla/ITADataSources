@@ -23,6 +23,7 @@ bool CITANetAudioClient::Connect( const std::string& sAddress, int iPort )
 
 	// Attempt to connect and check parameters
 	m_pConnection = new VistaConnectionIP( VistaConnectionIP::CT_TCP, sAddress, iPort );
+	
 	if( !GetIsConnected() )
 	{
 		delete m_pConnection;
@@ -46,5 +47,8 @@ void CITANetAudioClient::Disconnect()
 
 bool CITANetAudioClient::GetIsConnected() const
 {
-	return ( m_pConnection != NULL ) ? true : false;
+	if( m_pConnection )
+		return m_pConnection->GetIsOpen();
+	else
+		return false;
 }

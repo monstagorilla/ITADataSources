@@ -16,39 +16,9 @@
 #include <cmath>
 #include <iostream>
 
+
 //! Audio streaming log item
-struct ITAAudioLog : public ITALogDataBase
-{
-	inline static std::ostream& outputDesc( std::ostream& os )
-	{
-		os << "\t" << "Channel";
-		os << "\t" << "Samplerate";
-		os << "\t" << "BufferSize";
-		os << "\t" << "RingBufferSize";
-		os << "\t" << "TargetSampleLatency";
-		os << std::endl;
-		return os;
-	};
-
-	inline std::ostream& outputData( std::ostream& os ) const
-	{
-		os << "\t" << iChannel;
-		os << "\t" << dSampleRate;
-		os << "\t" << iBufferSize;
-		os << "\t" << iRingBufferSize;
-		os << "\t" << iTargetSampleLatency;
-		os << std::endl;
-		return os;
-	};
-
-	int iChannel;
-	double dSampleRate;
-	int iBufferSize;
-	int iRingBufferSize;
-	int iTargetSampleLatency;
-};
-	//! Audio streaming log item
-struct ITAStreamLog : public ITALogDataBase
+struct ITAAudioStreamLog : public ITALogDataBase
 {
 	inline static std::ostream& outputDesc( std::ostream& os )
 	{
@@ -81,7 +51,7 @@ struct ITAStreamLog : public ITALogDataBase
 };
 
 //! Network streaming log item
-struct ITANetLog : public ITALogDataBase
+struct ITANetworkStreamLog : public ITALogDataBase
 {
 	inline static std::ostream& outputDesc( std::ostream& os )
 	{
@@ -112,9 +82,8 @@ struct ITANetLog : public ITALogDataBase
 	int iNumSamplesTransmitted;
 };
 
-class ITABufferedDataLoggerImplAudio : public ITABufferedDataLogger < ITAAudioLog > {};
-class ITABufferedDataLoggerImplStream : public ITABufferedDataLogger < ITAStreamLog > {};
-class ITABufferedDataLoggerImplNet : public ITABufferedDataLogger < ITANetLog > {};
+class ITABufferedDataLoggerImplStream : public ITABufferedDataLogger < ITAAudioStreamLog > {};
+class ITABufferedDataLoggerImplNet : public ITABufferedDataLogger < ITANetworkStreamLog > {};
 
 
 CITANetAudioStream::CITANetAudioStream(int iChannels, double dSamplingRate, int iBufferSize, int iTargetSampleLatencyServer)
@@ -124,7 +93,6 @@ CITANetAudioStream::CITANetAudioStream(int iChannels, double dSamplingRate, int 
 	, m_bRingBufferFull( false )
 	, m_iStreamingStatus( INVALID )
 	, m_dLastStreamingTimeCode( 0.0f )
-	, m_iTargetSampleLatencyServer( iTargetSampleLatencyServer )
 {
 	m_bRingBufferFull = false;
 	if (iBufferSize > iTargetSampleLatencyServer)
@@ -137,33 +105,19 @@ CITANetAudioStream::CITANetAudioStream(int iChannels, double dSamplingRate, int 
 	m_iStreamingStatus = STOPPED;
 
 	// Logging
-	std::string paras = std::string("_BS") + std::to_string(iBufferSize) + std::string("_Ch") + std::to_string(iChannels) + std::string("_tl") + std::to_string(iTargetSampleLatencyServer) + std::string(".txt");
-	m_pAudioLogger = new ITABufferedDataLoggerImplAudio( );
-	m_pAudioLogger->setOutputFile(std::string("NetAudioLogBaseData") + paras);
-
-	m_pStreamLogger = new ITABufferedDataLoggerImplStream();
-	m_pStreamLogger->setOutputFile(std::string("NetAudioLogStream") + paras);
+	m_pAudioStreamLogger = new ITABufferedDataLoggerImplStream();
 	iAudioStreamingBlockID = 0;
 
-	m_pNetLogger = new ITABufferedDataLoggerImplNet();
-	m_pNetLogger->setOutputFile(std::string("NetAudioLogNet") + paras);
+	m_pNetworkStreamLogger = new ITABufferedDataLoggerImplNet();
 	iNetStreamingBlockID = 0;
 
-	// Logging Base Data
-	ITAAudioLog oLog;
-	oLog.iChannel = GetNumberOfChannels();
-	oLog.dSampleRate = m_dSampleRate;
-	oLog.iBufferSize = GetBlocklength();
-	oLog.iRingBufferSize = GetRingBufferSize();
-	oLog.iTargetSampleLatency = m_iTargetSampleLatencyServer;
-	m_pAudioLogger->log( oLog );
+	SetNetAudioStreamingLoggerBaseName( "ITANetAudioStream" );
 }
 
 CITANetAudioStream::~CITANetAudioStream()
 {
-	delete m_pNetLogger;
-	delete m_pStreamLogger;
-	delete m_pAudioLogger;
+	delete m_pAudioStreamLogger;
+	delete m_pNetworkStreamLogger;
 	delete m_pNetAudioStreamingClient;
 }
 
@@ -182,11 +136,6 @@ bool CITANetAudioStream::GetIsConnected() const
 	return m_pNetAudioStreamingClient->GetIsConnected();
 }
 
-void CITANetAudioStream::SetAllowedLatencySeconds( float fLatencySeconds )
-{
-	SetAllowedLatencySamples( (int) std::floor( GetSampleRate() * fLatencySeconds ) );
-}
-
 float CITANetAudioStream::GetMaximumLatencySeconds() const
 {
 	return float( GetMaximumLatencySamples() / GetSampleRate() );
@@ -195,27 +144,6 @@ float CITANetAudioStream::GetMaximumLatencySeconds() const
 float CITANetAudioStream::GetMinimumLatencySeconds() const
 {
 	return float( GetMinimumLatencySamples() / GetSampleRate() );
-}
-
-void CITANetAudioStream::SetAllowedLatencySamples( int iLatencySamples )
-{
-	if( iLatencySamples < GetMinimumLatencySamples() )
-		ITA_EXCEPT1( INVALID_PARAMETER, "Can not set latency lower than the minimum possible" );
-
-	if( iLatencySamples > GetMaximumLatencySamples() )
-		ITA_EXCEPT1( INVALID_PARAMETER, "Can not set latency greater than the maximum possible" );
-
-	m_iTargetSampleLatencyServer = iLatencySamples;
-}
-
-float CITANetAudioStream::GetAllowedLatencySeconds() const
-{
-	return float(m_iTargetSampleLatencyServer / GetSampleRate());
-}
-
-int CITANetAudioStream::GetAllowedLatencySamples() const
-{
-	return m_iTargetSampleLatencyServer;
 }
 
 int CITANetAudioStream::GetMinimumLatencySamples() const
@@ -227,11 +155,6 @@ int CITANetAudioStream::GetMinimumLatencySamples() const
 int CITANetAudioStream::GetMaximumLatencySamples() const
 {
 	return GetRingBufferSize();
-}
-
-void CITANetAudioStream::SetLatencyForRealtime()
-{
-	SetAllowedLatencySamples( GetMinimumLatencySamples() );
 }
 
 const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pInfo )
@@ -318,13 +241,13 @@ void CITANetAudioStream::IncrementBlockPointer()
 	}
 	m_bRingBufferFull = false;
 
-	ITAStreamLog oLog;	
+	ITAAudioStreamLog oLog;	
 	oLog.iStreamingStatus = m_iStreamingStatus;
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
 	oLog.dStreamingTimeCode = m_dLastStreamingTimeCode;
 	oLog.uiBlockId = ++iAudioStreamingBlockID;
 	oLog.iFreeSamples = GetRingBufferFreeSamples( );
-	m_pStreamLogger->log( oLog );
+	m_pAudioStreamLogger->log( oLog );
 	
 	//m_pNetAudioStreamingClient->TriggerBlockIncrement();
 }
@@ -335,7 +258,7 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	int iCurrentReadCursor = m_iReadCursor;
 	int iCurrentWriteCursor = m_iWriteCursor;
 
-	ITANetLog oLog;
+	ITANetworkStreamLog oLog;
 	if( iCurrentWriteCursor < iCurrentReadCursor )
 		iCurrentWriteCursor += GetRingBufferSize(); // Unwrap, because write cursor always ahead
 
@@ -380,7 +303,7 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	oLog.uiBlockId = ++iAudioStreamingBlockID;
 	oLog.iFreeSamples = GetRingBufferFreeSamples( );
 	oLog.iNumSamplesTransmitted = iNumSamples;
-	m_pNetLogger->log( oLog );
+	m_pNetworkStreamLogger->log( oLog );
 	
 	return GetRingBufferFreeSamples();
 }
@@ -398,6 +321,18 @@ int CITANetAudioStream::GetRingBufferFreeSamples() const
 	int iFreeSamples = GetRingBufferSize() - ((m_iWriteCursor - m_iReadCursor + GetRingBufferSize()) % GetRingBufferSize());
 	assert( iFreeSamples > 0 );
 	return iFreeSamples;
+}
+
+std::string CITANetAudioStream::GetNetAudioStreamLoggerBaseName() const
+{
+	return m_sNetAudioStreamLoggerBaseName;
+}
+
+void CITANetAudioStream::SetNetAudioStreamingLoggerBaseName( const std::string& sBaseName )
+{
+	m_sNetAudioStreamLoggerBaseName = sBaseName;
+	m_pAudioStreamLogger->setOutputFile( GetNetAudioStreamLoggerBaseName() + "_AudioStream" );
+	m_pNetworkStreamLogger->setOutputFile( GetNetAudioStreamLoggerBaseName() + "_NetworkStream" );
 }
 
 int CITANetAudioStream::GetRingBufferSize() const

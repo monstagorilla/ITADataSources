@@ -47,6 +47,7 @@ class CITANetAudioStream;
 class ITA_DATA_SOURCES_API CITANetAudioProtocol
 {
 public:
+	static const int NP_CLIENT_IDLE = 0;
 	static const int NP_CLIENT_OPEN = 100;
 	static const int NP_CLIENT_CLOSE = 101;
 	static const int NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES = 111;
@@ -65,7 +66,6 @@ public:
 		double dSampleRate;
 		int iBlockSize;
 		int iRingBufferSize;
-		int iTargetSampleLatency;
 
 		inline StreamingParameters()
 		{
@@ -73,7 +73,6 @@ public:
 			dSampleRate = 0.0f;
 			iBlockSize = 0;
 			iRingBufferSize = 0;
-			iTargetSampleLatency = 0;
 		};
 
 		inline bool operator==( const StreamingParameters& rhs )
@@ -81,8 +80,7 @@ public:
 			if ( ( iChannels == rhs.iChannels ) 
 				&& ( dSampleRate == rhs.dSampleRate ) 
 				&& (iBlockSize == rhs.iBlockSize)
-				&& (iRingBufferSize == rhs.iRingBufferSize)
-				&& (iTargetSampleLatency == rhs.iTargetSampleLatency))
+				&& (iRingBufferSize == rhs.iRingBufferSize))
 				return true;
 			else
 				return false;

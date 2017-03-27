@@ -25,6 +25,7 @@
 
 #include <ITASampleFrame.h>
 #include <ITAStreamProbe.h>
+#include <ITAStopWatch.h>
 
 #include <VistaInterProcComm/Concurrency/VistaThreadEvent.h>
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
@@ -59,6 +60,9 @@ public:
 
 	bool LoopBody();
 
+	std::string GetClientLoggerBaseName() const;
+	void SetClientLoggerBaseName( const std::string& );
+
 protected:
 	void TriggerBlockIncrement();
 
@@ -69,17 +73,22 @@ private:
 	CITANetAudioProtocol* m_pProtocol;
 	CITANetAudioMessage* m_pMessage;
 	VistaConnectionIP* m_pConnection;
-
-	//VistaThreadEvent m_oBlockIncrementEvent;
-
+	
 	ITASampleFrame m_sfReceivingBuffer; //!< Buffer incoming data
 
 	CITANetAudioProtocol::StreamingParameters m_oParams;
 
 	bool m_bStopIndicated;
 	bool m_bStopped;
-	int iStreamingBlockId;
+
+	int m_iStreamingBlockId;
+
+	double m_dServerClockSyncRequestTimeInterval;
+	double m_dServerClockSyncLastSyncTime;
+
 	ITABufferedDataLoggerImplClient* m_pClientLogger;
+	std::string m_sClientLoggerBaseName;
+	ITAStopWatch m_swTryReadStats;
 
 	friend class CITANetAudioStream;
 };

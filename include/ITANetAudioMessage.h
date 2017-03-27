@@ -36,6 +36,7 @@
 #include <vector>
 
 class VistaConnectionIP;
+class ITABufferedDataLoggerImplProtocol;
 
 //! Network audio messages
 /**
@@ -94,6 +95,9 @@ public:
 	int ReadRingBufferFree();
 	void ReadSampleFrame(ITASampleFrame* pSampleFrame);
 
+	void SetMessageLoggerBaseName( const std::string& );
+	std::string GetMessageLoggerBaseName() const;
+
 private:
 	int m_nMessageType;
 	int m_nMessageId;
@@ -105,8 +109,8 @@ private:
 
 	VistaConnectionIP* m_pConnection;
 
-	//DEBUG
-	int i;
+	ITABufferedDataLoggerImplProtocol* m_pMessageLogger;
+	std::string m_sMessageLoggerBaseName;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_MESSAGE

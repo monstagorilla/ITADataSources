@@ -51,21 +51,22 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	, m_pConnection( NULL )
 	, m_bStopIndicated( false )
 	, m_bStopped( false )
+	, m_iStreamingBlockId( 0 )
+	, m_dServerClockSyncRequestTimeInterval( 0.1f )
+	, m_dServerClockSyncLastSyncTime( 0.0f )
 {
 	m_pClient = new CITANetAudioClient();
-
 	m_oParams.iChannels = pParent->GetNumberOfChannels();
-	m_oParams.dSampleRate = pParent->GetSampleRate( );
+	m_oParams.dSampleRate = pParent->GetSampleRate();
 	m_oParams.iBlockSize = pParent->GetBlocklength();
 	m_oParams.iRingBufferSize = pParent->GetRingBufferSize();
-	m_oParams.iTargetSampleLatency = pParent->GetAllowedLatencySamples();
+		 
+	m_sfReceivingBuffer.init( m_oParams.iChannels, m_oParams.iRingBufferSize, false );
 
-	std::string paras = std::string("NetAudioLogClient") + std::string("_BS") + std::to_string(pParent->GetBlocklength()) + std::string("_Ch") + std::to_string(pParent->GetNumberOfChannels()) + std::string("_tl") + std::to_string(pParent->GetAllowedLatencySamples()) + std::string(".txt");
-	m_pClientLogger = new ITABufferedDataLoggerImplClient( );
-	m_pClientLogger->setOutputFile(paras);
-	iStreamingBlockId = 0;
 	m_pMessage = new CITANetAudioMessage( VistaSerializingToolset::SWAPS_MULTIBYTE_VALUES );
-	m_sfReceivingBuffer.init(m_oParams.iChannels, m_oParams.iRingBufferSize, false);
+
+	m_pClientLogger = new ITABufferedDataLoggerImplClient();
+	SetClientLoggerBaseName( "ITANetAudioStreamingClient" );
 }
 
 CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
@@ -73,7 +74,7 @@ CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 	if( GetIsConnected() )
 		Disconnect();
 
-	StopGently( true );
+	StopGently( false );
 
 	delete m_pClientLogger;
 	delete m_pClient;
@@ -84,10 +85,13 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 {
 	if( GetIsConnected() )
 		return false;
-	
+
 	if( !m_pClient->Connect( sAddress, iPort ) )
 		ITA_EXCEPT1( INVALID_PARAMETER, "Could not connect to " + sAddress );
-	
+
+	if( !m_pClient->GetIsConnected() )
+		return false;
+
 	m_pConnection = m_pClient->GetConnection();
 
 	m_pMessage->ResetMessage();
@@ -96,17 +100,17 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 	// Validate streaming parameters of server and client
 	m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_OPEN );
 	m_pMessage->WriteStreamingParameters( m_oParams );
-	m_pMessage->WriteMessage( );
-	m_pMessage->ResetMessage( );
+	m_pMessage->WriteMessage();
+	m_pMessage->ResetMessage();
 
-	while ( !m_pMessage->ReadMessage( 0 ) );
-	
-	assert( m_pMessage->GetMessageType( ) == CITANetAudioProtocol::NP_SERVER_OPEN );
-	bool bOK = m_pMessage->ReadBool();
-	
-	if( !bOK )
-		ITA_EXCEPT1( INVALID_PARAMETER, "Streaming server declined connection, detected streaming parameter mismatch." );
+	while( !m_pMessage->ReadMessage( 0 ) );
 
+	assert( m_pMessage->GetMessageType() == CITANetAudioProtocol::NP_SERVER_OPEN );
+
+	// Clock sync vars
+	m_dServerClockSyncRequestTimeInterval = m_pMessage->ReadDouble();
+	m_dServerClockSyncLastSyncTime = 0;
+	
 	Run();
 
 	return true;
@@ -118,7 +122,12 @@ bool CITANetAudioStreamingClient::LoopBody()
 		return true;
 
 	ITAClientLog oLog;
-	oLog.uiBlockId = ++iStreamingBlockId;
+	oLog.uiBlockId = ++m_iStreamingBlockId;
+	oLog.iChannel = m_pStream->GetNumberOfChannels();
+	oLog.iFreeSamples = m_pStream->GetRingBufferFreeSamples();
+	oLog.iProtocolStatus = CITANetAudioProtocol::NP_CLIENT_IDLE;
+
+	oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
 
 	if( m_bStopIndicated && !m_bStopped )
 	{
@@ -143,12 +152,13 @@ bool CITANetAudioStreamingClient::LoopBody()
 
 		return true;
 	}
-	
 
-	// Read answer (blocking)
-	m_pMessage->ResetMessage( );
+	// Try-read message (blocking for a timeout of 1ms)
+	m_pMessage->ResetMessage();
+	m_swTryReadStats.start();
 	if( m_pMessage->ReadMessage( 1 ) )
 	{
+		m_swTryReadStats.stop();
 		int iMsgType = m_pMessage->GetMessageType();
 		switch( iMsgType )
 		{
@@ -160,34 +170,56 @@ bool CITANetAudioStreamingClient::LoopBody()
 			vstr::out() << "[ITANetAudioStreamingClient] Recived " << m_sfReceivingBuffer.GetLength() << " samples" << std::endl;
 #endif
 			break;
+
 		case CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES:
 			m_pMessage->ReadBool();
 			m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES );
 			m_pMessage->WriteInt( m_pStream->GetRingBufferFreeSamples() );
 			m_pMessage->WriteMessage();
 			break;
+
 		case CITANetAudioProtocol::NP_SERVER_CLOSE:
 			Disconnect();
 			break;
+
 		default:
 			vstr::out() << "[ITANetAudioStreamingServer] Unkown protocol type : " << iMsgType << std::endl;
 			break;
+
 		}
 
-		oLog.iChannel = m_pStream->GetNumberOfChannels();
+		// Also log message type on incoming message
 		oLog.iProtocolStatus = iMsgType;
-		oLog.iFreeSamples = m_pStream->GetRingBufferFreeSamples();
-		oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
-		m_pClientLogger->log( oLog );
+
 	}
-	else 
+	m_swTryReadStats.stop();
+
+	m_pClientLogger->log( oLog );
+
+	// Send ring buffer free samples occasionally (as requested by server)
+	const double dNow = ITAClock::getDefaultClock()->getTime();
+	if( ( m_dServerClockSyncLastSyncTime + m_dServerClockSyncRequestTimeInterval ) < dNow )
 	{
-		// sende mal freie samples
-		m_pMessage->SetMessageType(CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES);
-		m_pMessage->WriteInt(m_pStream->GetRingBufferFreeSamples());
+		m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES );
+		m_pMessage->WriteInt( m_pStream->GetRingBufferFreeSamples() );
 		m_pMessage->WriteMessage();
+		m_dServerClockSyncLastSyncTime = dNow;
 	}
+	
 	return false;
+}
+
+std::string CITANetAudioStreamingClient::GetClientLoggerBaseName() const
+{
+	return m_sClientLoggerBaseName;
+}
+
+void CITANetAudioStreamingClient::SetClientLoggerBaseName( const std::string& sBaseName )
+{
+	m_sClientLoggerBaseName = sBaseName;
+
+	m_pClientLogger->setOutputFile( m_sClientLoggerBaseName );
+	m_pMessage->SetMessageLoggerBaseName( GetClientLoggerBaseName() + "_Messages" );
 }
 
 bool CITANetAudioStreamingClient::GetIsConnected() const
@@ -201,8 +233,9 @@ void CITANetAudioStreamingClient::Disconnect()
 
 	while( !m_bStopped )
 		VistaTimeUtils::Sleep( 100 );
-	
+
 	m_pConnection = NULL;
+	m_pMessage->ClearConnection();
 	m_pClient->Disconnect();
 	m_bStopIndicated = false;
 	m_bStopped = false;
