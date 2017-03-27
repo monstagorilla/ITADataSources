@@ -58,6 +58,7 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	, m_pConnection(NULL)
 	, m_pNetAudioServer(new CITANetAudioServer())
 	, m_dLastTimeStamp(0)
+	, m_iTargetLatencySamples( -1 )
 {
 	iServerBlockId = 0;
 	m_iMaxSendBlocks = 40;
@@ -90,9 +91,8 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 
 	bool bOK = false;
 	m_oServerParams.iRingBufferSize = oClientParams.iRingBufferSize;
-	m_oServerParams.iTargetSampleLatency = oClientParams.iTargetSampleLatency;
 	m_oServerParams.iBlockSize = oClientParams.iBlockSize;
-	m_iClientRingBufferFreeSamples = m_oServerParams.iTargetSampleLatency;
+	m_iClientRingBufferFreeSamples = m_oServerParams.iRingBufferSize;
 
 	m_dLastTimeStamp = ITAClock::getDefaultClock()->getTime();
 	if ( m_oServerParams == oClientParams )
@@ -109,7 +109,7 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort 
 #endif
 	}
 
-	std::string paras = std::string("NetAudioLogServer") + std::string("_BS") + std::to_string(m_oServerParams.iBlockSize) + std::string("_Ch") + std::to_string(m_oServerParams.iChannels) + std::string("_tl") + std::to_string(m_oServerParams.iTargetSampleLatency) + std::string(".txt");
+	std::string paras = std::string("NetAudioLogServer") + std::string("_BS") + std::to_string(m_oServerParams.iBlockSize) + std::string("_Ch") + std::to_string(m_oServerParams.iChannels) + std::string("_tl") + std::to_string(m_iTargetLatencySamples) + std::string(".txt");
 	m_pServerLogger = new ITABufferedDataLoggerImplServer( );
 	m_pServerLogger->setOutputFile( paras );
 
@@ -135,7 +135,7 @@ bool CITANetAudioStreamingServer::LoopBody( )
 	int iMsgType;
 	// Sending Samples 
 	int iBlockLength = m_pInputStream->GetBlocklength( );
-	int iClientRingBufferTargetLatencyFreeSamples = m_iClientRingBufferFreeSamples - (m_oServerParams.iRingBufferSize - m_oServerParams.iTargetSampleLatency);
+	int iClientRingBufferTargetLatencyFreeSamples = m_iClientRingBufferFreeSamples - (m_oServerParams.iRingBufferSize - m_iTargetLatencySamples);
 
 	if (iClientRingBufferTargetLatencyFreeSamples >= iBlockLength)
 	{
@@ -224,7 +224,7 @@ bool CITANetAudioStreamingServer::LoopBody( )
 		const double dTimeDiff = dTimestamp - m_dLastTimeStamp;
 		m_dLastTimeStamp = dTimestamp;
 		oLog.dWorldTimeStamp = dTimestamp;
-		float dEstimatedSamples = dTimeDiff * m_pInputStream->GetSampleRate();
+		double dEstimatedSamples = dTimeDiff * m_pInputStream->GetSampleRate();
 		m_iClientRingBufferFreeSamples += (int)dEstimatedSamples;
 		oLog.iFreeSamples = m_iClientRingBufferFreeSamples;
 		oLog.iProtocolStatus = 555;
@@ -283,6 +283,15 @@ int CITANetAudioStreamingServer::GetNetStreamNumberOfChannels( ) const
 void CITANetAudioStreamingServer::SetAutomaticUpdateRate( )
 {
 	m_iUpdateStrategy = AUTO;
+}
+
+void CITANetAudioStreamingServer::SetTargetLatencySamples( const int iTargetLatency )
+{
+	// Streaming already set up?
+	if( IsClientConnected() && m_iTargetLatencySamples < m_oServerParams.iBlockSize )
+		ITA_EXCEPT1( INVALID_PARAMETER, "Target latency has to be at least the block size of the audio streaming at client side." );
+
+	m_iTargetLatencySamples = iTargetLatency;
 }
 
 bool CITANetAudioStreamingServer::IsClientConnected( ) const

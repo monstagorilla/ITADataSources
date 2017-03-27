@@ -18,7 +18,7 @@ int g_iServerPort = 12480;
 double g_dSampleRate = 44100.0;
 int g_iBlockLength = 64;
 int g_iChannels = 2;
-int g_iRingBufferSize = 2048; // 22ms max
+int g_iRingBufferSize = 88200;
 double g_dPlaybackDuration = 10; // seconds
 
 int main( int argc, char* argv[] )

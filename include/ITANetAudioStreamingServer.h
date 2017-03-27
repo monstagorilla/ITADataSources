@@ -63,7 +63,7 @@ public:
 	CITANetAudioStreamingServer();
 	~CITANetAudioStreamingServer();
 
-	bool Start(const std::string& sAddress, int iPort, double dTimeIntervalCientSendStatus);
+	bool Start( const std::string& sAddress, const int iPort, const double dTimeIntervalCientSendStatus );
 	bool IsClientConnected() const;
 	std::string GetNetworkAddress() const;
 	int GetNetworkPort() const;
@@ -71,12 +71,15 @@ public:
 	void Stop();
 
 	void SetInputStream( ITADatasource* pInStream );
-	
+
 	int GetNetStreamBlocklength() const;
 	int GetNetStreamNumberOfChannels() const;
 	double GetNetStreamSampleRate() const;
 
 	void SetAutomaticUpdateRate();
+
+	void SetTargetLatencySamples( const int iTargetLatency );
+	void GetTargetLatencySamples() const;
 
 protected:
 	ITADatasource* GetInputStream() const;
@@ -95,6 +98,7 @@ private:
 
 	int m_iUpdateStrategy;
 	int m_iClientRingBufferFreeSamples;
+	int m_iTargetLatencySamples;
 	int m_iMaxSendBlocks;
 	double m_dLastTimeStamp;
 

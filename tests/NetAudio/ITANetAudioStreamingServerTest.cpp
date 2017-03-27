@@ -15,7 +15,7 @@ int g_iServerPort = 12480;
 double g_dSampleRate = 44100.0;
 int g_iBlockLength = 64;
 int g_iChannels = 2;
-int g_iTargetLatencySamples = 128; // 1.4512ms
+int g_iTargetLatencySamples = 44100; // 1.4512ms
 double g_dClientStatusMessageTimeout = 0.1; // seconds
 string g_sFileName = "gershwin-mono.wav";
 
@@ -47,6 +47,7 @@ int main( int argc, char** argv )
 	ITAStreamMultiplier1N oMuliplier( pSource, g_iChannels );
 	CITANetAudioStreamingServer oStreamingServer;
 	oStreamingServer.SetInputStream( &oMuliplier );
+	oStreamingServer.SetTargetLatencySamples( g_iTargetLatencySamples );
 
 	cout << "Starting net audio server and waiting for connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
 	oStreamingServer.Start( g_sServerName, g_iServerPort, g_dClientStatusMessageTimeout );
