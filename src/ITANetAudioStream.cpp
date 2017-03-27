@@ -331,8 +331,8 @@ std::string CITANetAudioStream::GetNetAudioStreamLoggerBaseName() const
 void CITANetAudioStream::SetNetAudioStreamingLoggerBaseName( const std::string& sBaseName )
 {
 	m_sNetAudioStreamLoggerBaseName = sBaseName;
-	m_pAudioStreamLogger->setOutputFile( GetNetAudioStreamLoggerBaseName() + "_AudioStream" );
-	m_pNetworkStreamLogger->setOutputFile( GetNetAudioStreamLoggerBaseName() + "_NetworkStream" );
+	m_pAudioStreamLogger->setOutputFile( GetNetAudioStreamLoggerBaseName() + "_AudioStream.log" );
+	m_pNetworkStreamLogger->setOutputFile( GetNetAudioStreamLoggerBaseName() + "_NetworkStream.log" );
 }
 
 int CITANetAudioStream::GetRingBufferSize() const

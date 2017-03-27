@@ -60,7 +60,7 @@ CITANetAudioMessage::CITANetAudioMessage( VistaSerializingToolset::ByteOrderSwap
 	, m_sMessageLoggerBaseName( "ITANetAudioMessage" )
 {
 	m_pMessageLogger = new ITABufferedDataLoggerImplProtocol();
-	m_pMessageLogger->setOutputFile( m_sMessageLoggerBaseName );
+	m_pMessageLogger->setOutputFile( m_sMessageLoggerBaseName + ".log" );
 
 	m_nMessageId = 0;
 	m_oOutgoing.SetByteorderSwapFlag( bSwapBuffers );

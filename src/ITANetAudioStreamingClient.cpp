@@ -218,8 +218,8 @@ void CITANetAudioStreamingClient::SetClientLoggerBaseName( const std::string& sB
 {
 	m_sClientLoggerBaseName = sBaseName;
 
-	m_pClientLogger->setOutputFile( m_sClientLoggerBaseName );
-	m_pMessage->SetMessageLoggerBaseName( GetClientLoggerBaseName() + "_Messages" );
+	m_pClientLogger->setOutputFile( m_sClientLoggerBaseName + ".log" );
+	m_pMessage->SetMessageLoggerBaseName( GetClientLoggerBaseName() + "_Messages.log" );
 }
 
 bool CITANetAudioStreamingClient::GetIsConnected() const
