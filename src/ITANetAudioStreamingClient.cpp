@@ -212,4 +212,5 @@ void CITANetAudioStreamingClient::Disconnect()
 	m_pClient->Disconnect();
 	m_bStopIndicated = false;
 	m_bStopped = false;
+	m_pMessage->ClearConnection();
 }
