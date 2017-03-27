@@ -209,8 +209,8 @@ void CITANetAudioStreamingClient::Disconnect()
 		VistaTimeUtils::Sleep( 100 );
 	
 	m_pConnection = NULL;
+	m_pMessage->ClearConnection();
 	m_pClient->Disconnect();
 	m_bStopIndicated = false;
 	m_bStopped = false;
-	m_pMessage->ClearConnection();
 }
