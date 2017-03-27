@@ -73,7 +73,7 @@ CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 	if( GetIsConnected() )
 		Disconnect();
 
-	StopGently( true );
+	StopGently( false );
 
 	delete m_pClientLogger;
 	delete m_pClient;
@@ -88,8 +88,11 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 	if( !m_pClient->Connect( sAddress, iPort ) )
 		ITA_EXCEPT1( INVALID_PARAMETER, "Could not connect to " + sAddress );
 	
-	m_pConnection = m_pClient->GetConnection();
+	if( !m_pClient->GetIsConnected() )
+		return false;
 
+	m_pConnection = m_pClient->GetConnection();
+	
 	m_pMessage->ResetMessage();
 	m_pMessage->SetConnection( m_pConnection );
 
