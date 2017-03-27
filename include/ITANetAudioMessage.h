@@ -36,6 +36,7 @@
 #include <vector>
 
 class VistaConnectionIP;
+class ITABufferedDataLoggerImplProtocol;
 
 //! Network audio messages
 /**
@@ -103,6 +104,8 @@ private:
 	VistaByteBufferDeSerializer m_oIncoming; //!< Deserialization buffer for messages
 	std::vector< VistaType::byte > m_vecIncomingBuffer; // Net IO buffer
 
+
+	ITABufferedDataLoggerImplProtocol* m_pProtocolLogger;
 	VistaConnectionIP* m_pConnection;
 
 	//DEBUG

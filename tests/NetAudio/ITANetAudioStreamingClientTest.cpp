@@ -18,16 +18,23 @@ int main(int argc, char* argv[])
 	
 	if (argc != 7)
 	{
-		fprintf(stderr, "Fehler: Syntax = ServerName ServerPort SampleRate BufferSize Channel RingBufferSize!\n");
+		//fprintf(stderr, "Fehler: Syntax = ServerName ServerPort SampleRate BufferSize Channel RingBufferSize!\n");
 	}
 	
-
-	 string sServerName = argv[1];
-	 unsigned int iServerPort = atoi(argv[2]);
-	 double dSampleRate = strtod(argv[3], NULL);
-	 int iBlockLength = atoi(argv[4]);
-	 int iChannels = atoi(argv[5]);
-	 int iBufferSize = atoi(argv[6]);
+	/*
+	string sServerName = argv[1];
+	unsigned int iServerPort = atoi(argv[2]);
+	double dSampleRate = strtod(argv[3], NULL);
+	int iBlockLength = atoi(argv[4]);
+	int iChannels = atoi(argv[5]);
+	int iBufferSize = atoi(argv[6]);
+	*/
+	string sServerName = "137.226.61.85";
+	unsigned int iServerPort = 12480;
+	double dSampleRate = 44100.0;
+	int iBlockLength = 32;
+	int iChannels = 2;
+	int iBufferSize = 32*16;
 
 	cout << "Channel " << iChannels << endl;
 
