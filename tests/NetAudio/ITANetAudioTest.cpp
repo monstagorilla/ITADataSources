@@ -23,8 +23,8 @@ const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
 const static int g_iBlockLength = 512;
 const static int g_iChannels = 2;
-const static int g_iTargetLatencySamples = g_iBlockLength * 3;
-const static int g_iRingerBufferCapacity = g_iBlockLength * 4;
+const static int g_iTargetLatencySamples = g_iBlockLength * 4;
+const static int g_iRingerBufferCapacity = g_iBlockLength * 8;
 
 class CServer : public VistaThread
 {
