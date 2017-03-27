@@ -21,20 +21,24 @@ const static string g_sServerName = "localhost";
 const static string g_sInputFilePath = "gershwin-mono.wav";
 const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
-const static int g_iBlockLength = 32;
+const static int g_iBlockLength = 512;
 const static int g_iChannels = 2;
+const static int g_iTargetLatencySamples = 512;
 
 class CServer : public VistaThread
 {
 public:
 	inline CServer( const string& sInputFilePath )
 	{
+		pStreamingServer = new CITANetAudioStreamingServer;
+		pStreamingServer->SetTargetLatencySamples( g_iTargetLatencySamples );
+		pStreamingServer->SetServerLogBaseName( "ITANetAudioTest_Server" );
+
 		pInputFile = new ITAFileDatasource( sInputFilePath, g_iBlockLength );
 		assert( pInputFile->GetNumberOfChannels() == 1 );
 		pMuliplier = new ITAStreamMultiplier1N( pInputFile, g_iChannels );
-		pStreamingServer = new CITANetAudioStreamingServer;
-
-		pStreamingServer->SetInputStream( pMuliplier );
+		pInputStreamProbe = new ITAStreamProbe( pMuliplier, "ITANetAudioTest.serverstream.wav" );
+		pStreamingServer->SetInputStream( pInputStreamProbe );
 
 		Run();
 	};
@@ -44,6 +48,7 @@ public:
 		delete pInputFile;
 		delete pMuliplier;
 		delete pStreamingServer;
+		delete pInputStreamProbe;
 	};
 
 	void ThreadBody( )
@@ -56,6 +61,8 @@ private:
 	ITAFileDatasource* pInputFile;
 	ITAStreamMultiplier1N* pMuliplier;
 	CITANetAudioStreamingServer* pStreamingServer;
+	ITAStreamProbe* pInputStreamProbe;
+
 };
 
 int main( int, char** )
@@ -65,6 +72,7 @@ int main( int, char** )
 
 	// Client dumping received stream and mixing down to two channels
 	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBlockLength, 20 * g_iBlockLength );
+	oNetAudioStream.SetNetAudioStreamingLoggerBaseName( "ITANetAudioTest_NetAudioStream" );
 
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBlockLength );
 	oPatchbay.AddInput( &oNetAudioStream );
@@ -74,7 +82,7 @@ int main( int, char** )
 	for ( int i = 0; i < N ; i++ )
 		oPatchbay.ConnectChannels( 0, i, 0, i % 2, 1 / double( N ) );
 	
-	ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.stream.wav" );
+	ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.netstream.wav" );
 
 	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBlockLength );
 	ITAPA.Initialize();
