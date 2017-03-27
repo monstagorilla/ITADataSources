@@ -63,11 +63,12 @@ public:
 	CITANetAudioStreamingServer();
 	~CITANetAudioStreamingServer();
 
+	//! Start to listen on a socket (blocking)
 	bool Start( const std::string& sAddress, const int iPort, const double dTimeIntervalCientSendStatus );
 	bool IsClientConnected() const;
 	std::string GetNetworkAddress() const;
 	int GetNetworkPort() const;
-	bool LoopBody();
+
 	void Stop();
 
 	void SetInputStream( ITADatasource* pInStream );
@@ -83,7 +84,8 @@ public:
 
 	void SetServerLogBaseName( const std::string& sBaseName );
 	std::string GetServerLogBaseName() const;
-	
+
+	bool LoopBody();
 
 protected:
 	ITADatasource* GetInputStream() const;

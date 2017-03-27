@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 
 #include <ITANetAudioStream.h>
 #include <ITAPortaudioInterface.h>
@@ -48,6 +49,13 @@ int main( int argc, char* argv[] )
 	cout << "Number of NetAudio channels: " << g_iChannels << endl;
 
 	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBlockLength, g_iRingBufferSize );
+
+	stringstream ss;
+	ss << "NetAudioStreamingServerTest";
+	ss << "_C" << g_iChannels;
+	ss << "_B" << g_iBlockLength;
+	ss << "_RB" << g_iRingBufferSize;
+	oNetAudioStream.SetNetAudioStreamingLoggerBaseName( ss.str() );
 
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBlockLength );
 	oPatchbay.AddInput( &oNetAudioStream );

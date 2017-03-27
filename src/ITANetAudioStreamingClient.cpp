@@ -60,13 +60,13 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	m_oParams.dSampleRate = pParent->GetSampleRate();
 	m_oParams.iBlockSize = pParent->GetBlocklength();
 	m_oParams.iRingBufferSize = pParent->GetRingBufferSize();
-
-	std::string paras = std::string( "NetAudioLogClient" ) + std::string( "_BS" ) + std::to_string( pParent->GetBlocklength() ) + std::string( "_Ch" ) + std::to_string( pParent->GetNumberOfChannels() ) + std::string( "_tl" ) + std::to_string( pParent->GetAllowedLatencySamples() ) + std::string( ".txt" );
-	m_pClientLogger = new ITABufferedDataLoggerImplClient();
-	m_pClientLogger->setOutputFile( paras );
-	 
-	m_pMessage = new CITANetAudioMessage( VistaSerializingToolset::SWAPS_MULTIBYTE_VALUES );
+		 
 	m_sfReceivingBuffer.init( m_oParams.iChannels, m_oParams.iRingBufferSize, false );
+
+	m_pMessage = new CITANetAudioMessage( VistaSerializingToolset::SWAPS_MULTIBYTE_VALUES );
+
+	m_pClientLogger = new ITABufferedDataLoggerImplClient();
+	SetClientLoggerBaseName( "ITANetAudioStreamingClient" );
 }
 
 CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
@@ -207,6 +207,19 @@ bool CITANetAudioStreamingClient::LoopBody()
 	}
 	
 	return false;
+}
+
+std::string CITANetAudioStreamingClient::GetClientLoggerBaseName() const
+{
+	return m_sClientLoggerBaseName;
+}
+
+void CITANetAudioStreamingClient::SetClientLoggerBaseName( const std::string& sBaseName )
+{
+	m_sClientLoggerBaseName = sBaseName;
+
+	m_pClientLogger->setOutputFile( m_sClientLoggerBaseName );
+	m_pMessage->SetMessageLoggerBaseName( GetClientLoggerBaseName() + "_Messages" );
 }
 
 bool CITANetAudioStreamingClient::GetIsConnected() const

@@ -60,6 +60,9 @@ public:
 
 	bool LoopBody();
 
+	std::string GetClientLoggerBaseName() const;
+	void SetClientLoggerBaseName( const std::string& );
+
 protected:
 	void TriggerBlockIncrement();
 
@@ -84,6 +87,7 @@ private:
 	double m_dServerClockSyncLastSyncTime;
 
 	ITABufferedDataLoggerImplClient* m_pClientLogger;
+	std::string m_sClientLoggerBaseName;
 	ITAStopWatch m_swTryReadStats;
 
 	friend class CITANetAudioStream;

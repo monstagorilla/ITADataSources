@@ -95,6 +95,9 @@ public:
 	int ReadRingBufferFree();
 	void ReadSampleFrame(ITASampleFrame* pSampleFrame);
 
+	void SetMessageLoggerBaseName( const std::string& );
+	std::string GetMessageLoggerBaseName() const;
+
 private:
 	int m_nMessageType;
 	int m_nMessageId;
@@ -104,12 +107,10 @@ private:
 	VistaByteBufferDeSerializer m_oIncoming; //!< Deserialization buffer for messages
 	std::vector< VistaType::byte > m_vecIncomingBuffer; // Net IO buffer
 
-
-	ITABufferedDataLoggerImplProtocol* m_pProtocolLogger;
 	VistaConnectionIP* m_pConnection;
 
-	//DEBUG
-	int i;
+	ITABufferedDataLoggerImplProtocol* m_pMessageLogger;
+	std::string m_sMessageLoggerBaseName;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_MESSAGE

@@ -49,7 +49,7 @@ int main( int argc, char** argv )
 	CITANetAudioStreamingServer oStreamingServer;
 
 	stringstream ss;
-	ss << "NetAudioStreamingServerTest";
+	ss << "ITANetAudioStreamingServerTest";
 	ss << "_C" << g_iChannels;
 	ss << "_B" << g_iBlockLength;
 	ss << "_TL" << g_iTargetLatencySamples;

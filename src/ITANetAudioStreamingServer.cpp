@@ -83,6 +83,8 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort,
 	m_pConnection = m_pNetAudioServer->GetConnection();
 
 	m_pMessage = new CITANetAudioMessage( m_pConnection->GetByteorderSwapFlag() );
+	m_pMessage->SetMessageLoggerBaseName( GetServerLogBaseName() + "_Messages" );
+
 	m_pMessage->ResetMessage();
 	m_pMessage->SetConnection( m_pConnection );
 	while( !m_pMessage->ReadMessage( 0 ) ); //blocking
