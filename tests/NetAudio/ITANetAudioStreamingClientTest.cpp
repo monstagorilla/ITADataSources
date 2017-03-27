@@ -16,7 +16,7 @@ using namespace std;
 string g_sServerName = "localhost";
 int g_iServerPort = 12480;
 double g_dSampleRate = 44100.0;
-int g_iBlockLength = 32;
+int g_iBlockLength = 64;
 int g_iChannels = 2;
 int g_iRingBufferSize = 2048; // 22ms max
 double g_dPlaybackDuration = 10; // seconds

@@ -13,9 +13,9 @@ using namespace std;
 string g_sServerName = "localhost";
 int g_iServerPort = 12480;
 double g_dSampleRate = 44100.0;
-int g_iBlockLength = 32;
+int g_iBlockLength = 64;
 int g_iChannels = 2;
-int g_iTargetLatencySamples = 64; // 1.4512ms
+int g_iTargetLatencySamples = 128; // 1.4512ms
 double g_dClientStatusMessageTimeout = 0.1; // seconds
 string g_sFileName = "gershwin-mono.wav";
 
