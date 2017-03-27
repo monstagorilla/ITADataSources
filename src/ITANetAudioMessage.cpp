@@ -388,6 +388,9 @@ CITANetAudioProtocol::StreamingParameters CITANetAudioMessage::ReadStreamingPara
 	oParams.iTargetSampleLatency = ReadInt();
 	oParams.dTimeIntervalSendInfos = ReadDouble();
 
+	std::string paras = std::string( "NetAudioLogProtocol" ) + std::string( "_BS" ) + std::to_string( oParams.iBlockSize ) + std::string( "_Ch" ) + std::to_string( oParams.iChannels ) + std::string( "_tl" ) + std::to_string( oParams.iTargetSampleLatency ) + std::string( ".txt" );
+	m_pProtocolLogger->setOutputFile( paras );
+
 	return oParams;
 }
 
@@ -399,7 +402,6 @@ void CITANetAudioMessage::WriteStreamingParameters( const CITANetAudioProtocol::
 	WriteInt(oParams.iRingBufferSize);
 	WriteInt(oParams.iTargetSampleLatency);
 	WriteDouble(oParams.dTimeIntervalSendInfos);
-
 
 	std::string paras = std::string("NetAudioLogProtocol") + std::string("_BS") + std::to_string(oParams.iBlockSize) + std::string("_Ch") + std::to_string(oParams.iChannels) + std::string("_tl") + std::to_string(oParams.iTargetSampleLatency) + std::string(".txt");
 	m_pProtocolLogger->setOutputFile(paras);
