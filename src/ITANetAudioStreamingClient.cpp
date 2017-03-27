@@ -18,6 +18,7 @@ struct ITAClientLog : public ITALogDataBase
 		os << "BlockId";
 		os << "\t" << "WorldTimeStamp";
 		os << "\t" << "ProtocolStatus";
+		os << "\t" << "TransmittedRingBufferFreeSamples";
 		os << "\t" << "FreeSamples";
 		os << std::endl;
 		return os;
@@ -27,7 +28,8 @@ struct ITAClientLog : public ITALogDataBase
 	{
 		os << uiBlockId;
 		os << "\t" << std::setprecision( 12 ) << dWorldTimeStamp;
-		os << "\t" << iProtocolStatus;
+		os << "\t" << sProtocolStatus;
+		os << "\t" << ( bTransmittedRingBufferFreeSamples ? "true" : "false" );
 		os << "\t" << iFreeSamples;
 		os << std::endl;
 		return os;
@@ -35,7 +37,8 @@ struct ITAClientLog : public ITALogDataBase
 
 	unsigned int uiBlockId; //!< Block identifier (audio streaming)
 	double dWorldTimeStamp;
-	int iProtocolStatus; //!< ... usw
+	std::string sProtocolStatus;
+	bool bTransmittedRingBufferFreeSamples;
 	int iFreeSamples;
 
 };
@@ -77,8 +80,8 @@ CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 	delete m_pClient;
 	delete m_pMessage;
 
-	vstr::out() << "Try-read block calc time (ms): " << m_swTryReadBlockStats.ToString() << endl;
-	vstr::out() << "Try-read access time         : " << m_swTryReadAccessStats.ToString() << endl;	
+	vstr::out() << "[ ITANetAudioStreamingClient ] Processing statistics: " << m_swTryReadBlockStats.ToString() << std::endl;
+	vstr::out() << "[ ITANetAudioStreamingClient ] Try-read access statistics: " << m_swTryReadAccessStats.ToString() << std::endl;
 }
 
 bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPort )
@@ -124,7 +127,8 @@ bool CITANetAudioStreamingClient::LoopBody()
 	ITAClientLog oLog;
 	oLog.uiBlockId = ++m_iStreamingBlockId;
 	oLog.iFreeSamples = m_pStream->GetRingBufferFreeSamples();
-	oLog.iProtocolStatus = CITANetAudioProtocol::NP_CLIENT_IDLE;
+	oLog.sProtocolStatus = CITANetAudioProtocol::GetNPMessageID( CITANetAudioProtocol::NP_CLIENT_IDLE );
+	oLog.bTransmittedRingBufferFreeSamples = false;
 
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
 
@@ -158,8 +162,7 @@ bool CITANetAudioStreamingClient::LoopBody()
 	m_swTryReadAccessStats.start();
 	if( m_pMessage->ReadMessage( 1 ) )
 	{
-		double dAccessTime = m_swTryReadAccessStats.stop();
-
+		m_swTryReadAccessStats.stop();
 
 		int iMsgType = m_pMessage->GetMessageType();
 		switch( iMsgType )
@@ -169,7 +172,7 @@ bool CITANetAudioStreamingClient::LoopBody()
 			if( m_pStream->GetRingBufferFreeSamples() >= m_sfReceivingBuffer.GetLength() )
 				m_pStream->Transmit( m_sfReceivingBuffer, m_sfReceivingBuffer.GetLength() );
 #ifdef NET_AUDIO_SHOW_TRAFFIC
-			vstr::out() << "[ITANetAudioStreamingClient] Recived " << m_sfReceivingBuffer.GetLength() << " samples" << std::endl;
+			vstr::out() << "[ITANetAudioStreamingClient] Received " << m_sfReceivingBuffer.GetLength() << " samples" << std::endl;
 #endif
 			break;
 
@@ -191,12 +194,11 @@ bool CITANetAudioStreamingClient::LoopBody()
 		}
 
 		// Also log message type on incoming message
-		oLog.iProtocolStatus = iMsgType;
+		oLog.sProtocolStatus = CITANetAudioProtocol::GetNPMessageID( iMsgType );
 
 	}
-	m_swTryReadBlockStats.stop();
-
-	m_pClientLogger->log( oLog );
+	if( m_swTryReadBlockStats.started() )
+		m_swTryReadBlockStats.stop();
 
 	// Send ring buffer free samples occasionally (as requested by server)
 	const double dNow = ITAClock::getDefaultClock()->getTime();
@@ -206,7 +208,10 @@ bool CITANetAudioStreamingClient::LoopBody()
 		m_pMessage->WriteInt( m_pStream->GetRingBufferFreeSamples() );
 		m_pMessage->WriteMessage();
 		m_dServerClockSyncLastSyncTime = dNow;
+		oLog.bTransmittedRingBufferFreeSamples = true;
 	}
+
+	m_pClientLogger->log( oLog );
 	
 	return false;
 }
@@ -221,7 +226,7 @@ void CITANetAudioStreamingClient::SetClientLoggerBaseName( const std::string& sB
 	m_sClientLoggerBaseName = sBaseName;
 
 	m_pClientLogger->setOutputFile( m_sClientLoggerBaseName + ".log" );
-	m_pMessage->SetMessageLoggerBaseName( GetClientLoggerBaseName() + "_Messages.log" );
+	m_pMessage->SetMessageLoggerBaseName( GetClientLoggerBaseName() + "_Messages" );
 }
 
 bool CITANetAudioStreamingClient::GetIsConnected() const

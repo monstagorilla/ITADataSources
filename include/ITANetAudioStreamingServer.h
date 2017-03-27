@@ -22,16 +22,16 @@
 #include <ITADataSourcesDefinitions.h>
 
 #include <ITANetAudioProtocol.h>
+#include <ITANetAudioProtocol.h>
+#include <ITASampleFrame.h>
+#include <ITAStopWatch.h>
+
+#include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 
 #include <string>
 #include <vector>
 #include <iostream>
-#include <fstream>
 
-#include <ITANetAudioProtocol.h>
-
-#include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
-#include <ITASampleFrame.h>
 
 class ITADatasource;
 class CITANetAudioMessage;
@@ -102,9 +102,10 @@ private:
 	int iServerBlockId;
 	ITABufferedDataLoggerImplServer* m_pServerLogger;
 	std::string m_sServerLogBaseName;
+	ITAStopWatch m_swTryReadBlockStats, m_swTryReadAccessStats;
 
 	int m_iUpdateStrategy;
-	int m_iClientRingBufferFreeSamples;
+	int m_iEstimatedClientRingBufferFreeSamples;
 	int m_iTargetLatencySamples;
 	int m_iMaxSendBlocks;
 	double m_dLastTimeStamp;

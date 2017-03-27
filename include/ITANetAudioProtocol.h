@@ -59,6 +59,22 @@ public:
 
 	inline CITANetAudioProtocol() {};
 	inline ~CITANetAudioProtocol() {};
+
+	inline static std::string GetNPMessageID( const int iMessageType )
+	{
+		switch( iMessageType )
+		{
+		case NP_CLIENT_IDLE: return "CLIENT_IDLE";
+		case NP_CLIENT_OPEN: return "CLIENT_OPEN";
+		case NP_CLIENT_CLOSE: return "CLIENT_CLOSE";
+		case NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES: return "CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES";
+		case NP_SERVER_OPEN: return "SERVER_OPEN";
+		case NP_SERVER_CLOSE: return "SERVER_CLOSE";
+		case NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES: return "SERVER_GET_RINGBUFFER_FREE_SAMPLES";
+		case NP_SERVER_SENDING_SAMPLES: return "SERVER_SENDING_SAMPLES";
+		default: return "INVALID";
+		}
+	};
 	
 	struct StreamingParameters
 	{

@@ -29,7 +29,8 @@ struct ITAServerLog : public ITALogDataBase
 		os << "BlockId";
 		os << "\t" << "WorldTimeStamp";
 		os << "\t" << "ProtocolStatus";
-		os << "\t" << "FreeSamples";
+		os << "\t" << "EstimatedFreeSamples";
+		os << "\t" << "TransmittedSamples";
 		os << std::endl;
 		return os;
 	};
@@ -38,16 +39,18 @@ struct ITAServerLog : public ITALogDataBase
 	{
 		os << uiBlockId;
 		os << "\t" << std::setprecision( 12 ) << dWorldTimeStamp;
-		os << "\t" << iProtocolStatus;
-		os << "\t" << iFreeSamples;
+		os << "\t" << sProtocolStatus;
+		os << "\t" << iEstimatedFreeSamples;
+		os << "\t" << iTransmittedSamples;
 		os << std::endl;
 		return os;
 	};
 
 	unsigned int uiBlockId; //!< Block identifier (audio streaming)
 	double dWorldTimeStamp;
-	int iProtocolStatus; //!< ... usw
-	int iFreeSamples;
+	std::string sProtocolStatus;
+	int iEstimatedFreeSamples;
+	int iTransmittedSamples;
 };
 
 class ITABufferedDataLoggerImplServer : public ITABufferedDataLogger < ITAServerLog > {};
@@ -63,13 +66,16 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 {
 	iServerBlockId = 0;
 	m_iMaxSendBlocks = 40;
-	m_iClientRingBufferFreeSamples = 0;
+	m_iEstimatedClientRingBufferFreeSamples = 0;
 }
 
 CITANetAudioStreamingServer::~CITANetAudioStreamingServer()
 {
 	delete m_pNetAudioServer;
 	delete m_pServerLogger;
+
+	vstr::out() << "[ ITANetAudioStreamingServer ] Processing statistics: " << m_swTryReadBlockStats.ToString() << std::endl;
+	vstr::out() << "[ ITANetAudioStreamingServer ] Try-read access statistics: " << m_swTryReadAccessStats.ToString() << std::endl;
 }
 
 bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort, double dTimeIntervalCientSendStatus )
@@ -95,7 +101,7 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort,
 	bool bOK = false;
 	m_oServerParams.iRingBufferSize = oClientParams.iRingBufferSize;
 	m_oServerParams.iBlockSize = oClientParams.iBlockSize;
-	m_iClientRingBufferFreeSamples = m_oServerParams.iRingBufferSize;
+	m_iEstimatedClientRingBufferFreeSamples = m_oServerParams.iRingBufferSize;
 
 	m_dLastTimeStamp = ITAClock::getDefaultClock()->getTime();
 	if( m_oServerParams == oClientParams )
@@ -130,21 +136,23 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort,
 
 bool CITANetAudioStreamingServer::LoopBody()
 {
-	bool bAskClient = false;
-	m_pMessage->ResetMessage();
-	ITAServerLog oLog;
-	oLog.uiBlockId = ++iServerBlockId;
-	int iMsgType;
-	// Sending Samples 
-	int iBlockLength = m_pInputStream->GetBlocklength();
-	int iClientRingBufferTargetLatencyFreeSamples = m_iClientRingBufferFreeSamples - ( m_oServerParams.iRingBufferSize - m_iTargetLatencySamples );
+	const double dNow = ITAClock::getDefaultClock()->getTime();
 
-	if( iClientRingBufferTargetLatencyFreeSamples >= iBlockLength )
+	ITAServerLog oLog;
+	oLog.dWorldTimeStamp = dNow;
+	oLog.uiBlockId = ++iServerBlockId;
+	oLog.iTransmittedSamples = 0;
+	
+	// Sending Samples
+	int iBlockLength = m_pInputStream->GetBlocklength();
+	int iEstimatedClientRingBufferTargetLatencyFreeSamples = m_iEstimatedClientRingBufferFreeSamples - ( m_oServerParams.iRingBufferSize - m_iTargetLatencySamples );
+
+	if( iEstimatedClientRingBufferTargetLatencyFreeSamples >= iBlockLength )
 	{
 		// Send Samples
-		int iSendBlocks = iClientRingBufferTargetLatencyFreeSamples / iBlockLength;
-		bAskClient = true;
+		int iSendBlocks = iEstimatedClientRingBufferTargetLatencyFreeSamples / iBlockLength;
 
+		// Besser wäre vermutlich, gleich alle samples zu senden und nicht nur einen Block nach dem anderen
 		if( m_sfTempTransmitBuffer.GetLength() != iBlockLength )
 			m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels(), iBlockLength, false );
 
@@ -159,43 +167,45 @@ bool CITANetAudioStreamingServer::LoopBody()
 				if( pfData != 0 )
 					m_sfTempTransmitBuffer[ i ].write( pfData, iBlockLength, 0 );
 			}
+
 			m_pInputStream->IncrementBlockPointer();
-			iMsgType = CITANetAudioProtocol::NP_SERVER_SENDING_SAMPLES;
-			m_pMessage->SetMessageType( iMsgType );
+
+			m_pMessage->ResetMessage();
+			m_pMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_SENDING_SAMPLES );
 			m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
 			m_pMessage->WriteMessage();
-			m_iClientRingBufferFreeSamples -= iBlockLength;
-			m_pMessage->ResetMessage();
+			m_iEstimatedClientRingBufferFreeSamples -= iBlockLength;
 		}
+
 #ifdef NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ITANetAudioStreamingServer] Transmitted " << iSendSamples << " samples for "
 			<< m_pInputStream->GetNumberOfChannels() << " channels" << std::endl;
 #endif
-		}
-	else
-		bAskClient = true;
 
-
-
-	// Try to Empfange Daten
+		oLog.iTransmittedSamples = iSendBlocks * m_pInputStream->GetBlocklength();
+	}
+	
+	// Try-read incoming messages from client (e.g. regular status information)
 	m_pMessage->ResetMessage();
-
+	m_swTryReadBlockStats.start();
+	m_swTryReadAccessStats.start();
 	if( m_pMessage->ReadMessage( 1 ) )
 	{
-		ITAServerLog oLog;
-		oLog.uiBlockId = ++iServerBlockId;
+		m_swTryReadAccessStats.stop();
 		int iMsgType = m_pMessage->GetMessageType();
 		switch( iMsgType )
 		{
 		case CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES:
 		{
-			m_iClientRingBufferFreeSamples = m_pMessage->ReadInt();
-			m_dLastTimeStamp = ITAClock::getDefaultClock()->getTime();
-			bAskClient = false;
+			m_iEstimatedClientRingBufferFreeSamples = m_pMessage->ReadInt();
+			m_dLastTimeStamp = dNow;
 			break;
 		}
 		case CITANetAudioProtocol::NP_CLIENT_CLOSE:
 		{
+			// Stop here because answer on client close might be blocking, we don't want that in our statistics
+			m_swTryReadBlockStats.stop();
+
 			m_pMessage->ResetMessage();
 			m_pMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_CLOSE );
 			m_pMessage->WriteMessage();
@@ -203,55 +213,31 @@ bool CITANetAudioStreamingServer::LoopBody()
 			StopGently( false );
 			m_pConnection = NULL;
 			Stop();
-			bAskClient = false;
 			break;
 		}
 		default:
 		{
-			vstr::out() << "[ITANetAudioStreamingServer] Unkown protocol type : " << iMsgType << std::endl;
+			vstr::out() << "[ ITANetAudioStreamingServer ] Unkown protocol type : " << iMsgType << std::endl;
 			break;
 		}
 		}
-		oLog.iFreeSamples = m_iClientRingBufferFreeSamples;
-		oLog.iProtocolStatus = iMsgType;
-		oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
-		m_pServerLogger->log( oLog );
+
+		oLog.sProtocolStatus = CITANetAudioProtocol::GetNPMessageID( iMsgType );
 	}
 	else
 	{
-		ITAServerLog oLog;
-		oLog.uiBlockId = ++iServerBlockId;
-		// Neue Samples, bei ca 1ms warten
-		const double dTimestamp = ITAClock::getDefaultClock()->getTime();
-		const double dTimeDiff = dTimestamp - m_dLastTimeStamp;
-		m_dLastTimeStamp = dTimestamp;
-		oLog.dWorldTimeStamp = dTimestamp;
+		// There is no status message, so we estimate the client-side ring buffer status
+		const double dTimeDiff = dNow - m_dLastTimeStamp;
+		m_dLastTimeStamp = dNow;
 		double dEstimatedSamples = dTimeDiff * m_pInputStream->GetSampleRate();
-		m_iClientRingBufferFreeSamples += ( int ) dEstimatedSamples;
-		oLog.iFreeSamples = m_iClientRingBufferFreeSamples;
-		oLog.iProtocolStatus = 555;
-		m_pServerLogger->log( oLog );
+		m_iEstimatedClientRingBufferFreeSamples += ( int ) dEstimatedSamples;
+		oLog.sProtocolStatus = "SERVER_ESTIMATION";
 	}
-
-	bAskClient = false;
-	if( bAskClient )
-	{
-#ifdef NET_AUDIO_SHOW_TRAFFIC
-		vstr::out() << "[ITANetAudioStreamingServer] Not enough free samples in client buffer, requesting a trigger when more free samples available" << std::endl;
-#endif
-		ITAServerLog oLog;
-		oLog.uiBlockId = ++iServerBlockId;
-		m_pMessage->ResetMessage();
-		iMsgType = CITANetAudioProtocol::NP_SERVER_GET_RINGBUFFER_FREE_SAMPLES;
-		m_pMessage->SetMessageType( iMsgType );
-		m_pMessage->WriteBool( true );
-		m_pMessage->WriteMessage();
-		oLog.iProtocolStatus = iMsgType;
-		oLog.iFreeSamples = m_iClientRingBufferFreeSamples;
-		oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime();
-		m_pServerLogger->log( oLog );
-	}
-
+	if( m_swTryReadBlockStats.started() ) // only stop if still running
+		m_swTryReadBlockStats.stop();
+	
+	oLog.iEstimatedFreeSamples = m_iEstimatedClientRingBufferFreeSamples;
+	m_pServerLogger->log( oLog );
 
 	return false;
 }

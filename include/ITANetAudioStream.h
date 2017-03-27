@@ -180,6 +180,9 @@ protected:
 	*/
 	int GetRingBufferFreeSamples() const;
 
+	//! Returns a string for the streaming status identifier
+	static std::string GetStreamingStatusString( int iStreamingStatus );
+
 private:
 	CITANetAudioStreamingClient* m_pNetAudioStreamingClient; //!< Audio streaming network client
 
@@ -198,11 +201,10 @@ private:
 	ITABufferedDataLoggerImplNet* m_pNetworkStreamLogger; //!< Logging for the network stream
 	std::string m_sNetAudioStreamLoggerBaseName;
 
-	int iAudioStreamingBlockID; //!< Audio streaming block id
-	int iNetStreamingBlockID; //!< Network streaming block id
+	int m_iAudioStreamingBlockID; //!< Audio streaming block id
+	int m_iNetStreamingBlockID; //!< Network streaming block id
 	
 	friend class CITANetAudioStreamingClient;
-	static std::string GetStreamingStatusString( int iStreamingStatus );
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_STREAM

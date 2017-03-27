@@ -91,7 +91,7 @@ void CITANetAudioMessage::ResetMessage()
 	// from deleting the buffer while it is still being read
 	// by the connection
 	if( m_pConnection != NULL )
-		m_pConnection->WaitForSendFinish();
+		m_pConnection->WaitForSendFinish(); // can be time-costly
 
 	m_nMessageId = S_nMessageIds++;
 
@@ -103,7 +103,6 @@ void CITANetAudioMessage::ResetMessage()
 	m_oIncoming.SetBuffer( NULL, 0 );
 
 	m_nMessageType = -1;
-
 
 	oLog.dInternalProcessingTime = ITAClock::getDefaultClock()->getTime() - dInTime;
 	m_pMessageLogger->log( oLog );
