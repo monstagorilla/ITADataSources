@@ -12,8 +12,11 @@
 #include <ITAFileDataSource.h>
 #include <ITAStreamProbe.h>
 #include <ITAStreamPatchBay.h>
+#include <ITAAsioInterface.h>
 
 #include <VistaBase/VistaStreamUtils.h>
+#include <VistaBase/VistaTimeUtils.h>
+#include <VistaBase/VistaExceptionBase.h>
 
 using namespace std;
 
@@ -23,8 +26,11 @@ const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
 const static int g_iBlockLength = 512;
 const static int g_iChannels = 2;
-const static int g_iTargetLatencySamples = g_iBlockLength * 4;
-const static int g_iRingerBufferCapacity = g_iBlockLength * 8;
+const static int g_iTargetLatencySamples = g_iBlockLength * 3;
+const static int g_iRingerBufferCapacity = g_iBlockLength * 4;
+const static double g_dDuration = 10.0f;
+const static bool g_bUseASIO = true;
+const static string g_sAudioInterface = "ASIO4ALL v2";
 
 class CServer : public VistaThread
 {
@@ -36,6 +42,7 @@ public:
 		pStreamingServer->SetServerLogBaseName( "ITANetAudioTest_Server" );
 
 		pInputFile = new ITAFileDatasource( sInputFilePath, g_iBlockLength );
+		pInputFile->SetIsLooping( true );
 		assert( pInputFile->GetNumberOfChannels() == 1 );
 		pMuliplier = new ITAStreamMultiplier1N( pInputFile, g_iChannels );
 		pInputStreamProbe = new ITAStreamProbe( pMuliplier, "ITANetAudioTest.serverstream.wav" );
@@ -66,8 +73,9 @@ private:
 
 };
 
-int main( int, char** )
+void run_test()
 {
+
 	// Sample server (forked away into a thread)
 	CServer* pServer = new CServer( g_sInputFilePath );
 
@@ -80,51 +88,91 @@ int main( int, char** )
 	int iOutputID = oPatchbay.AddOutput( 2 );
 
 	int N = int( oNetAudioStream.GetNumberOfChannels() );
-	for ( int i = 0; i < N ; i++ )
+	for( int i = 0; i < N; i++ )
 		oPatchbay.ConnectChannels( 0, i, 0, i % 2, 1 / double( N ) );
-	
+
 	ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.netstream.wav" );
 
 	ITAPortaudioInterface ITAPA( g_dSampleRate, g_iBlockLength );
-	ITAPA.Initialize();
-	ITAPA.SetPlaybackDatasource( &oProbe );
-	ITAPA.Open();
-	ITAPA.Start();
+	if( g_bUseASIO )
+	{
+		ITAsioInitializeLibrary();
+		ITAsioInitializeDriver( g_sAudioInterface );
+
+		long lBuffersize, lDummy;
+		ITAsioGetBufferSize( &lDummy, &lDummy, &lBuffersize, &lDummy );
+		ITAsioSetSampleRate( ( ASIOSampleRate ) g_dSampleRate );
+		long lNumInputChannels, lNumOutputChannels;
+		ITAsioGetChannels( &lNumInputChannels, &lNumOutputChannels );
+		ITAsioCreateBuffers( 0, 2, lBuffersize );
+		ITAsioSetPlaybackDatasource( &oProbe );
+		ITAsioStart();
+
+	}
+	else
+	{
+		ITAPA.Initialize();
+		ITAPA.SetPlaybackDatasource( &oProbe );
+		ITAPA.Open();
+		ITAPA.Start();
+	}
 
 	vstr::out() << "[ NetAudioTestClient ] Waiting 1 second (net audio stream not connected and playing back zeros)" << endl;
-	ITAPA.Sleep( 1.0f );
+	VistaTimeUtils::Sleep( int( 1.0f * 1.0e3 ) );
 
 	vstr::out() << "[ NetAudioTestClient ] Will now connect to net audio server '" << g_sServerName << "' on port " << g_iServerPort << endl;
-	try
-	{
-		if ( !oNetAudioStream.Connect( g_sServerName, g_iServerPort ) )
-			ITA_EXCEPT1( INVALID_PARAMETER, "Could not connect to net audio server" );
-	}
-	catch ( ITAException e )
-	{
-		vstr::warn() << "[ NetAudioTestClient ] Connection failed." << endl;
-		vstr::err() << e << endl;
-		return 255;
-	}
+
+	if( !oNetAudioStream.Connect( g_sServerName, g_iServerPort ) )
+		ITA_EXCEPT1( INVALID_PARAMETER, "Could not connect to net audio server" );
 	vstr::out() << "[ NetAudioTestClient ] Connected." << endl;
 
 	// Playback
-	float fSeconds = 10.0f;
+	float fSeconds = float( g_dDuration );
 	vstr::out() << "[ NetAudioTestClient ] Playback started, waiting " << fSeconds << " seconds" << endl;
-	ITAPA.Sleep( fSeconds ); // blocking
+	VistaTimeUtils::Sleep( int( fSeconds * 1.0e3 ) ); // blocking
 	vstr::out() << "[ NetAudioTestClient ] Done." << endl;
 
 	oNetAudioStream.Disconnect();
 
 	vstr::out() << "[ NetAudioTestClient ] Will now disconnect from net audio server '" << g_sServerName << "' and port " << g_iServerPort << endl;
 	vstr::out() << "[ NetAudioTestClient ] Closing in 1 second (net audio stream not connected and playing back zeros)" << endl;
-	ITAPA.Sleep( 1.0f );
+	VistaTimeUtils::Sleep( int( 1.0f * 1.0e3 ) );
 
-	ITAPA.Stop( );
-	ITAPA.Close( );
-	ITAPA.Finalize( );
+	if( g_bUseASIO )
+	{
+		ITAsioStop();
+		ITAsioDisposeBuffers();
+		ITAsioFinalizeDriver();
+		ITAsioFinalizeLibrary();
+	}
+	else
+	{
+		ITAPA.Stop();
+		ITAPA.Close();
+		ITAPA.Finalize();
+	}
 
 	delete pServer;
 
+};
+
+int main( int, char** )
+{
+	try
+	{
+		run_test();
+	}
+	catch( ITAException& ie )
+	{
+		vstr::err() << ie << endl;
+		return 255;
+	}
+	catch( VistaExceptionBase& ve )
+	{
+		vstr::err() << ve.GetBacktraceString() << endl;
+		return 255;
+	}
+
 	return 0;
+
 }

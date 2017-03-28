@@ -256,7 +256,6 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 	int iCurrentReadCursor = m_iReadCursor;
 	int iCurrentWriteCursor = m_iWriteCursor;
 
-	ITANetworkStreamLog oLog;
 	if( iCurrentWriteCursor < iCurrentReadCursor )
 		iCurrentWriteCursor += GetRingBufferSize(); // Unwrap, because write cursor always ahead
 
@@ -296,6 +295,8 @@ int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSa
 #endif
 		}
 	}
+
+	ITANetworkStreamLog oLog;
 	oLog.sBufferStatus = GetStreamingStatusString( m_iStreamingStatus );
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock( )->getTime( );
 	oLog.uiBlockId = ++m_iAudioStreamingBlockID;

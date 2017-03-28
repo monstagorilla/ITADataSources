@@ -7,6 +7,7 @@
 #include <ITAClock.h>
 
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
+#include <VistaInterProcComm/Concurrency/VistaPriority.h>
 #include <VistaBase/VistaStreamUtils.h>
 #include <VistaBase/VistaTimeUtils.h>
 
@@ -67,6 +68,8 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 
 	m_pClientLogger = new ITABufferedDataLoggerImplClient();
 	SetClientLoggerBaseName( "ITANetAudioStreamingClient" );
+
+	VistaThread::SetPriority( VistaPriority::VISTA_MID_PRIORITY );
 }
 
 CITANetAudioStreamingClient::~CITANetAudioStreamingClient()

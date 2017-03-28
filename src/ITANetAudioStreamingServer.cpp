@@ -15,6 +15,7 @@
 #include <VistaInterProcComm/IPNet/VistaTCPSocket.h>
 #include <VistaBase/VistaTimeUtils.h>
 #include <VistaInterProcComm/IPNet/VistaIPAddress.h>
+#include <VistaInterProcComm/Concurrency/VistaPriority.h>
 #include <VistaBase/VistaStreamUtils.h>
 #include <ITADataLog.h>
 
@@ -67,6 +68,8 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	iServerBlockId = 0;
 	m_iMaxSendBlocks = 40;
 	m_iEstimatedClientRingBufferFreeSamples = 0;
+
+	VistaThread::SetPriority( VistaPriority::VISTA_MID_PRIORITY );
 }
 
 CITANetAudioStreamingServer::~CITANetAudioStreamingServer()
