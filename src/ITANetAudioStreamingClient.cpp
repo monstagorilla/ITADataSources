@@ -69,7 +69,7 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	m_pClientLogger = new ITABufferedDataLoggerImplClient();
 	SetClientLoggerBaseName( "ITANetAudioStreamingClient" );
 
-	VistaThread::SetPriority( VistaPriority::VISTA_MID_PRIORITY );
+	//SetPriority( VistaPriority::VISTA_MID_PRIORITY );
 }
 
 CITANetAudioStreamingClient::~CITANetAudioStreamingClient()

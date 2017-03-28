@@ -69,7 +69,7 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	m_iMaxSendBlocks = 40;
 	m_iEstimatedClientRingBufferFreeSamples = 0;
 
-	VistaThread::SetPriority( VistaPriority::VISTA_MID_PRIORITY );
+	//SetPriority( VistaPriority::VISTA_MID_PRIORITY );
 }
 
 CITANetAudioStreamingServer::~CITANetAudioStreamingServer()

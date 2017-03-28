@@ -6,9 +6,9 @@ ITANetAudioTest_Client_NetworkStream = readtable( 'ITANetAudioTest_Client_Networ
 
 
 %% Settings
-B = 512;
-TL = B*3;
-RB = B*4;
+B = 265;
+TL = B * 1;
+RB = B * 5;
 
 
 %% Analyse
@@ -27,7 +27,9 @@ ClientAudioStreamTiming = diff( ITANetAudioTest_Client_AudioStream.WorldTimeStam
 ClientNetStreamTiming = diff( ITANetAudioTest_Client_NetworkStream.WorldTimeStamp );
 
 %% Plot
+figure
 subplot( 2, 1, 1 )
+
 % Client
 plot( ITANetAudioTest_Client.WorldTimeStamp - TS, RB - ITANetAudioTest_Client.FreeSamples,  'LineWidth', 1 )
 hold on
