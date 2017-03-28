@@ -122,7 +122,7 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort,
 }
 
 	m_pServerLogger = new ITABufferedDataLoggerImplServer();
-	m_pServerLogger->setOutputFile( m_sServerLogBaseName + ".log" );
+	m_pServerLogger->setOutputFile( m_sServerLogBaseName + "_Server.log" );
 
 	m_pMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_OPEN );
 	m_pMessage->WriteDouble( dTimeIntervalCientSendStatus );

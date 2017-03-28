@@ -11,24 +11,37 @@
 
 using namespace std;
 
-string g_sServerName = "localhost";
+string g_sServerName = "137.226.61.85";
 int g_iServerPort = 12480;
 double g_dSampleRate = 44100.0;
-int g_iBlockLength = 64;
+int g_iBlockLength = 32;
 int g_iChannels = 2;
-int g_iTargetLatencySamples = 44100; // 1.4512ms
-double g_dClientStatusMessageTimeout = 0.1; // seconds
+int g_iTargetLatencySamples = 2 * g_iBlockLength; // 1.4512ms
+int g_iRingBufferSize = 2 * g_iTargetLatencySamples;
+double g_dClientStatusMessageTimeout = 0.001; // seconds
 string g_sFileName = "gershwin-mono.wav";
 
 int main( int argc, char** argv )
 {
-	if( argc >= 6 )
+
+	if ( argc >= 8 )
 	{
 		g_sServerName = argv[ 1 ];
-		g_iServerPort = atoi( argv[ 2 ] );
-		g_dSampleRate = strtod( argv[ 3 ], NULL );
-		g_iBlockLength = atoi( argv[ 4 ] );
-		g_iChannels = atoi( argv[ 5 ] );
+
+		if ( argc >= 3 )
+		{
+			g_iServerPort = atoi( argv[ 2 ] );
+			g_dSampleRate = strtod( argv[ 3 ], NULL );
+			g_iBlockLength = atoi( argv[ 4 ] );
+			g_iChannels = atoi( argv[ 5 ] );
+			g_iTargetLatencySamples = atoi( argv[ 6 ] );
+			g_iRingBufferSize = atoi( argv[ 7 ] );
+		}
+	}
+	else
+	{
+		cout << "Syntax: ServerName ServerPort SampleRate BufferSize Channel TargetLatencySamples RingBufferSize" << endl;
+		cout << "Using default values ..." << endl;
 	}
 
 	ITADatasource* pSource = NULL;
@@ -53,6 +66,7 @@ int main( int argc, char** argv )
 	ss << "_C" << g_iChannels;
 	ss << "_B" << g_iBlockLength;
 	ss << "_TL" << g_iTargetLatencySamples;
+	ss << "_RB" << g_iRingBufferSize;
 	oStreamingServer.SetServerLogBaseName( ss.str() );
 
 	oStreamingServer.SetInputStream( &oMuliplier );

@@ -33,7 +33,7 @@ struct ITANetAudioMessageLog : public ITALogDataBase
 	{
 		os << uiBlockId;
 		os << "\t" << std::setprecision( 12 ) << dWorldTimeStamp;
-		os << "\t" << iMessageType;
+		os << "\t" << sMessageType;
 		os << "\t" << sAction;
 		os << "\t" << std::setprecision( 12 ) << dInternalProcessingTime;
 		os << "\t" << nMessagePayloadSize;
@@ -43,7 +43,7 @@ struct ITANetAudioMessageLog : public ITALogDataBase
 
 	unsigned int uiBlockId; //!< Block identifier (audio streaming)
 	double dWorldTimeStamp; //!< Time stamp at beginning of logged message process
-	int iMessageType; //!< Protocol message type
+	std::string sMessageType; //!< Protocol message type
 	std::string sAction; //!< Triggered action
 	double dInternalProcessingTime; //!< Processing within message class
 	VistaType::sint32 nMessagePayloadSize; //!< Data
@@ -75,7 +75,7 @@ void CITANetAudioMessage::ResetMessage()
 
 	ITANetAudioMessageLog oLog;
 	oLog.uiBlockId = m_nMessageId;
-	oLog.iMessageType = 0;
+	oLog.sMessageType = "RESET_MESSAGE";
 	oLog.nMessagePayloadSize = 0;
 	oLog.dWorldTimeStamp = dInTime;
 
@@ -136,7 +136,7 @@ void CITANetAudioMessage::WriteMessage()
 
 	// rewrite type dummy
 	iSwapDummy = m_nMessageType;
-	oLog.iMessageType = m_nMessageType;
+	oLog.sMessageType = CITANetAudioProtocol::GetNPMessageID( m_nMessageType );
 	if( m_oOutgoing.GetByteorderSwapFlag() )
 		VistaSerializingToolset::Swap4( &iSwapDummy );
 	std::memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
@@ -235,7 +235,7 @@ bool CITANetAudioMessage::ReadMessage( int timeout )
 	m_oIncoming.SetBuffer( &m_vecIncomingBuffer[ 0 ], nMessagePayloadSize, false );
 	m_nMessageType = ReadInt();
 	m_nMessageId = ReadInt();
-	oLog.iMessageType = m_nMessageType;
+	oLog.sMessageType = CITANetAudioProtocol::GetNPMessageID( m_nMessageType );
 	oLog.uiBlockId = m_nMessageId;
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime() - dInTime;
 	m_pMessageLogger->log( oLog );
