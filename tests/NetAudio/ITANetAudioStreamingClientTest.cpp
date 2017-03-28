@@ -14,17 +14,18 @@
 
 using namespace std;
 
-string g_sServerName = "localhost";
+string g_sServerName = "137.226.61.85";
 int g_iServerPort = 12480;
 double g_dSampleRate = 44100.0;
-int g_iBlockLength = 64;
+int g_iBlockLength = 32;
 int g_iChannels = 2;
-int g_iRingBufferSize = 88200;
-double g_dPlaybackDuration = 10; // seconds
+int g_iTargetLatencySamples = 2 * g_iBlockLength; // 1.4512ms
+int g_iRingBufferSize = 2 * g_iTargetLatencySamples;
+double g_dPlaybackDuration = 10 ; // seconds
 
 int main( int argc, char* argv[] )
 {
-	if( argc >= 7 )
+	if( argc >= 8 )
 	{
 		g_sServerName = argv[ 1 ];
 
@@ -33,16 +34,17 @@ int main( int argc, char* argv[] )
 			g_iServerPort = atoi( argv[ 2 ] );
 			g_dSampleRate = strtod( argv[ 3 ], NULL );
 			g_iBlockLength = atoi( argv[ 4 ] );
-			g_iChannels = atoi( argv[ 5 ] );
-			g_iRingBufferSize = atoi( argv[ 6 ] );
+			g_iChannels = atoi(argv[5]);
+			g_iTargetLatencySamples = atoi(argv[6]);
+			g_iRingBufferSize = atoi(argv[7]);
 		}
 
-		if( argc >= 8 )
-			g_dPlaybackDuration = strtod( argv[ 7 ], NULL );;
+		if( argc >= 9 )
+			g_dPlaybackDuration = strtod( argv[ 8 ], NULL );;
 	}
 	else
 	{
-		cout << "Syntax: ServerName ServerPort SampleRate BufferSize Channel RingBufferSize" << endl;
+		cout << "Syntax: ServerName ServerPort SampleRate BufferSize Channel TargetLatencySamples RingBufferSize" << endl;
 		cout << "Using default values ..." << endl;
 	}
 
@@ -51,9 +53,10 @@ int main( int argc, char* argv[] )
 	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBlockLength, g_iRingBufferSize );
 
 	stringstream ss;
-	ss << "NetAudioStreamingServerTest";
+	ss << "ITANetAudioStreamingClientTest";
 	ss << "_C" << g_iChannels;
 	ss << "_B" << g_iBlockLength;
+	ss << "_TL" << g_iTargetLatencySamples;
 	ss << "_RB" << g_iRingBufferSize;
 	oNetAudioStream.SetNetAudioStreamingLoggerBaseName( ss.str() );
 
@@ -71,7 +74,7 @@ int main( int argc, char* argv[] )
 	cout << "Will attempt to connect to '" << g_sServerName << "' on port " << g_iServerPort << endl;
 
 	ITAsioInitializeLibrary();
-	ITAsioInitializeDriver( "ASIO Hammerfall DSP" );
+	ITAsioInitializeDriver( "ASIO MADIface USB" );
 
 	long lBuffersize, lDummy;
 	ITAsioGetBufferSize( &lDummy, &lDummy, &lBuffersize, &lDummy );
@@ -105,6 +108,5 @@ int main( int argc, char* argv[] )
 	ITAsioDisposeBuffers();
 	ITAsioFinalizeDriver();
 	ITAsioFinalizeLibrary();
-
 	return 0;
 }
