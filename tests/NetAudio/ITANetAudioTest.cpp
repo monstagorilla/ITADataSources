@@ -24,13 +24,15 @@ const static string g_sServerName = "localhost";
 const static string g_sInputFilePath = "gershwin-mono.wav";
 const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
-const static int g_iBlockLength = 512;
+const static int g_iBlockLength = 256;
 const static int g_iChannels = 2;
-const static int g_iTargetLatencySamples = g_iBlockLength * 3;
-const static int g_iRingerBufferCapacity = g_iBlockLength * 4;
+const static int g_iTargetLatencySamples = g_iBlockLength * 1;
+const static int g_iRingerBufferCapacity = g_iBlockLength * 5;
 const static double g_dDuration = 10.0f;
+const static double g_dSyncTimout = 0.001f;
 const static bool g_bUseASIO = true;
-const static string g_sAudioInterface = "ASIO4ALL v2";
+//const static string g_sAudioInterface = "ASIO4ALL v2";
+const static string g_sAudioInterface = "ASIO Hammerfall DSP";
 
 class CServer : public VistaThread
 {
@@ -62,7 +64,7 @@ public:
 	void ThreadBody( )
 	{
 		vstr::out() << "[ NetAudioTestServer ] Starting net audio server and waiting for client connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
-		pStreamingServer->Start( g_sServerName, g_iServerPort, 0.1 );		
+		pStreamingServer->Start( g_sServerName, g_iServerPort, g_dSyncTimout );		
 	};
 
 private:
