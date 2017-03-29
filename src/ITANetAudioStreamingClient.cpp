@@ -111,15 +111,27 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 
 	while( !m_pMessage->ReadMessage( 0 ) );
 
-	assert( m_pMessage->GetMessageType() == CITANetAudioProtocol::NP_SERVER_OPEN );
+	int iMsgType = m_pMessage->GetMessageType();
+	if( iMsgType == CITANetAudioProtocol::NP_SERVER_OPEN )
+	{
+		// Clock sync vars
+		m_dServerClockSyncRequestTimeInterval = m_pMessage->ReadDouble();
+		m_dServerClockSyncLastSyncTime = 0;
 
-	// Clock sync vars
-	m_dServerClockSyncRequestTimeInterval = m_pMessage->ReadDouble();
-	m_dServerClockSyncLastSyncTime = 0;
-	
-	Run();
+		Run();
 
-	return true;
+		return true;
+	}
+	else if( iMsgType == CITANetAudioProtocol::NP_SERVER_REFUSED_INVALID_PARAMETERS )
+	{
+		ITA_EXCEPT1( INVALID_PARAMETER, "Server refused connection due to invalid streaming parameters (mismatching block size or sampling rate)" );
+	}
+	else
+	{
+		ITA_EXCEPT1( INVALID_PARAMETER, "Server connection could not be established, unrecognized answer received." );
+	}
+     
+    return false;
 }
 
 bool CITANetAudioStreamingClient::LoopBody()

@@ -101,40 +101,40 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort,
 	assert( m_pMessage->GetMessageType() == CITANetAudioProtocol::NP_CLIENT_OPEN );
 	CITANetAudioProtocol::StreamingParameters oClientParams = m_pMessage->ReadStreamingParameters();
 
-	bool bOK = false;
 	m_oServerParams.iRingBufferSize = oClientParams.iRingBufferSize;
 	m_oServerParams.iBlockSize = oClientParams.iBlockSize;
 	m_iEstimatedClientRingBufferFreeSamples = m_oServerParams.iRingBufferSize;
 
-	m_dLastTimeStamp = ITAClock::getDefaultClock()->getTime();
-	if( m_oServerParams == oClientParams )
-	{
-		bOK = true;
-#ifdef NET_AUDIO_SHOW_TRAFFIC
-		vstr::out() << "[ITANetAudioStreamingServer] Server and client parameters matched. Will resume with streaming" << std::endl;
-#endif
-	}
-	else
-	{
-#ifdef NET_AUDIO_SHOW_TRAFFIC
-		vstr::out() << "[ITANetAudioStreamingServer] Server and client parameters mismatch detected. Will notify client and stop." << std::endl;
-#endif
-}
+	m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels(), m_oServerParams.iRingBufferSize, true );
 
 	m_pServerLogger = new ITABufferedDataLoggerImplServer();
 	m_pServerLogger->setOutputFile( m_sServerLogBaseName + "_Server.log" );
+	m_dLastTimeStamp = ITAClock::getDefaultClock()->getTime();
 
-	m_pMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_OPEN );
-	m_pMessage->WriteDouble( dTimeIntervalCientSendStatus );
-	m_pMessage->WriteMessage();
+	if( m_oServerParams == oClientParams )
+	{
+		m_pMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_OPEN );
+		m_pMessage->WriteDouble( dTimeIntervalCientSendStatus );
+		m_pMessage->WriteMessage();
 
-	m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels(), m_oServerParams.iRingBufferSize, true );
+#ifdef NET_AUDIO_SHOW_TRAFFIC
+		vstr::out() << "[ITANetAudioStreamingServer] Server and client parameters matched. Will resume with streaming" << std::endl;
+#endif
 
+		Run(); // Start thread loop
 
-	if( bOK )
-		Run();
+		return true;
+	}
+	else
+	{
+		m_pMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_REFUSED_INVALID_PARAMETERS );
+		m_pMessage->WriteMessage();
 
-	return bOK;
+#ifdef NET_AUDIO_SHOW_TRAFFIC
+		vstr::out() << "[ITANetAudioStreamingServer] Server and client parameters mismatch detected. Will notify client and stop." << std::endl;
+#endif
+		return false;
+	}
 }
 
 bool CITANetAudioStreamingServer::LoopBody()
