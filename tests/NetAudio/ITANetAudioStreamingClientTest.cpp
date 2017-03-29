@@ -21,6 +21,7 @@ int g_iBlockLength = 32;
 int g_iChannels = 2;
 int g_iTargetLatencySamples = 2 * g_iBlockLength; // 1.4512ms
 int g_iRingBufferSize = 2 * g_iTargetLatencySamples;
+int g_iSendingBlockLength = 8;
 double g_dPlaybackDuration = 10 ; // seconds
 
 int main( int argc, char* argv[] )
@@ -37,6 +38,7 @@ int main( int argc, char* argv[] )
 			g_iChannels = atoi(argv[5]);
 			g_iTargetLatencySamples = atoi(argv[6]);
 			g_iRingBufferSize = atoi(argv[7]);
+			g_iSendingBlockLength = atoi(argv[8]);
 		}
 
 		if( argc >= 9 )
@@ -58,6 +60,7 @@ int main( int argc, char* argv[] )
 	ss << "_B" << g_iBlockLength;
 	ss << "_TL" << g_iTargetLatencySamples;
 	ss << "_RB" << g_iRingBufferSize;
+	ss << "_SB" << g_iSendingBlockLength;
 	oNetAudioStream.SetNetAudioStreamingLoggerBaseName( ss.str() );
 
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBlockLength );

@@ -69,6 +69,7 @@ int main( int argc, char** argv )
 	ss << "_B" << g_iBlockLength;
 	ss << "_TL" << g_iTargetLatencySamples;
 	ss << "_RB" << g_iRingBufferSize;
+	ss << "_SB" << g_iSendingBlockLength;
 	oStreamingServer.SetServerLogBaseName( ss.str() );
 
 	oStreamingServer.SetInputStream( &oMuliplier );
