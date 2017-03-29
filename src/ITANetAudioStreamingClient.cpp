@@ -57,6 +57,7 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	, m_iStreamingBlockId( 0 )
 	, m_dServerClockSyncRequestTimeInterval( 0.1f )
 	, m_dServerClockSyncLastSyncTime( 0.0f )
+	, m_bDebuggingEnabled( false )
 {
 	m_pClient = new CITANetAudioClient();
 		 
@@ -78,12 +79,18 @@ CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 
 	StopGently( false );
 
+	if( GetIsDebuggingEnabled() )
+	{
+		vstr::out() << "[ ITANetAudioStreamingClient ] Processing statistics: " << m_swTryReadBlockStats.ToString() << std::endl;
+		vstr::out() << "[ ITANetAudioStreamingClient ] Try-read access statistics: " << m_swTryReadAccessStats.ToString() << std::endl;
+	}
+	else
+		m_pClientLogger->setOutputFile( "" ); // disable output
+
 	delete m_pClientLogger;
 	delete m_pClient;
 	delete m_pMessage;
 
-	vstr::out() << "[ ITANetAudioStreamingClient ] Processing statistics: " << m_swTryReadBlockStats.ToString() << std::endl;
-	vstr::out() << "[ ITANetAudioStreamingClient ] Try-read access statistics: " << m_swTryReadAccessStats.ToString() << std::endl;
 }
 
 bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPort )
@@ -247,6 +254,17 @@ void CITANetAudioStreamingClient::SetClientLoggerBaseName( const std::string& sB
 
 	m_pClientLogger->setOutputFile( m_sClientLoggerBaseName + "_Client.log" );
 	m_pMessage->SetMessageLoggerBaseName( GetClientLoggerBaseName() + "_Messages" );
+}
+
+void CITANetAudioStreamingClient::SetDebuggingEnabled( bool bEnabled )
+{
+	m_bDebuggingEnabled = bEnabled;
+	m_pMessage->SetDebuggingEnabled( bEnabled );
+}
+
+bool CITANetAudioStreamingClient::GetIsDebuggingEnabled() const
+{
+	return m_bDebuggingEnabled;
 }
 
 bool CITANetAudioStreamingClient::GetIsConnected() const

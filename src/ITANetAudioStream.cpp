@@ -115,7 +115,7 @@ CITANetAudioStream::CITANetAudioStream(int iChannels, double dSamplingRate, int 
 
 CITANetAudioStream::~CITANetAudioStream()
 {
-	if( m_bDebuggingEnabled == false )
+	if( GetIsDebuggingEnabled() == false )
 	{
 		m_pAudioStreamLogger->setOutputFile( "" ); // Disables file storing
 		m_pNetworkStreamLogger->setOutputFile( "" ); // Disables file storing
@@ -391,6 +391,7 @@ void CITANetAudioStream::SetNetAudioStreamingLoggerBaseName( const std::string& 
 void CITANetAudioStream::SetDebuggingEnabled( bool bEnabled )
 {
 	m_bDebuggingEnabled = bEnabled;
+	m_pNetAudioStreamingClient->SetDebuggingEnabled( bEnabled );
 }
 
 bool CITANetAudioStream::GetIsDebuggingEnabled() const

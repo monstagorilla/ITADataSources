@@ -62,6 +62,9 @@ public:
 	std::string GetClientLoggerBaseName() const;
 	void SetClientLoggerBaseName( const std::string& );
 
+	void SetDebuggingEnabled( bool bEnabled );
+	bool GetIsDebuggingEnabled() const;
+
 protected:
 	void TriggerBlockIncrement();
 
@@ -86,6 +89,7 @@ private:
 	ITABufferedDataLoggerImplClient* m_pClientLogger;
 	std::string m_sClientLoggerBaseName;
 	ITAStopWatch m_swTryReadBlockStats, m_swTryReadAccessStats;
+	bool m_bDebuggingEnabled;
 
 	friend class CITANetAudioStream;
 };

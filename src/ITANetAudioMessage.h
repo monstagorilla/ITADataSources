@@ -98,6 +98,8 @@ public:
 
 	void SetMessageLoggerBaseName( const std::string& );
 	std::string GetMessageLoggerBaseName() const;
+	void SetDebuggingEnabled( bool bEnabled );
+	bool GetIsDebuggingEnabled() const;
 
 private:
 	int m_nMessageType;
@@ -112,6 +114,7 @@ private:
 
 	ITABufferedDataLoggerImplProtocol* m_pMessageLogger;
 	std::string m_sMessageLoggerBaseName;
+	bool m_bDebuggingEnabled;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_MESSAGE

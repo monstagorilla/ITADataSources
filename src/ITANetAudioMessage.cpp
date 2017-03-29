@@ -59,6 +59,7 @@ CITANetAudioMessage::CITANetAudioMessage( VistaSerializingToolset::ByteOrderSwap
 	, m_pConnection( NULL )
 	, m_iBytesReceivedTotal( 0 )
 	, m_sMessageLoggerBaseName( "ITANetAudioMessage" )
+	, m_bDebuggingEnabled( false )
 {
 	m_pMessageLogger = new ITABufferedDataLoggerImplProtocol();
 	m_pMessageLogger->setOutputFile( m_sMessageLoggerBaseName + ".log" );
@@ -201,8 +202,8 @@ bool CITANetAudioMessage::ReadMessage( int timeout )
 
 	VistaType::sint32 nMessagePayloadSize;
 	int nBytesRead = m_pConnection->ReadInt32( nMessagePayloadSize );
-	oLog.nMessagePayloadSize = nMessagePayloadSize;
 	assert( nBytesRead == sizeof( VistaType::sint32 ) );
+	oLog.nMessagePayloadSize = nMessagePayloadSize;
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] Expecting " << nMessagePayloadSize << " bytes message payload" << std::endl;
 #endif
@@ -369,6 +370,8 @@ VistaConnectionIP* CITANetAudioMessage::GetConnection() const
 void CITANetAudioMessage::ClearConnection()
 {
 	m_pConnection = NULL;
+	if( GetIsDebuggingEnabled() == false )
+		m_pMessageLogger->setOutputFile( "" ); // disable output
 	delete m_pMessageLogger;
 }
 
@@ -462,4 +465,14 @@ void CITANetAudioMessage::SetMessageLoggerBaseName( const std::string& sBaseName
 std::string CITANetAudioMessage::GetMessageLoggerBaseName() const
 {
 	return m_sMessageLoggerBaseName;
+}
+
+void CITANetAudioMessage::SetDebuggingEnabled( bool bEnabled )
+{
+	m_bDebuggingEnabled = bEnabled;
+}
+
+bool CITANetAudioMessage::GetIsDebuggingEnabled() const
+{
+	return m_bDebuggingEnabled;
 }
