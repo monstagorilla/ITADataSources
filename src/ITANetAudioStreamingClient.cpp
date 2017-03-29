@@ -1,7 +1,9 @@
-#include <ITANetAudioStreamingClient.h>
+#include "ITANetAudioStreamingClient.h"
 
-#include <ITANetAudioClient.h>
-#include <ITANetAudioMessage.h>
+#include "ITANetAudioClient.h"
+#include "ITANetAudioMessage.h"
+#include "ITANetAudioProtocol.h"
+
 #include <ITANetAudioStream.h>
 #include <ITADataLog.h>
 #include <ITAClock.h>
@@ -57,18 +59,15 @@ CITANetAudioStreamingClient::CITANetAudioStreamingClient( CITANetAudioStream* pP
 	, m_dServerClockSyncLastSyncTime( 0.0f )
 {
 	m_pClient = new CITANetAudioClient();
-	m_oParams.iChannels = pParent->GetNumberOfChannels();
-	m_oParams.dSampleRate = pParent->GetSampleRate();
-	m_oParams.iBlockSize = pParent->GetBlocklength();
-	m_oParams.iRingBufferSize = pParent->GetRingBufferSize();
 		 
-	m_sfReceivingBuffer.init( m_oParams.iChannels, m_oParams.iRingBufferSize, false );
+	m_sfReceivingBuffer.init( pParent->GetNumberOfChannels(), pParent->GetRingBufferSize(), false );
 
 	m_pMessage = new CITANetAudioMessage( VistaSerializingToolset::SWAPS_MULTIBYTE_VALUES );
 
 	m_pClientLogger = new ITABufferedDataLoggerImplClient();
 	SetClientLoggerBaseName( "ITANetAudioStreamingClient" );
 
+	// Careful with this.
 	//SetPriority( VistaPriority::VISTA_MID_PRIORITY );
 }
 
@@ -103,9 +102,15 @@ bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPor
 	m_pMessage->ResetMessage();
 	m_pMessage->SetConnection( m_pConnection );
 
+	CITANetAudioProtocol::StreamingParameters oParams;
+	oParams.dSampleRate = m_pStream->GetSampleRate();
+	oParams.iBlockSize = m_pStream->GetBlocklength();
+	oParams.iChannels= m_pStream->GetNumberOfChannels();
+	oParams.iRingBufferSize = m_pStream->GetRingBufferSize();
+
 	// Validate streaming parameters of server and client
 	m_pMessage->SetMessageType( CITANetAudioProtocol::NP_CLIENT_OPEN );
-	m_pMessage->WriteStreamingParameters( m_oParams );
+	m_pMessage->WriteStreamingParameters( oParams );
 	m_pMessage->WriteMessage();
 	m_pMessage->ResetMessage();
 

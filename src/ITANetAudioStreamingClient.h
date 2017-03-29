@@ -21,8 +21,6 @@
 
 #include <ITADataSourcesDefinitions.h>
 
-#include <ITANetAudioProtocol.h>
-
 #include <ITASampleFrame.h>
 #include <ITAStreamProbe.h>
 #include <ITAStopWatch.h>
@@ -38,6 +36,7 @@ class CITANetAudioMessage;
 class CITANetAudioProtocol;
 class CITANetAudioStream;
 class ITABufferedDataLoggerImplClient;
+class VistaConnectionIP;
 
 //! Network audio streaming client
 /**
@@ -75,9 +74,7 @@ private:
 	VistaConnectionIP* m_pConnection;
 	
 	ITASampleFrame m_sfReceivingBuffer; //!< Buffer incoming data
-
-	CITANetAudioProtocol::StreamingParameters m_oParams;
-
+	
 	bool m_bStopIndicated;
 	bool m_bStopped;
 

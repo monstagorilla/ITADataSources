@@ -1,8 +1,9 @@
 #include <ITANetAudioStreamingServer.h>
-#include <ITANetAudioServer.h>
 #include <ITAStreamFunctionGenerator.h>
 #include <ITAStreamMultiplier1N.h>
 #include <ITAFileDataSource.h>
+#include <ITAException.h>
+
 #include <VistaBase/VistaTimeUtils.h>
 
 #include <iostream>

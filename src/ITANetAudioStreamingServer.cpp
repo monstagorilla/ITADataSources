@@ -1,10 +1,10 @@
 #include <ITANetAudioStreamingServer.h>
-#include <ITANetAudioServer.h>
-#include <ITANetAudioMessage.h>
+
+#include "ITANetAudioServer.h"
+#include "ITANetAudioMessage.h"
 
 // ITA includes
 #include <ITADataSource.h>
-#include <ITANetAudioMessage.h>
 #include <ITAException.h>
 #include <ITAStreamInfo.h>
 #include <ITAClock.h>
@@ -67,6 +67,7 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	, m_iMaxSendBlocks( 40 )
 	, m_iServerBlockId( 0 )
 	, m_iEstimatedClientRingBufferFreeSamples( 0 )
+	, m_iClientRingBufferSize( 0 )
 {
 	// Careful with this:
 	//SetPriority( VistaPriority::VISTA_MID_PRIORITY );
@@ -104,19 +105,23 @@ bool CITANetAudioStreamingServer::Start(const std::string& sAddress, int iPort, 
 	assert( m_pMessage->GetMessageType() == CITANetAudioProtocol::NP_CLIENT_OPEN );
 	CITANetAudioProtocol::StreamingParameters oClientParams = m_pMessage->ReadStreamingParameters();
 
-	m_oServerParams.iRingBufferSize = oClientParams.iRingBufferSize;
-	m_oServerParams.iBlockSize = oClientParams.iBlockSize;
+	CITANetAudioProtocol::StreamingParameters oServerParams;
+	oServerParams.iRingBufferSize = oClientParams.iRingBufferSize;
+	oServerParams.iBlockSize = m_pInputStream->GetBlocklength();
+	oServerParams.dSampleRate = m_pInputStream->GetSampleRate();
+	oServerParams.iChannels = m_pInputStream->GetNumberOfChannels();
 
-	m_iEstimatedClientRingBufferFreeSamples = m_oServerParams.iRingBufferSize;
-	m_iSendingBlockLength = m_oServerParams.iBlockSize;
+	m_iEstimatedClientRingBufferFreeSamples = oServerParams.iRingBufferSize;
+	m_iClientRingBufferSize = oClientParams.iRingBufferSize;
+	m_iSendingBlockLength = oServerParams.iBlockSize;
 
-	m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels(), m_oServerParams.iRingBufferSize, true );
+	m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels(), oServerParams.iRingBufferSize, true );
 
 	m_pServerLogger = new ITABufferedDataLoggerImplServer();
 	m_pServerLogger->setOutputFile( m_sServerLogBaseName + "_Server.log" );
 	m_dLastTimeStamp = ITAClock::getDefaultClock()->getTime();
 
-	if( m_oServerParams == oClientParams )
+	if( oServerParams == oClientParams )
 	{
 		m_pMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_OPEN );
 		m_pMessage->WriteDouble( dTimeIntervalCientSendStatus );
@@ -153,7 +158,7 @@ bool CITANetAudioStreamingServer::LoopBody()
 	oLog.iTransmittedSamples = 0;
 	
 	// Sending Samples
-	int iEstimatedClientRingBufferTargetLatencyFreeSamples = m_iEstimatedClientRingBufferFreeSamples - ( m_oServerParams.iRingBufferSize - m_iTargetLatencySamples );
+	int iEstimatedClientRingBufferTargetLatencyFreeSamples = m_iEstimatedClientRingBufferFreeSamples - ( m_iClientRingBufferSize - m_iTargetLatencySamples );
 
 	if (iEstimatedClientRingBufferTargetLatencyFreeSamples >= m_iSendingBlockLength)
 	{
@@ -256,9 +261,6 @@ void CITANetAudioStreamingServer::SetInputStream( ITADatasource* pInStream )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "Streaming loop already running, can not change input stream" );
 
 	m_pInputStream = pInStream;
-	m_oServerParams.dSampleRate = m_pInputStream->GetSampleRate();
-	m_oServerParams.iBlockSize = m_pInputStream->GetBlocklength();
-	m_oServerParams.iChannels = m_pInputStream->GetNumberOfChannels();
 }
 
 ITADatasource* CITANetAudioStreamingServer::GetInputStream() const
@@ -299,8 +301,12 @@ bool CITANetAudioStreamingServer::GetLoggingExportEnabled() const
 void CITANetAudioStreamingServer::SetTargetLatencySamples( const int iTargetLatency )
 {
 	// Streaming already set up?
-	if( IsClientConnected() && m_iTargetLatencySamples < m_oServerParams.iBlockSize )
-		ITA_EXCEPT1( INVALID_PARAMETER, "Target latency has to be at least the block size of the audio streaming at client side." );
+	if( IsClientConnected() )
+		ITA_EXCEPT1( MODAL_EXCEPTION, "Server not connected, client ring buffer unkown" );
+
+	if( m_pInputStream )
+		if( m_iTargetLatencySamples < m_pInputStream->GetBlocklength() )
+			ITA_EXCEPT1( INVALID_PARAMETER, "Target latency has to be at least the block size of the audio streaming at client side." );
 
 	m_iTargetLatencySamples = iTargetLatency;
 }

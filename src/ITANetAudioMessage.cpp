@@ -1,14 +1,15 @@
-#include <ITANetAudioMessage.h>
+#include "ITANetAudioMessage.h"
+
+#include <ITAClock.h>
+#include <ITADataLog.h>
 #include <ITAStringUtils.h>
 
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
 #include <VistaBase/VistaExceptionBase.h>
 #include <VistaBase/VistaStreamUtils.h>
-#include <ITAClock.h>
-#include <ITADataLog.h>
 
-#include <cstring>
 #include <algorithm>
+#include <cstring>
 #include <cassert>
 #include <iostream>
 #include <iomanip>

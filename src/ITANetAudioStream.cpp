@@ -1,5 +1,6 @@
 #include <ITANetAudioStream.h>
-#include <ITANetAudioStreamingClient.h>
+
+#include "ITANetAudioStreamingClient.h"
 
 // ITA includes
 #include <ITAException.h>

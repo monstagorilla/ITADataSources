@@ -1,6 +1,7 @@
-#include <ITANetAudioServer.h>
+#include "ITANetAudioServer.h"
+#include "ITANetAudioProtocol.h"
+
 #include <ITANetAudioStreamingServer.h>
-#include <ITANetAudioProtocol.h>
 
 // ITA includes
 #include <ITADataSource.h>

@@ -1,9 +1,4 @@
-#include <cmath>
-#include <iostream>
-#include <string>
-
 #include <ITANetAudioStreamingServer.h>
-#include <ITANetAudioServer.h>
 #include <ITANetAudioStream.h>
 #include <ITAPortaudioInterface.h>
 #include <ITAStreamFunctionGenerator.h>
@@ -17,6 +12,10 @@
 #include <VistaBase/VistaStreamUtils.h>
 #include <VistaBase/VistaTimeUtils.h>
 #include <VistaBase/VistaExceptionBase.h>
+
+#include <cmath>
+#include <iostream>
+#include <string>
 
 using namespace std;
 

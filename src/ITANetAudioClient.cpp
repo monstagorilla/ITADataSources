@@ -1,8 +1,7 @@
-#include <ITANetAudioClient.h>
+#include "ITANetAudioClient.h"
 
-#include <ITANetAudioMessage.h>
-#include <ITANetAudioProtocol.h>
 #include <ITANetAudioStream.h>
+#include <ITAException.h>
 
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
 

@@ -21,11 +21,12 @@
 
 #include <ITADataSourcesDefinitions.h>
 
+#include "ITANetAudioProtocol.h"
+
 // ITA includes
 #include <ITAException.h>
 #include <ITASampleBuffer.h>
 #include <ITASampleFrame.h>
-#include <ITANetAudioProtocol.h>
 
 // Vista includes
 #include <VistaInterProcComm/Connections/VistaByteBufferSerializer.h>

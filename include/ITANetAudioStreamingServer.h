@@ -21,8 +21,6 @@
 
 #include <ITADataSourcesDefinitions.h>
 
-#include <ITANetAudioProtocol.h>
-#include <ITANetAudioProtocol.h>
 #include <ITASampleFrame.h>
 #include <ITAStopWatch.h>
 
@@ -40,6 +38,7 @@ class CITANetAudioServer;
 class CITANetAudioMessage;
 class VistaTCPSocket;
 class ITABufferedDataLoggerImplServer;
+class VistaConnectionIP;
 
 
 //! Network audio streaming server (for connecting a net audio stream) with an ITADataSource connection
@@ -97,7 +96,6 @@ private:
 	ITADatasource* m_pInputStream;
 	VistaConnectionIP* m_pConnection;
 
-	CITANetAudioProtocol::StreamingParameters m_oServerParams;
 	CITANetAudioMessage* m_pMessage;
 
 	ITABufferedDataLoggerImplServer* m_pServerLogger;
@@ -110,6 +108,7 @@ private:
 
 	int m_iTargetLatencySamples;
 	int m_iEstimatedClientRingBufferFreeSamples;
+	int m_iClientRingBufferSize;
 	int m_iSendingBlockLength;
 	int m_iMaxSendBlocks;
 

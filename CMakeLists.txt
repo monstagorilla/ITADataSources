@@ -110,23 +110,21 @@ endif( )
 
 if( ITA_DATA_SOURCES_WITH_NET_AUDIO )
 	list( APPEND ITADataSourcesHeader
-		"include/ITANetAudioClient.h"
-		"include/ITANetAudioMessage.h"
-		"include/ITANetAudioProtocol.h"
-		"include/ITANetAudioServer.h"
 		"include/ITANetAudioStream.h"
-		"include/ITANetAudioStreamingClient.h"
 		"include/ITANetAudioStreamingServer.h"
-		"include/ITANetAudioStreamingClient.h"
 		)
 	list( APPEND ITADataSourcesSources
 		"src/ITANetAudioClient.cpp"
+		"src/ITANetAudioClient.h"
 		"src/ITANetAudioMessage.cpp"
-		"src/ITANetAudioProtocol.cpp"
+		"src/ITANetAudioMessage.h"
+		"src/ITANetAudioProtocol.h"
+		"src/ITANetAudioServer.cpp"
+		"src/ITANetAudioServer.h"
 		"src/ITANetAudioStream.cpp"
 		"src/ITANetAudioStreamingClient.cpp"
+		"src/ITANetAudioStreamingClient.h"
 		"src/ITANetAudioStreamingServer.cpp"
-		"src/ITANetAudioServer.cpp"
 		)	
 endif( )
 
