@@ -18,6 +18,7 @@ int g_iBlockLength = 32;
 int g_iChannels = 2;
 int g_iTargetLatencySamples = 4 * g_iBlockLength; // 1.4512ms
 int g_iRingBufferSize = 2 * g_iTargetLatencySamples;
+int g_iSendingBlockLength = 8;
 double g_dClientStatusMessageTimeout = 0.001; // seconds
 string g_sFileName = "gershwin-mono.wav";
 
@@ -34,13 +35,14 @@ int main( int argc, char** argv )
 			g_dSampleRate = strtod( argv[ 3 ], NULL );
 			g_iBlockLength = atoi( argv[ 4 ] );
 			g_iChannels = atoi( argv[ 5 ] );
-			g_iTargetLatencySamples = atoi( argv[ 6 ] );
-			g_iRingBufferSize = atoi( argv[ 7 ] );
+			g_iTargetLatencySamples = atoi(argv[6]);
+			g_iRingBufferSize = atoi(argv[7]);
+			g_iSendingBlockLength = atoi(argv[8]);
 		}
 	}
 	else
 	{
-		cout << "Syntax: ServerName ServerPort SampleRate BufferSize Channel TargetLatencySamples RingBufferSize" << endl;
+		cout << "Syntax: ServerName ServerPort SampleRate BufferSize Channel TargetLatencySamples RingBufferSize SnedingBlockLength" << endl;
 		cout << "Using default values ..." << endl;
 	}
 
@@ -71,6 +73,7 @@ int main( int argc, char** argv )
 
 	oStreamingServer.SetInputStream( &oMuliplier );
 	oStreamingServer.SetTargetLatencySamples( g_iTargetLatencySamples );
+	oStreamingServer.SetSendingBlockLength( g_iSendingBlockLength );
 
 	cout << "Starting net audio server and waiting for connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
 	oStreamingServer.Start( g_sServerName, g_iServerPort, g_dClientStatusMessageTimeout );

@@ -64,7 +64,7 @@ public:
 	~CITANetAudioStreamingServer();
 
 	//! Start to listen on a socket (blocking)
-	bool Start( const std::string& sAddress, const int iPort, const double dTimeIntervalCientSendStatus );
+	bool Start(const std::string& sAddress, const int iPort, const double dTimeIntervalCientSendStatus);
 	bool IsClientConnected() const;
 	std::string GetNetworkAddress() const;
 	int GetNetworkPort() const;
@@ -76,6 +76,9 @@ public:
 	int GetNetStreamBlocklength() const;
 	int GetNetStreamNumberOfChannels() const;
 	double GetNetStreamSampleRate() const;
+
+	int GetSendingBlockLength() const;
+	void SetSendingBlockLength( const int iSendingBlockLength );
 
 	void SetAutomaticUpdateRate();
 
@@ -108,6 +111,7 @@ private:
 	int m_iEstimatedClientRingBufferFreeSamples;
 	int m_iTargetLatencySamples;
 	int m_iMaxSendBlocks;
+	int m_iSendingBlockLength;
 	double m_dLastTimeStamp;
 
 	friend class CITANetAudioServer;
