@@ -81,7 +81,7 @@ CITANetAudioStreamingServer::~CITANetAudioStreamingServer()
 	vstr::out() << "[ ITANetAudioStreamingServer ] Try-read access statistics: " << m_swTryReadAccessStats.ToString() << std::endl;
 }
 
-bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort, double dTimeIntervalCientSendStatus )
+bool CITANetAudioStreamingServer::Start(const std::string& sAddress, int iPort, double dTimeIntervalCientSendStatus)
 {
 	if( !m_pInputStream )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "Can not start server without a valid input stream" );
@@ -133,6 +133,7 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, int iPort,
 #ifdef NET_AUDIO_SHOW_TRAFFIC
 		vstr::out() << "[ITANetAudioStreamingServer] Server and client parameters mismatch detected. Will notify client and stop." << std::endl;
 #endif
+
 		return false;
 	}
 }
@@ -147,28 +148,27 @@ bool CITANetAudioStreamingServer::LoopBody()
 	oLog.iTransmittedSamples = 0;
 	
 	// Sending Samples
-	int iBlockLength = m_pInputStream->GetBlocklength();
 	int iEstimatedClientRingBufferTargetLatencyFreeSamples = m_iEstimatedClientRingBufferFreeSamples - ( m_oServerParams.iRingBufferSize - m_iTargetLatencySamples );
 
-	if( iEstimatedClientRingBufferTargetLatencyFreeSamples >= iBlockLength )
+	if (iEstimatedClientRingBufferTargetLatencyFreeSamples >= m_iSendingBlockLength)
 	{
 		// Send Samples
-		int iSendBlocks = iEstimatedClientRingBufferTargetLatencyFreeSamples / iBlockLength;
+		int iSendBlocks = iEstimatedClientRingBufferTargetLatencyFreeSamples / m_iSendingBlockLength;
 
 		// Besser wäre vermutlich, gleich alle samples zu senden und nicht nur einen Block nach dem anderen
-		if( m_sfTempTransmitBuffer.GetLength() != iBlockLength )
-			m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels(), iBlockLength, false );
+		if (m_sfTempTransmitBuffer.GetLength() != m_iSendingBlockLength)
+			m_sfTempTransmitBuffer.init(m_pInputStream->GetNumberOfChannels(), m_iSendingBlockLength, false);
 
 		for( int j = 0; j < iSendBlocks; j++ )
 		{
 			for( int i = 0; i < int( m_pInputStream->GetNumberOfChannels() ); i++ )
 			{
 				ITAStreamInfo oStreamInfo;
-				oStreamInfo.nSamples = iBlockLength;
+				oStreamInfo.nSamples = m_iSendingBlockLength;
 
 				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
 				if( pfData != 0 )
-					m_sfTempTransmitBuffer[ i ].write( pfData, iBlockLength, 0 );
+					m_sfTempTransmitBuffer[i].write(pfData, m_iSendingBlockLength, 0);
 			}
 
 			m_pInputStream->IncrementBlockPointer();
@@ -177,7 +177,7 @@ bool CITANetAudioStreamingServer::LoopBody()
 			m_pMessage->SetMessageType( CITANetAudioProtocol::NP_SERVER_SENDING_SAMPLES );
 			m_pMessage->WriteSampleFrame( &m_sfTempTransmitBuffer );
 			m_pMessage->WriteMessage();
-			m_iEstimatedClientRingBufferFreeSamples -= iBlockLength;
+			m_iEstimatedClientRingBufferFreeSamples -= m_iSendingBlockLength;
 		}
 
 #ifdef NET_AUDIO_SHOW_TRAFFIC
@@ -264,6 +264,16 @@ ITADatasource* CITANetAudioStreamingServer::GetInputStream() const
 int CITANetAudioStreamingServer::GetNetStreamBlocklength() const
 {
 	return m_sfTempTransmitBuffer.GetLength();
+}
+
+int CITANetAudioStreamingServer::GetSendingBlockLength() const
+{
+	return m_iSendingBlockLength;
+}
+
+void CITANetAudioStreamingServer::SetSendingBlockLength(const int iSendingBlockLength)
+{
+	m_iSendingBlockLength = iSendingBlockLength;
 }
 
 int CITANetAudioStreamingServer::GetNetStreamNumberOfChannels() const
