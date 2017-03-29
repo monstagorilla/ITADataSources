@@ -22,6 +22,7 @@ int g_iRingBufferSize = 2 * g_iTargetLatencySamples;
 int g_iSendingBlockLength = 8;
 double g_dClientStatusMessageTimeout = 0.001; // seconds
 string g_sFileName = "gershwin-mono.wav";
+bool g_bDebuggingEnabled = true;
 
 int main( int argc, char** argv )
 {
@@ -72,7 +73,7 @@ int main( int argc, char** argv )
 	ss << "_RB" << g_iRingBufferSize;
 	ss << "_SB" << g_iSendingBlockLength;
 	oStreamingServer.SetServerLogBaseName( ss.str() );
-	oStreamingServer.SetDebuggingEnabled( true );
+	oStreamingServer.SetDebuggingEnabled( g_bDebuggingEnabled );
 
 	oStreamingServer.SetInputStream( &oMuliplier );
 	oStreamingServer.SetTargetLatencySamples( g_iTargetLatencySamples );
