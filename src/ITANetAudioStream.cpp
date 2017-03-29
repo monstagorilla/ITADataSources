@@ -1,5 +1,4 @@
 #include <ITANetAudioStream.h>
-
 #include <ITANetAudioStreamingClient.h>
 
 // ITA includes
@@ -7,13 +6,13 @@
 #include <ITADataLog.h>
 #include <ITAStreamInfo.h>
 #include <ITAClock.h>
-#include <iomanip> 
 
 // Vista includes
 #include <VistaBase/VistaStreamUtils.h>
 
 // STL includes
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 
 
@@ -97,6 +96,7 @@ CITANetAudioStream::CITANetAudioStream(int iChannels, double dSamplingRate, int 
 	, m_iWriteCursor( 0 ) // always ahead, i.e. iWriteCursor >= iReadCursor if unwrapped
 	, m_iAudioStreamingBlockID( 0 )
 	, m_iNetStreamingBlockID( 0 )
+	, m_bExportLogs( false )
 {
 	if( iBufferSize > iRingBufferCapacity )
 		ITA_EXCEPT1( INVALID_PARAMETER, "Ring buffer capacity can not be smaller than Target Sample Latency." );
@@ -114,6 +114,12 @@ CITANetAudioStream::CITANetAudioStream(int iChannels, double dSamplingRate, int 
 
 CITANetAudioStream::~CITANetAudioStream()
 {
+	if( m_bExportLogs == false )
+	{
+		m_pAudioStreamLogger->setOutputFile( "" ); // Disables file storing
+		m_pNetworkStreamLogger->setOutputFile( "" ); // Disables file storing
+	}
+
 	delete m_pAudioStreamLogger;
 	delete m_pNetworkStreamLogger;
 	delete m_pNetAudioStreamingClient;
@@ -246,8 +252,6 @@ void CITANetAudioStream::IncrementBlockPointer()
 	oLog.uiBlockId = ++m_iAudioStreamingBlockID;
 	oLog.iFreeSamples = GetRingBufferFreeSamples( );
 	m_pAudioStreamLogger->log( oLog );
-	
-	//m_pNetAudioStreamingClient->TriggerBlockIncrement();
 }
 
 int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples )
@@ -381,4 +385,14 @@ void CITANetAudioStream::SetNetAudioStreamingLoggerBaseName( const std::string& 
 	m_pAudioStreamLogger->setOutputFile( GetNetAudioStreamLoggerBaseName() + "_AudioStream.log" );
 	m_pNetworkStreamLogger->setOutputFile( GetNetAudioStreamLoggerBaseName() + "_NetworkStream.log" );
 	m_pNetAudioStreamingClient->SetClientLoggerBaseName( sBaseName );
+}
+
+void CITANetAudioStream::SetLoggingExportEnabled( bool bEnabled )
+{
+	m_bExportLogs = bEnabled;
+}
+
+bool CITANetAudioStream::GetLoggingExportEnabled() const
+{
+	return m_bExportLogs;
 }

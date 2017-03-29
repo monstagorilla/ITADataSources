@@ -65,4 +65,5 @@ private:
 	std::string m_sServerAddress;
 
 };
+
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_SERVER

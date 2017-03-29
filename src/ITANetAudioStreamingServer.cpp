@@ -58,23 +58,26 @@ class ITABufferedDataLoggerImplServer : public ITABufferedDataLogger < ITAServer
 
 CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	: m_pInputStream( NULL )
-	, m_iUpdateStrategy( AUTO )
 	, m_pConnection( NULL )
 	, m_pNetAudioServer( new CITANetAudioServer() )
 	, m_dLastTimeStamp( 0 )
 	, m_iTargetLatencySamples( -1 )
 	, m_sServerLogBaseName( "ITANetAudioStreamingServer" )
+	, m_bExportLogs( false )
+	, m_iMaxSendBlocks( 40 )
+	, m_iServerBlockId( 0 )
+	, m_iEstimatedClientRingBufferFreeSamples( 0 )
 {
-	iServerBlockId = 0;
-	m_iMaxSendBlocks = 40;
-	m_iEstimatedClientRingBufferFreeSamples = 0;
-
+	// Careful with this:
 	//SetPriority( VistaPriority::VISTA_MID_PRIORITY );
 }
 
 CITANetAudioStreamingServer::~CITANetAudioStreamingServer()
 {
 	delete m_pNetAudioServer;
+
+	if( m_bExportLogs == false )
+		m_pServerLogger->setOutputFile( "" ); // disables export
 	delete m_pServerLogger;
 
 	vstr::out() << "[ ITANetAudioStreamingServer ] Processing statistics: " << m_swTryReadBlockStats.ToString() << std::endl;
@@ -103,7 +106,9 @@ bool CITANetAudioStreamingServer::Start(const std::string& sAddress, int iPort, 
 
 	m_oServerParams.iRingBufferSize = oClientParams.iRingBufferSize;
 	m_oServerParams.iBlockSize = oClientParams.iBlockSize;
+
 	m_iEstimatedClientRingBufferFreeSamples = m_oServerParams.iRingBufferSize;
+	m_iSendingBlockLength = m_oServerParams.iBlockSize;
 
 	m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels(), m_oServerParams.iRingBufferSize, true );
 
@@ -144,7 +149,7 @@ bool CITANetAudioStreamingServer::LoopBody()
 
 	ITAServerLog oLog;
 	oLog.dWorldTimeStamp = dNow;
-	oLog.uiBlockId = ++iServerBlockId;
+	oLog.uiBlockId = ++m_iServerBlockId;
 	oLog.iTransmittedSamples = 0;
 	
 	// Sending Samples
@@ -281,9 +286,14 @@ int CITANetAudioStreamingServer::GetNetStreamNumberOfChannels() const
 	return m_sfTempTransmitBuffer.channels();
 }
 
-void CITANetAudioStreamingServer::SetAutomaticUpdateRate()
+void CITANetAudioStreamingServer::SetLoggingExportEnabled( bool bEnabled )
 {
-	m_iUpdateStrategy = AUTO;
+	m_bExportLogs = bEnabled;
+}
+
+bool CITANetAudioStreamingServer::GetLoggingExportEnabled() const
+{
+	return m_bExportLogs;
 }
 
 void CITANetAudioStreamingServer::SetTargetLatencySamples( const int iTargetLatency )

@@ -26,9 +26,6 @@
 
 #include <string>
 #include <vector>
-#include <iostream>
-#include <fstream>
-using namespace std;
 
 
 class CITANetAudioStreamingClient;
@@ -38,7 +35,7 @@ class ITABufferedDataLoggerImplAudio;
 
 //! Network audio stream
 /**
-  * Audio streaming for a signal source that is connected via TCP/IP.
+  * Audio streaming for a signal source that is connected via TCP/IP or UDP.
   * The network audio stream behaves like a client and receives samples
   * from a network audio stream server, CITANetAudioStreamingSearver.
   * 
@@ -46,11 +43,13 @@ class ITABufferedDataLoggerImplAudio;
   * block the streaming processing, because it is decoupled from the 
   * network connection and forwards samples from an internal ring buffer.
   * If the buffer runs out of samples, zeros will be return. If the buffer
-  * overruns, the sample server will be suspendeb by blocking the network
+  * overruns, the sample server will be suspended by blocking the network
   * data flow.
   *
-  * Latency can be managed by either providing a small ring buffer or
-  * oversizing the ring buffer and requesting a target latency.
+  * Latency can be managed by either providing a small ring buffer and 
+  * constantly filling it uo, or by oversizing the internal ring buffer 
+  * only pushing samples to meet a target latency. This has to be 
+  * implemented by the server.
   *
   * \note not thread-safe
   */
@@ -58,7 +57,21 @@ class ITA_DATA_SOURCES_API CITANetAudioStream : public ITADatasource
 {
 public:
 	//! Constructor of a network audio stream
+	/**
+	  * @param[in] iChannels Number of channels
+	  * @param[in] dSamplingRate Sampling rate
+	  * @param[in] iBufferSize Size of audio streaming buffer
+	  * @param[in] iRingBufferCapacity Internal ring buffer
+	  *
+	  * The ring buffer capacity should be roughly 6-10 buffer sizes long for short audio streaming buffers,
+	  * and can go down to one block in case of higher audio buffer sizes.
+	  *
+	  * The streaming parameters have to match with the server settings (yes also buffer size, that of the audio streaming context)
+	  *
+	  * @note Accept for more memory usage, oversizing the buffer does not require more CPU.
+	  */
 	CITANetAudioStream( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity = 2048 );
+
 	virtual ~CITANetAudioStream();
 
 	//! Network streaming status of client
@@ -68,17 +81,19 @@ public:
 		STOPPED, //!< Client not connected to a server and streaming stopped, i.e. not receiving samples by choice
 		CONNECTED, //!< Client is connected to a sample server (and potentially receives samples)
 		STREAMING, //!< 
-		BUFFER_UNDERRUN,
-		BUFFER_OVERRUN,
+		BUFFER_UNDERRUN, //!< Client internal audio buffer ran out of samples
+		BUFFER_OVERRUN, //!< Client internal audio ring buffer is full
 	};
 
 	//! Connect a streaming server
 	/**
-	  * @sAddress[in] Server address IP, i.e. 127.0.0.1
+	  * @sAddress[in] Server address IP (127.0.0.1, localhost, etc.)
 	  * @iPort[in] Server socket port, defaults to 12480
+	  * @return True, if connection could be established and streaming parameters match
 	  */
 	bool Connect( const std::string& sAddress, int iPort = 12480 );
 
+	//! Disconnct safely from server
 	void Disconnect();
 
 	//! Returns the connection status
@@ -87,26 +102,47 @@ public:
 	  */
 	bool GetIsConnected() const;
 
-	//! Sets the minimal latency possible
+	//! Returns the minimal latency possible (single block)
 	/**
-	  * Real-time network audio is considered to process at lowest latency possible.
-	  * However, this implementation requires at least one block. Hence latency is
-	  * depending on sampling rate and block length.
-	  *
-	  * @sa GetMinimumLatencySamples()
-	  * @sa GetMinimumLatencySamples()
+	  * @return Minimum latency in seconds
 	  */
 	float GetMinimumLatencySeconds() const;
 
+	//! Returns the maximum latency possible (entire ring buffer used)
+	/**
+	  * @return Maximum latency in seconds
+	  */
 	float GetMaximumLatencySeconds() const;
+	
+	//! Returns the minimum latency possible (single block)
+	/**
+	  * @return Minimum latency in samples
+	  */
 	int GetMinimumLatencySamples() const;
+
+	//! Returns the maximum latency possible (entire ring buffer used)
+	/**
+	  * @return Maximum latency in samples
+	  */
 	int GetMaximumLatencySamples() const;
 
 	//! Returns the NetAudio streaming logger base name
 	std::string GetNetAudioStreamLoggerBaseName() const;
 
 	//! Sets the NetAudio streaming logger base name
+	/**
+	  * If debugging is enabled, all debugging files will be named
+	  * with this suffix.
+	  * @param[in] sBaseName Base name string
+	  * 
+	  */
 	void SetNetAudioStreamingLoggerBaseName( const std::string& sBaseName );
+
+	//! Enabled/disables export of loggers
+	void SetLoggingExportEnabled( bool bEnabled );
+
+	//! Logging export flag getter
+	bool GetLoggingExportEnabled() const;
 
 	//! Returns (static) size of ring buffer
 	/**
@@ -200,6 +236,7 @@ private:
 	ITABufferedDataLoggerImplStream* m_pAudioStreamLogger; //!< Logging for the audio stream
 	ITABufferedDataLoggerImplNet* m_pNetworkStreamLogger; //!< Logging for the network stream
 	std::string m_sNetAudioStreamLoggerBaseName;
+	bool m_bExportLogs;
 
 	int m_iAudioStreamingBlockID; //!< Audio streaming block id
 	int m_iNetStreamingBlockID; //!< Network streaming block id
