@@ -62,7 +62,7 @@ int main( int argc, char* argv[] )
 	ss << "_RB" << g_iRingBufferSize;
 	ss << "_SB" << g_iSendingBlockLength;
 	oNetAudioStream.SetNetAudioStreamingLoggerBaseName( ss.str() );
-	oNetAudioStream.SetLoggingExportEnabled( true );
+	oNetAudioStream.SetDebuggingEnabled( true );
 
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBlockLength );
 	oPatchbay.AddInput( &oNetAudioStream );

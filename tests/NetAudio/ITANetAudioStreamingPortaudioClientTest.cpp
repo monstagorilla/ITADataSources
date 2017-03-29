@@ -32,6 +32,7 @@ int main(int argc, char* argv[])
 	int iBufferSize = atoi(argv[6]);
 	
 	CITANetAudioStream oNetAudioStream( iChannels, dSampleRate, iBlockLength, iBlockLength*16 );
+	oNetAudioStream.SetDebuggingEnabled( true );
 	ITAStreamPatchbay oPatchbay( dSampleRate, iBlockLength );
 	oPatchbay.AddInput( &oNetAudioStream );
 	int iOutputID = oPatchbay.AddOutput( 2 );

@@ -97,7 +97,7 @@ CITANetAudioStream::CITANetAudioStream(int iChannels, double dSamplingRate, int 
 	, m_iWriteCursor( 0 ) // always ahead, i.e. iWriteCursor >= iReadCursor if unwrapped
 	, m_iAudioStreamingBlockID( 0 )
 	, m_iNetStreamingBlockID( 0 )
-	, m_bExportLogs( false )
+	, m_bDebuggingEnabled( false )
 {
 	if( iBufferSize > iRingBufferCapacity )
 		ITA_EXCEPT1( INVALID_PARAMETER, "Ring buffer capacity can not be smaller than Target Sample Latency." );
@@ -115,7 +115,7 @@ CITANetAudioStream::CITANetAudioStream(int iChannels, double dSamplingRate, int 
 
 CITANetAudioStream::~CITANetAudioStream()
 {
-	if( m_bExportLogs == false )
+	if( m_bDebuggingEnabled == false )
 	{
 		m_pAudioStreamLogger->setOutputFile( "" ); // Disables file storing
 		m_pNetworkStreamLogger->setOutputFile( "" ); // Disables file storing
@@ -388,12 +388,12 @@ void CITANetAudioStream::SetNetAudioStreamingLoggerBaseName( const std::string& 
 	m_pNetAudioStreamingClient->SetClientLoggerBaseName( sBaseName );
 }
 
-void CITANetAudioStream::SetLoggingExportEnabled( bool bEnabled )
+void CITANetAudioStream::SetDebuggingEnabled( bool bEnabled )
 {
-	m_bExportLogs = bEnabled;
+	m_bDebuggingEnabled = bEnabled;
 }
 
-bool CITANetAudioStream::GetLoggingExportEnabled() const
+bool CITANetAudioStream::GetIsDebuggingEnabled() const
 {
-	return m_bExportLogs;
+	return m_bDebuggingEnabled;
 }

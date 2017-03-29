@@ -39,7 +39,7 @@ public:
 	inline CServer( const string& sInputFilePath )
 	{
 		pStreamingServer = new CITANetAudioStreamingServer;
-		pStreamingServer->SetLoggingExportEnabled( true );
+		pStreamingServer->SetDebuggingEnabled( true );
 		pStreamingServer->SetTargetLatencySamples( g_iTargetLatencySamples );
 		pStreamingServer->SetServerLogBaseName( "ITANetAudioTest_Server" );
 
@@ -84,7 +84,7 @@ void run_test()
 	// Client dumping received stream and mixing down to two channels
 	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBlockLength, g_iRingerBufferCapacity );
 	oNetAudioStream.SetNetAudioStreamingLoggerBaseName( "ITANetAudioTest_Client" );
-	oNetAudioStream.SetLoggingExportEnabled( true );
+	oNetAudioStream.SetDebuggingEnabled( true );
 
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBlockLength );
 	oPatchbay.AddInput( &oNetAudioStream );

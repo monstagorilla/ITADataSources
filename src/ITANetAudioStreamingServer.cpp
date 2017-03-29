@@ -63,7 +63,7 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	, m_dLastTimeStamp( 0 )
 	, m_iTargetLatencySamples( -1 )
 	, m_sServerLogBaseName( "ITANetAudioStreamingServer" )
-	, m_bExportLogs( false )
+	, m_bDebuggingEnabled( false )
 	, m_iMaxSendBlocks( 40 )
 	, m_iServerBlockId( 0 )
 	, m_iEstimatedClientRingBufferFreeSamples( 0 )
@@ -77,12 +77,17 @@ CITANetAudioStreamingServer::~CITANetAudioStreamingServer()
 {
 	delete m_pNetAudioServer;
 
-	if( m_bExportLogs == false )
+	
+	if( GetIsDebuggingEnabled() )
+	{
+		vstr::out() << "[ ITANetAudioStreamingServer ] Processing statistics: " << m_swTryReadBlockStats.ToString() << std::endl;
+		vstr::out() << "[ ITANetAudioStreamingServer ] Try-read access statistics: " << m_swTryReadAccessStats.ToString() << std::endl;
+	}
+	else
 		m_pServerLogger->setOutputFile( "" ); // disables export
+
 	delete m_pServerLogger;
 
-	vstr::out() << "[ ITANetAudioStreamingServer ] Processing statistics: " << m_swTryReadBlockStats.ToString() << std::endl;
-	vstr::out() << "[ ITANetAudioStreamingServer ] Try-read access statistics: " << m_swTryReadAccessStats.ToString() << std::endl;
 }
 
 bool CITANetAudioStreamingServer::Start(const std::string& sAddress, int iPort, double dTimeIntervalCientSendStatus)
@@ -288,14 +293,14 @@ int CITANetAudioStreamingServer::GetNetStreamNumberOfChannels() const
 	return m_sfTempTransmitBuffer.channels();
 }
 
-void CITANetAudioStreamingServer::SetLoggingExportEnabled( bool bEnabled )
+void CITANetAudioStreamingServer::SetDebuggingEnabled( bool bEnabled )
 {
-	m_bExportLogs = bEnabled;
+	m_bDebuggingEnabled = bEnabled;
 }
 
-bool CITANetAudioStreamingServer::GetLoggingExportEnabled() const
+bool CITANetAudioStreamingServer::GetIsDebuggingEnabled() const
 {
-	return m_bExportLogs;
+	return m_bDebuggingEnabled;
 }
 
 void CITANetAudioStreamingServer::SetTargetLatencySamples( const int iTargetLatency )

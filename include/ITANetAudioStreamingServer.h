@@ -71,10 +71,10 @@ public:
 
 
 	//! Enabled/disables export of loggers
-	void SetLoggingExportEnabled( bool bEnabled );
+	void SetDebuggingEnabled( bool bEnabled );
 
 	//! Logging export flag getter
-	bool GetLoggingExportEnabled() const;
+	bool GetIsDebuggingEnabled() const;
 
 	int GetSendingBlockLength() const;
 	void SetSendingBlockLength( const int iSendingBlockLength );
@@ -101,7 +101,7 @@ private:
 	ITABufferedDataLoggerImplServer* m_pServerLogger;
 	std::string m_sServerLogBaseName;
 	ITAStopWatch m_swTryReadBlockStats, m_swTryReadAccessStats;
-	bool m_bExportLogs;
+	bool m_bDebuggingEnabled;
 
 	int m_iServerBlockId;
 	double m_dLastTimeStamp;

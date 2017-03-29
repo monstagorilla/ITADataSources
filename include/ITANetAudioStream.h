@@ -139,10 +139,10 @@ public:
 	void SetNetAudioStreamingLoggerBaseName( const std::string& sBaseName );
 
 	//! Enabled/disables export of loggers
-	void SetLoggingExportEnabled( bool bEnabled );
+	void SetDebuggingEnabled( bool bEnabled );
 
 	//! Logging export flag getter
-	bool GetLoggingExportEnabled() const;
+	bool GetIsDebuggingEnabled() const;
 
 	//! Returns (static) size of ring buffer
 	/**
@@ -236,7 +236,7 @@ private:
 	ITABufferedDataLoggerImplStream* m_pAudioStreamLogger; //!< Logging for the audio stream
 	ITABufferedDataLoggerImplNet* m_pNetworkStreamLogger; //!< Logging for the network stream
 	std::string m_sNetAudioStreamLoggerBaseName;
-	bool m_bExportLogs;
+	bool m_bDebuggingEnabled;
 
 	int m_iAudioStreamingBlockID; //!< Audio streaming block id
 	int m_iNetStreamingBlockID; //!< Network streaming block id
