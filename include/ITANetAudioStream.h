@@ -70,7 +70,7 @@ public:
 	  *
 	  * @note Accept for more memory usage, oversizing the buffer does not require more CPU.
 	  */
-	CITANetAudioStream( int iChannels, double dSamplingRate, int iBufferSize, int iRingBufferCapacity = 2048 );
+	CITANetAudioStream( const int iChannels, const double dSamplingRate, const int iBufferSize, const int iRingBufferCapacity = 2048 );
 
 	virtual ~CITANetAudioStream();
 
@@ -91,7 +91,7 @@ public:
 	  * @iPort[in] Server socket port, defaults to 12480
 	  * @return True, if connection could be established and streaming parameters match
 	  */
-	bool Connect( const std::string& sAddress, int iPort = 12480 );
+	bool Connect( const std::string& sAddress, const int iPort = 12480, const bool bUseUDP = false );
 
 	//! Disconnct safely from server
 	void Disconnect();
@@ -202,7 +202,7 @@ protected:
 	  *
 	  * @note This method is not called out of the audio streaming context but out of the network context.
 	  */
-	int Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples );
+	int Transmit( const ITASampleFrame& sfNewSamples, const int iNumSamples );
 
 	//! Returns samples that can be read from ring buffer
 	/**
@@ -217,7 +217,7 @@ protected:
 	int GetRingBufferFreeSamples() const;
 
 	//! Returns a string for the streaming status identifier
-	static std::string GetStreamingStatusString( int iStreamingStatus );
+	static std::string GetStreamingStatusString( const int iStreamingStatus );
 
 private:
 	CITANetAudioStreamingClient* m_pNetAudioStreamingClient; //!< Audio streaming network client

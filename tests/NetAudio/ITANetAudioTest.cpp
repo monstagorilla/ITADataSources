@@ -32,6 +32,7 @@ const static double g_dSyncTimout = 0.001f;
 const static bool g_bUseASIO = true;
 const static string g_sAudioInterface = "ASIO4ALL v2";
 //const static string g_sAudioInterface = "ASIO Hammerfall DSP";
+const static bool g_bUseUDP = false;
 
 class CServer : public VistaThread
 {
@@ -64,7 +65,7 @@ public:
 	void ThreadBody( )
 	{
 		vstr::out() << "[ NetAudioTestServer ] Starting net audio server and waiting for client connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
-		pStreamingServer->Start( g_sServerName, g_iServerPort, g_dSyncTimout );		
+		pStreamingServer->Start( g_sServerName, g_iServerPort, g_dSyncTimout, g_bUseUDP );
 	};
 
 private:
@@ -125,7 +126,7 @@ void run_test()
 
 	vstr::out() << "[ NetAudioTestClient ] Will now connect to net audio server '" << g_sServerName << "' on port " << g_iServerPort << endl;
 
-	if( !oNetAudioStream.Connect( g_sServerName, g_iServerPort ) )
+	if( !oNetAudioStream.Connect( g_sServerName, g_iServerPort, g_bUseUDP ) )
 		ITA_EXCEPT1( INVALID_PARAMETER, "Could not connect to net audio server" );
 	vstr::out() << "[ NetAudioTestClient ] Connected." << endl;
 

@@ -126,9 +126,9 @@ CITANetAudioStream::~CITANetAudioStream()
 	delete m_pNetAudioStreamingClient;
 }
 
-bool CITANetAudioStream::Connect( const std::string& sAddress, int iPort )
+bool CITANetAudioStream::Connect( const std::string& sAddress, const int iPort, const bool bUseUDP )
 {
-	return m_pNetAudioStreamingClient->Connect( sAddress, iPort );
+	return m_pNetAudioStreamingClient->Connect( sAddress, iPort, bUseUDP );
 }
 
 void CITANetAudioStream::Disconnect()
@@ -255,7 +255,7 @@ void CITANetAudioStream::IncrementBlockPointer()
 	m_pAudioStreamLogger->log( oLog );
 }
 
-int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, int iNumSamples )
+int CITANetAudioStream::Transmit( const ITASampleFrame& sfNewSamples, const int iNumSamples )
 {
 	// Take local copies (concurrent access)
 	int iCurrentReadCursor = m_iReadCursor;
@@ -357,7 +357,7 @@ double CITANetAudioStream::GetSampleRate() const
 	return m_dSampleRate;
 }
 
-std::string CITANetAudioStream::GetStreamingStatusString( int iStreamingStatus )
+std::string CITANetAudioStream::GetStreamingStatusString( const int iStreamingStatus )
 {
 	if( iStreamingStatus == CITANetAudioStream::INVALID )
 		return "INVALID";

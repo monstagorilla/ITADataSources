@@ -30,6 +30,7 @@ class CITANetAudioStreamingServer;
 class VistaConnectionIP;
 class VistaTCPServer;
 class VistaTCPSocket;
+class VistaUDPSocket;
 
 //! Realizes server functionality for network audio streaming
 /**
@@ -47,7 +48,7 @@ public:
 	std::string GetServerAddress() const;
 	int GetNetworkPort() const;
 
-	bool Start( const std::string& sAddress, int iPort );
+	bool Start( const std::string& sAddress, const int iPort, const bool bUseUDP );
 	void Stop();
 
 	VistaConnectionIP* GetConnection() const;
@@ -55,8 +56,9 @@ public:
 
 
 private:
-	VistaTCPServer* m_pServer;
-	VistaTCPSocket* m_pSocket;
+	VistaTCPServer* m_pTCPServer;
+	VistaTCPSocket* m_pTCPSocket;
+	VistaUDPSocket* m_pUDPSocket;
 	VistaConnectionIP* m_pConnection;
 
 	int m_iServerPort;

@@ -40,7 +40,7 @@ class VistaConnectionIP;
 
 //! Network audio streaming client
 /**
- * Audio streaming for a signal source that is connected via TCP/IP.
+ * Audio streaming for a signal source that is connected via TCP/IP or UDP.
  * Implements the ITA network protocol for audio streaming on client side.
  *
  * @todo: move to src folder
@@ -53,7 +53,7 @@ public:
 	CITANetAudioStreamingClient( CITANetAudioStream* pParent );
 	virtual ~CITANetAudioStreamingClient();
 
-	bool Connect( const std::string& sAddress, int iPort );
+	bool Connect( const std::string& sAddress, const int iPort, const bool bUseUDP );
 	bool GetIsConnected() const;
 	void Disconnect();
 
@@ -62,7 +62,7 @@ public:
 	std::string GetClientLoggerBaseName() const;
 	void SetClientLoggerBaseName( const std::string& );
 
-	void SetDebuggingEnabled( bool bEnabled );
+	void SetDebuggingEnabled( const bool bEnabled );
 	bool GetIsDebuggingEnabled() const;
 
 protected:
