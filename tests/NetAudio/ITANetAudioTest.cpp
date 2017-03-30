@@ -23,14 +23,15 @@ const static string g_sServerName = "localhost";
 const static string g_sInputFilePath = "gershwin-mono.wav";
 const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
-const static int g_iBlockLength = 512;
-const static int g_iChannels = 2;
-const static int g_iTargetLatencySamples = g_iBlockLength * 1;
-const static int g_iRingerBufferCapacity = g_iBlockLength * 5;
+const static int g_iBlockLength = 32;
+const static int g_iChannels = 100;
+const static int g_iTargetLatencySamples = g_iBlockLength * 10;
+const static int g_iRingerBufferCapacity = g_iBlockLength * 20;
 const static double g_dDuration = 10.0f;
-const static double g_dSyncTimout = 0.001f;
+const static double g_dSyncTimout = 0.01f;
 const static bool g_bUseASIO = true;
-const static string g_sAudioInterface = "ASIO4ALL v2";
+const static string g_sAudioInterface = "ASIO MADIface USB";
+//const static string g_sAudioInterface = "ASIO4ALL v2";
 //const static string g_sAudioInterface = "ASIO Hammerfall DSP";
 const static bool g_bUseUDP = false;
 
@@ -48,8 +49,8 @@ public:
 		pInputFile->SetIsLooping( true );
 		assert( pInputFile->GetNumberOfChannels() == 1 );
 		pMuliplier = new ITAStreamMultiplier1N( pInputFile, g_iChannels );
-		pInputStreamProbe = new ITAStreamProbe( pMuliplier, "ITANetAudioTest.serverstream.wav" );
-		pStreamingServer->SetInputStream( pInputStreamProbe );
+		//pInputStreamProbe = new ITAStreamProbe( pMuliplier, "ITANetAudioTest.serverstream.wav" );
+		pStreamingServer->SetInputStream(pMuliplier);
 
 		Run();
 	};

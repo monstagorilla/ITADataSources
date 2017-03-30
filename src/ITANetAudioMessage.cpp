@@ -130,6 +130,7 @@ void CITANetAudioMessage::WriteMessage()
 	// rewrite size dummy
 	iSwapDummy = m_oOutgoing.GetBufferSize() - sizeof( VistaType::sint32 );
 	oLog.nMessagePayloadSize = iSwapDummy;
+
 	if( m_oOutgoing.GetByteorderSwapFlag() )
 		VistaSerializingToolset::Swap4( &iSwapDummy );
 	std::memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
@@ -154,6 +155,8 @@ void CITANetAudioMessage::WriteMessage()
 	oLog.sAction = "write_message";
 	oLog.dInternalProcessingTime = ITAClock::getDefaultClock()->getTime() - dInTime;
 	m_pMessageLogger->log( oLog );
+	std::cout << GetMessageLoggerBaseName() << " Write: Groesse:" << oLog.nMessagePayloadSize << " MsgType:" << oLog.sMessageType << " MsgID: " << oLog.uiBlockId << std::endl;
+
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [  Writing] " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
 #endif
@@ -212,6 +215,8 @@ bool CITANetAudioMessage::ReadMessage( int timeout )
 	// we need at least the two protocol ints
 	//assert( nMessagePayloadSize >= 2 * sizeof( VistaType::sint32 ) );
 
+	std::cout << GetMessageLoggerBaseName() << " Read: " << nMessagePayloadSize << std::endl;
+
 	if( nMessagePayloadSize > ( int ) m_vecIncomingBuffer.size() )
 		m_vecIncomingBuffer.resize( nMessagePayloadSize );
 
@@ -237,6 +242,8 @@ bool CITANetAudioMessage::ReadMessage( int timeout )
 	m_oIncoming.SetBuffer( &m_vecIncomingBuffer[ 0 ], nMessagePayloadSize, false );
 	m_nMessageType = ReadInt();
 	m_nMessageId = ReadInt();
+	std::cout << GetMessageLoggerBaseName() << " Read: MsgType:" << m_nMessageType << " MsgID: " << m_nMessageId << std::endl;
+
 	oLog.sMessageType = CITANetAudioProtocol::GetNPMessageID( m_nMessageType );
 	oLog.uiBlockId = m_nMessageId;
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime() - dInTime;
@@ -460,6 +467,7 @@ void CITANetAudioMessage::SetMessageLoggerBaseName( const std::string& sBaseName
 	assert( !sBaseName.empty() );
 	if( m_pMessageLogger )
 		m_pMessageLogger->setOutputFile( sBaseName + ".log" );
+	m_sMessageLoggerBaseName = sBaseName;
 }
 
 std::string CITANetAudioMessage::GetMessageLoggerBaseName() const

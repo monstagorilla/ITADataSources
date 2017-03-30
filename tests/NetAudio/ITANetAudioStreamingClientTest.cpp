@@ -14,11 +14,11 @@
 
 using namespace std;
 
-string g_sServerName = "localhost";
+string g_sServerName = "137.226.61.85";
 int g_iServerPort = 12480;
 double g_dSampleRate = 44100.0;
-int g_iBlockLength = 512;
-int g_iChannels = 2;
+int g_iBlockLength = 32;
+int g_iChannels = 100;
 int g_iTargetLatencySamples = 2 * g_iBlockLength; // 1.4512ms
 int g_iRingBufferSize = 2 * g_iTargetLatencySamples;
 int g_iSendingBlockLength = 8;
