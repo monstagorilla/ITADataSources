@@ -55,7 +55,7 @@ public:
 	~CITANetAudioStreamingServer();
 
 	//! Start to listen on a socket (blocking)
-	bool Start( const std::string& sAddress, const int iPort, const double dTimeIntervalCientSendStatus );
+	bool Start( const std::string& sAddress, const int iPort, const double dTimeIntervalCientSendStatus, const bool bUseUDP = false );
 	bool IsClientConnected() const;
 	std::string GetNetworkAddress() const;
 	int GetNetworkPort() const;

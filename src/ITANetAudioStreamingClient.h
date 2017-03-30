@@ -62,7 +62,7 @@ public:
 	std::string GetClientLoggerBaseName() const;
 	void SetClientLoggerBaseName( const std::string& );
 
-	void SetDebuggingEnabled( bool bEnabled );
+	void SetDebuggingEnabled( const bool bEnabled );
 	bool GetIsDebuggingEnabled() const;
 
 protected:

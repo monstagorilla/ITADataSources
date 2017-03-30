@@ -52,7 +52,7 @@ int CITANetAudioServer::GetNetworkPort() const
 	return m_iServerPort;
 }
 
-bool CITANetAudioServer::Start( const std::string& sAddress, const int iPort, const bool bUseUDP /* = false */ )
+bool CITANetAudioServer::Start( const std::string& sAddress, const int iPort, const bool bUseUDP )
 {
 	if( m_pTCPServer || m_pUDPSocket )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "This NetAudio server is already started" );

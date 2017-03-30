@@ -256,7 +256,7 @@ void CITANetAudioStreamingClient::SetClientLoggerBaseName( const std::string& sB
 	m_pMessage->SetMessageLoggerBaseName( GetClientLoggerBaseName() + "_Messages" );
 }
 
-void CITANetAudioStreamingClient::SetDebuggingEnabled( bool bEnabled )
+void CITANetAudioStreamingClient::SetDebuggingEnabled( const bool bEnabled )
 {
 	m_bDebuggingEnabled = bEnabled;
 	m_pMessage->SetDebuggingEnabled( bEnabled );

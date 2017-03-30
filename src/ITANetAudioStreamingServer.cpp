@@ -89,12 +89,12 @@ CITANetAudioStreamingServer::~CITANetAudioStreamingServer()
 
 }
 
-bool CITANetAudioStreamingServer::Start( const std::string& sAddress, const int iPort, const double dTimeIntervalCientSendStatus )
+bool CITANetAudioStreamingServer::Start( const std::string& sAddress, const int iPort, const double dTimeIntervalCientSendStatus, const bool bUseUDP /* = false */ )
 {
 	if( !m_pInputStream )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "Can not start server without a valid input stream" );
 
-	if( !m_pNetAudioServer->Start( sAddress, iPort ) ) // blocking
+	if( !m_pNetAudioServer->Start( sAddress, iPort, bUseUDP ) ) // blocking
 		return false;
 
 	m_pConnection = m_pNetAudioServer->GetConnection();

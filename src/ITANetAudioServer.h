@@ -48,7 +48,7 @@ public:
 	std::string GetServerAddress() const;
 	int GetNetworkPort() const;
 
-	bool Start( const std::string& sAddress, const int iPort, const bool bUseUDP = false );
+	bool Start( const std::string& sAddress, const int iPort, const bool bUseUDP );
 	void Stop();
 
 	VistaConnectionIP* GetConnection() const;
