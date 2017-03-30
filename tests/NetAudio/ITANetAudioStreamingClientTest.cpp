@@ -14,10 +14,10 @@
 
 using namespace std;
 
-string g_sServerName = "137.226.61.85";
+string g_sServerName = "localhost";
 int g_iServerPort = 12480;
 double g_dSampleRate = 44100.0;
-int g_iBlockLength = 32;
+int g_iBlockLength = 512;
 int g_iChannels = 2;
 int g_iTargetLatencySamples = 2 * g_iBlockLength; // 1.4512ms
 int g_iRingBufferSize = 2 * g_iTargetLatencySamples;
@@ -62,6 +62,7 @@ int main( int argc, char* argv[] )
 	ss << "_RB" << g_iRingBufferSize;
 	ss << "_SB" << g_iSendingBlockLength;
 	oNetAudioStream.SetNetAudioStreamingLoggerBaseName( ss.str() );
+	oNetAudioStream.SetDebuggingEnabled( true );
 
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBlockLength );
 	oPatchbay.AddInput( &oNetAudioStream );
@@ -77,7 +78,7 @@ int main( int argc, char* argv[] )
 	cout << "Will attempt to connect to '" << g_sServerName << "' on port " << g_iServerPort << endl;
 
 	ITAsioInitializeLibrary();
-	ITAsioInitializeDriver( "ASIO MADIface USB" );
+	ITAsioInitializeDriver( "ASIO4ALL v2" );
 
 	long lBuffersize, lDummy;
 	ITAsioGetBufferSize( &lDummy, &lDummy, &lBuffersize, &lDummy );

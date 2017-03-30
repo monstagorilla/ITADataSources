@@ -1,8 +1,9 @@
 #include <ITANetAudioStreamingServer.h>
-#include <ITANetAudioServer.h>
 #include <ITAStreamFunctionGenerator.h>
 #include <ITAStreamMultiplier1N.h>
 #include <ITAFileDataSource.h>
+#include <ITAException.h>
+
 #include <VistaBase/VistaTimeUtils.h>
 
 #include <iostream>
@@ -11,16 +12,17 @@
 
 using namespace std;
 
-string g_sServerName = "137.226.61.85";
+string g_sServerName = "localhost";
 int g_iServerPort = 12480;
 double g_dSampleRate = 44100.0;
-int g_iBlockLength = 32;
-int g_iChannels = 2;
+int g_iBlockLength = 512;
+int g_iChannels = 1;
 int g_iTargetLatencySamples = 4 * g_iBlockLength; // 1.4512ms
 int g_iRingBufferSize = 2 * g_iTargetLatencySamples;
 int g_iSendingBlockLength = 8;
 double g_dClientStatusMessageTimeout = 0.001; // seconds
 string g_sFileName = "gershwin-mono.wav";
+bool g_bDebuggingEnabled = true;
 
 int main( int argc, char** argv )
 {
@@ -71,13 +73,20 @@ int main( int argc, char** argv )
 	ss << "_RB" << g_iRingBufferSize;
 	ss << "_SB" << g_iSendingBlockLength;
 	oStreamingServer.SetServerLogBaseName( ss.str() );
+	oStreamingServer.SetDebuggingEnabled( g_bDebuggingEnabled );
 
 	oStreamingServer.SetInputStream( &oMuliplier );
 	oStreamingServer.SetTargetLatencySamples( g_iTargetLatencySamples );
 	oStreamingServer.SetSendingBlockLength( g_iSendingBlockLength );
 
 	cout << "Starting net audio server and waiting for connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
-	oStreamingServer.Start( g_sServerName, g_iServerPort, g_dClientStatusMessageTimeout );
+	if( oStreamingServer.Start( g_sServerName, g_iServerPort, g_dClientStatusMessageTimeout ) )
+		cout << "Client connected, sending samples." << endl;
+	else
+	{
+		cerr << "Connection failed or streaming refused, aborting." << endl;
+		return 255;
+	}
 
 	while( !oStreamingServer.IsClientConnected() )
 		VistaTimeUtils::Sleep( 100 );

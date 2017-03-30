@@ -1,9 +1,4 @@
-#include <cmath>
-#include <iostream>
-#include <string>
-
 #include <ITANetAudioStreamingServer.h>
-#include <ITANetAudioServer.h>
 #include <ITANetAudioStream.h>
 #include <ITAPortaudioInterface.h>
 #include <ITAStreamFunctionGenerator.h>
@@ -18,21 +13,25 @@
 #include <VistaBase/VistaTimeUtils.h>
 #include <VistaBase/VistaExceptionBase.h>
 
+#include <cmath>
+#include <iostream>
+#include <string>
+
 using namespace std;
 
 const static string g_sServerName = "localhost";
 const static string g_sInputFilePath = "gershwin-mono.wav";
 const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
-const static int g_iBlockLength = 32;
+const static int g_iBlockLength = 512;
 const static int g_iChannels = 2;
 const static int g_iTargetLatencySamples = g_iBlockLength * 1;
 const static int g_iRingerBufferCapacity = g_iBlockLength * 5;
 const static double g_dDuration = 10.0f;
 const static double g_dSyncTimout = 0.001f;
 const static bool g_bUseASIO = true;
-//const static string g_sAudioInterface = "ASIO4ALL v2";
-const static string g_sAudioInterface = "ASIO Hammerfall DSP";
+const static string g_sAudioInterface = "ASIO4ALL v2";
+//const static string g_sAudioInterface = "ASIO Hammerfall DSP";
 
 class CServer : public VistaThread
 {
@@ -40,6 +39,7 @@ public:
 	inline CServer( const string& sInputFilePath )
 	{
 		pStreamingServer = new CITANetAudioStreamingServer;
+		pStreamingServer->SetDebuggingEnabled( true );
 		pStreamingServer->SetTargetLatencySamples( g_iTargetLatencySamples );
 		pStreamingServer->SetServerLogBaseName( "ITANetAudioTest_Server" );
 
@@ -84,6 +84,7 @@ void run_test()
 	// Client dumping received stream and mixing down to two channels
 	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBlockLength, g_iRingerBufferCapacity );
 	oNetAudioStream.SetNetAudioStreamingLoggerBaseName( "ITANetAudioTest_Client" );
+	oNetAudioStream.SetDebuggingEnabled( true );
 
 	ITAStreamPatchbay oPatchbay( g_dSampleRate, g_iBlockLength );
 	oPatchbay.AddInput( &oNetAudioStream );

@@ -1,6 +1,7 @@
-#include <ITANetAudioServer.h>
+#include "ITANetAudioServer.h"
+#include "ITANetAudioProtocol.h"
+
 #include <ITANetAudioStreamingServer.h>
-#include <ITANetAudioProtocol.h>
 
 // ITA includes
 #include <ITADataSource.h>
@@ -29,9 +30,9 @@ CITANetAudioServer::CITANetAudioServer()
 
 CITANetAudioServer::~CITANetAudioServer()
 {
+	m_pSocket = NULL;
 	delete m_pConnection;
 	delete m_pServer;
-	delete m_pSocket;
 }
 
 std::string CITANetAudioServer::GetServerAddress() const

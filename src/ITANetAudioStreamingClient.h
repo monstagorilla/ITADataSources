@@ -21,8 +21,6 @@
 
 #include <ITADataSourcesDefinitions.h>
 
-#include <ITANetAudioProtocol.h>
-
 #include <ITASampleFrame.h>
 #include <ITAStreamProbe.h>
 #include <ITAStopWatch.h>
@@ -38,6 +36,7 @@ class CITANetAudioMessage;
 class CITANetAudioProtocol;
 class CITANetAudioStream;
 class ITABufferedDataLoggerImplClient;
+class VistaConnectionIP;
 
 //! Network audio streaming client
 /**
@@ -63,6 +62,9 @@ public:
 	std::string GetClientLoggerBaseName() const;
 	void SetClientLoggerBaseName( const std::string& );
 
+	void SetDebuggingEnabled( bool bEnabled );
+	bool GetIsDebuggingEnabled() const;
+
 protected:
 	void TriggerBlockIncrement();
 
@@ -75,9 +77,7 @@ private:
 	VistaConnectionIP* m_pConnection;
 	
 	ITASampleFrame m_sfReceivingBuffer; //!< Buffer incoming data
-
-	CITANetAudioProtocol::StreamingParameters m_oParams;
-
+	
 	bool m_bStopIndicated;
 	bool m_bStopped;
 
@@ -89,6 +89,7 @@ private:
 	ITABufferedDataLoggerImplClient* m_pClientLogger;
 	std::string m_sClientLoggerBaseName;
 	ITAStopWatch m_swTryReadBlockStats, m_swTryReadAccessStats;
+	bool m_bDebuggingEnabled;
 
 	friend class CITANetAudioStream;
 };

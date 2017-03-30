@@ -21,8 +21,6 @@
 
 #include <ITADataSourcesDefinitions.h>
 
-#include <ITANetAudioProtocol.h>
-#include <ITANetAudioProtocol.h>
 #include <ITASampleFrame.h>
 #include <ITAStopWatch.h>
 
@@ -40,31 +38,25 @@ class CITANetAudioServer;
 class CITANetAudioMessage;
 class VistaTCPSocket;
 class ITABufferedDataLoggerImplServer;
+class VistaConnectionIP;
 
 
-//! Network audio sample server (for connecting a net audio stream)
+//! Network audio streaming server (for connecting a net audio stream) with an ITADataSource connection
 /**
- * Audio sample transmitter for a networked signal source that can connect via TCP/IP.
- *
- * \sa CITANetAudioStream
- * \note not thread-safe
- */
+  * Audio sample transmitter for a networked signal source that can connect via TCP/IP.
+  *
+  * @sa CITANetAudioStream, CITANetAudioSampleServer
+  * @note not thread-safe
+  */
 class ITA_DATA_SOURCES_API CITANetAudioStreamingServer : public VistaThreadLoop
 {
 public:
-
-	enum UpdateStrategy
-	{
-		AUTO = 1, //!< Automatic update rate based on sample rate and block length of client (default)
-		ADAPTIVE, //!< Adaptive update rate, adjusts for drifting clocks
-		CONSTANT, //!< Set a user-defined update rate (may cause forced pausing of sample feeding or dropouts on client side)
-	};
 
 	CITANetAudioStreamingServer();
 	~CITANetAudioStreamingServer();
 
 	//! Start to listen on a socket (blocking)
-	bool Start(const std::string& sAddress, const int iPort, const double dTimeIntervalCientSendStatus);
+	bool Start( const std::string& sAddress, const int iPort, const double dTimeIntervalCientSendStatus );
 	bool IsClientConnected() const;
 	std::string GetNetworkAddress() const;
 	int GetNetworkPort() const;
@@ -77,10 +69,15 @@ public:
 	int GetNetStreamNumberOfChannels() const;
 	double GetNetStreamSampleRate() const;
 
+
+	//! Enabled/disables export of loggers
+	void SetDebuggingEnabled( bool bEnabled );
+
+	//! Logging export flag getter
+	bool GetIsDebuggingEnabled() const;
+
 	int GetSendingBlockLength() const;
 	void SetSendingBlockLength( const int iSendingBlockLength );
-
-	void SetAutomaticUpdateRate();
 
 	void SetTargetLatencySamples( const int iTargetLatency );
 	int GetTargetLatencySamples() const;
@@ -99,20 +96,21 @@ private:
 	ITADatasource* m_pInputStream;
 	VistaConnectionIP* m_pConnection;
 
-	CITANetAudioProtocol::StreamingParameters m_oServerParams;
 	CITANetAudioMessage* m_pMessage;
 
-	int iServerBlockId;
 	ITABufferedDataLoggerImplServer* m_pServerLogger;
 	std::string m_sServerLogBaseName;
 	ITAStopWatch m_swTryReadBlockStats, m_swTryReadAccessStats;
+	bool m_bDebuggingEnabled;
 
-	int m_iUpdateStrategy;
-	int m_iEstimatedClientRingBufferFreeSamples;
-	int m_iTargetLatencySamples;
-	int m_iMaxSendBlocks;
-	int m_iSendingBlockLength;
+	int m_iServerBlockId;
 	double m_dLastTimeStamp;
+
+	int m_iTargetLatencySamples;
+	int m_iEstimatedClientRingBufferFreeSamples;
+	int m_iClientRingBufferSize;
+	int m_iSendingBlockLength;
+	int m_iMaxSendBlocks;
 
 	friend class CITANetAudioServer;
 };
