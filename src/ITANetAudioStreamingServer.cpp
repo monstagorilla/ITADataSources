@@ -12,7 +12,6 @@
 // Vista includes
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
-#include <VistaInterProcComm/IPNet/VistaTCPSocket.h>
 #include <VistaBase/VistaTimeUtils.h>
 #include <VistaInterProcComm/IPNet/VistaIPAddress.h>
 #include <VistaInterProcComm/Concurrency/VistaPriority.h>
@@ -23,7 +22,7 @@
 #include <cmath>
 #include <cassert>
 
-struct ITAServerLog : public ITALogDataBase
+struct CITAServerLog : public ITALogDataBase
 {
 	inline static std::ostream& outputDesc( std::ostream& os )
 	{
@@ -54,7 +53,7 @@ struct ITAServerLog : public ITALogDataBase
 	int iTransmittedSamples;
 };
 
-class ITABufferedDataLoggerImplServer : public ITABufferedDataLogger < ITAServerLog > {};
+class CITABufferedDataLoggerImplServer : public ITABufferedDataLogger < CITAServerLog > {};
 
 CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	: m_pInputStream( NULL )
@@ -77,7 +76,7 @@ CITANetAudioStreamingServer::~CITANetAudioStreamingServer()
 {
 	delete m_pNetAudioServer;
 
-	
+
 	if( GetIsDebuggingEnabled() )
 	{
 		vstr::out() << "[ ITANetAudioStreamingServer ] Processing statistics: " << m_swTryReadBlockStats.ToString() << std::endl;
@@ -90,7 +89,7 @@ CITANetAudioStreamingServer::~CITANetAudioStreamingServer()
 
 }
 
-bool CITANetAudioStreamingServer::Start(const std::string& sAddress, int iPort, double dTimeIntervalCientSendStatus)
+bool CITANetAudioStreamingServer::Start( const std::string& sAddress, const int iPort, const double dTimeIntervalCientSendStatus )
 {
 	if( !m_pInputStream )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "Can not start server without a valid input stream" );
@@ -122,7 +121,7 @@ bool CITANetAudioStreamingServer::Start(const std::string& sAddress, int iPort, 
 
 	m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels(), oServerParams.iRingBufferSize, true );
 
-	m_pServerLogger = new ITABufferedDataLoggerImplServer();
+	m_pServerLogger = new CITABufferedDataLoggerImplServer();
 	m_pServerLogger->setOutputFile( m_sServerLogBaseName + "_Server.log" );
 	m_dLastTimeStamp = ITAClock::getDefaultClock()->getTime();
 
@@ -157,22 +156,22 @@ bool CITANetAudioStreamingServer::LoopBody()
 {
 	const double dNow = ITAClock::getDefaultClock()->getTime();
 
-	ITAServerLog oLog;
+	CITAServerLog oLog;
 	oLog.dWorldTimeStamp = dNow;
 	oLog.uiBlockId = ++m_iServerBlockId;
 	oLog.iTransmittedSamples = 0;
-	
+
 	// Sending Samples
 	int iEstimatedClientRingBufferTargetLatencyFreeSamples = m_iEstimatedClientRingBufferFreeSamples - ( m_iClientRingBufferSize - m_iTargetLatencySamples );
 
-	if (iEstimatedClientRingBufferTargetLatencyFreeSamples >= m_iSendingBlockLength)
+	if( iEstimatedClientRingBufferTargetLatencyFreeSamples >= m_iSendingBlockLength )
 	{
 		// Send Samples
 		int iSendBlocks = iEstimatedClientRingBufferTargetLatencyFreeSamples / m_iSendingBlockLength;
 
 		// Besser wäre vermutlich, gleich alle samples zu senden und nicht nur einen Block nach dem anderen
-		if (m_sfTempTransmitBuffer.GetLength() != m_iSendingBlockLength)
-			m_sfTempTransmitBuffer.init(m_pInputStream->GetNumberOfChannels(), m_iSendingBlockLength, false);
+		if( m_sfTempTransmitBuffer.GetLength() != m_iSendingBlockLength )
+			m_sfTempTransmitBuffer.init( m_pInputStream->GetNumberOfChannels(), m_iSendingBlockLength, false );
 
 		for( int j = 0; j < iSendBlocks; j++ )
 		{
@@ -183,7 +182,7 @@ bool CITANetAudioStreamingServer::LoopBody()
 
 				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
 				if( pfData != 0 )
-					m_sfTempTransmitBuffer[i].write(pfData, m_iSendingBlockLength, 0);
+					m_sfTempTransmitBuffer[ i ].write( pfData, m_iSendingBlockLength, 0 );
 			}
 
 			m_pInputStream->IncrementBlockPointer();
@@ -202,7 +201,7 @@ bool CITANetAudioStreamingServer::LoopBody()
 
 		oLog.iTransmittedSamples = iSendBlocks * m_pInputStream->GetBlocklength();
 	}
-	
+
 	// Try-read incoming messages from client (e.g. regular status information)
 	m_pMessage->ResetMessage();
 	m_swTryReadBlockStats.start();
@@ -253,7 +252,7 @@ bool CITANetAudioStreamingServer::LoopBody()
 	}
 	if( m_swTryReadBlockStats.started() ) // only stop if still running
 		m_swTryReadBlockStats.stop();
-	
+
 	oLog.iEstimatedFreeSamples = m_iEstimatedClientRingBufferFreeSamples;
 	m_pServerLogger->log( oLog );
 
@@ -283,7 +282,7 @@ int CITANetAudioStreamingServer::GetSendingBlockLength() const
 	return m_iSendingBlockLength;
 }
 
-void CITANetAudioStreamingServer::SetSendingBlockLength(const int iSendingBlockLength)
+void CITANetAudioStreamingServer::SetSendingBlockLength( const int iSendingBlockLength )
 {
 	m_iSendingBlockLength = iSendingBlockLength;
 }
@@ -310,7 +309,7 @@ void CITANetAudioStreamingServer::SetTargetLatencySamples( const int iTargetLate
 		ITA_EXCEPT1( MODAL_EXCEPTION, "Server not connected, client ring buffer unkown" );
 
 	if( m_pInputStream )
-		if( m_iTargetLatencySamples < m_pInputStream->GetBlocklength() )
+		if( m_iTargetLatencySamples < int( m_pInputStream->GetBlocklength() ) )
 			ITA_EXCEPT1( INVALID_PARAMETER, "Target latency has to be at least the block size of the audio streaming at client side." );
 
 	m_iTargetLatencySamples = iTargetLatency;

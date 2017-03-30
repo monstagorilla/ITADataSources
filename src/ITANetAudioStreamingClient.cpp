@@ -93,12 +93,12 @@ CITANetAudioStreamingClient::~CITANetAudioStreamingClient()
 
 }
 
-bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, int iPort )
+bool CITANetAudioStreamingClient::Connect( const std::string& sAddress, const int iPort, const bool bUseUDP )
 {
 	if( GetIsConnected() )
 		return false;
 
-	if( !m_pClient->Connect( sAddress, iPort ) )
+	if( !m_pClient->Connect( sAddress, iPort, bUseUDP ) )
 		ITA_EXCEPT1( INVALID_PARAMETER, "Could not connect to " + sAddress );
 
 	if( !m_pClient->GetIsConnected() )

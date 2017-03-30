@@ -15,13 +15,14 @@ CITANetAudioClient::~CITANetAudioClient()
 	delete m_pConnection;
 }
 
-bool CITANetAudioClient::Connect( const std::string& sAddress, int iPort )
+bool CITANetAudioClient::Connect( const std::string& sAddress, const int iPort, const bool bUseUDP /* = false */ )
 {
 	if( GetIsConnected() )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "This net stream is already connected" );
 
 	// Attempt to connect and check parameters
-	m_pConnection = new VistaConnectionIP( VistaConnectionIP::CT_TCP, sAddress, iPort );
+	const VistaConnectionIP::VistaProtocol iCTProtocol = bUseUDP ? VistaConnectionIP::CT_UDP : VistaConnectionIP::CT_TCP;
+	m_pConnection = new VistaConnectionIP( iCTProtocol, sAddress, iPort );
 	
 	if( !GetIsConnected() )
 	{

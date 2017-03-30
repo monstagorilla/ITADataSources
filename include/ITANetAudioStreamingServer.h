@@ -36,8 +36,7 @@ class CITANetAudioMessage;
 class CITANetAudioProtocol;
 class CITANetAudioServer;
 class CITANetAudioMessage;
-class VistaTCPSocket;
-class ITABufferedDataLoggerImplServer;
+class CITABufferedDataLoggerImplServer;
 class VistaConnectionIP;
 
 
@@ -98,7 +97,7 @@ private:
 
 	CITANetAudioMessage* m_pMessage;
 
-	ITABufferedDataLoggerImplServer* m_pServerLogger;
+	CITABufferedDataLoggerImplServer* m_pServerLogger;
 	std::string m_sServerLogBaseName;
 	ITAStopWatch m_swTryReadBlockStats, m_swTryReadAccessStats;
 	bool m_bDebuggingEnabled;
