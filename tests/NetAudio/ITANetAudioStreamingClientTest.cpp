@@ -26,7 +26,7 @@ double g_dPlaybackDuration = 10 ; // seconds
 
 int main( int argc, char* argv[] )
 {
-	if( argc >= 8 )
+	if( argc >= 9 )
 	{
 		g_sServerName = argv[ 1 ];
 
@@ -41,8 +41,8 @@ int main( int argc, char* argv[] )
 			g_iSendingBlockLength = atoi(argv[8]);
 		}
 
-		if( argc >= 9 )
-			g_dPlaybackDuration = strtod( argv[ 8 ], NULL );;
+		if( argc >= 10 )
+			g_dPlaybackDuration = strtod( argv[ 9 ], NULL );;
 	}
 	else
 	{
