@@ -309,7 +309,7 @@ void CITANetAudioStreamingServer::SetTargetLatencySamples( const int iTargetLate
 		ITA_EXCEPT1( MODAL_EXCEPTION, "Server not connected, client ring buffer unkown" );
 
 	if( m_pInputStream )
-		if( m_iTargetLatencySamples < int( m_pInputStream->GetBlocklength() ) )
+		if ( iTargetLatency < int( m_pInputStream->GetBlocklength( ) ) )
 			ITA_EXCEPT1( INVALID_PARAMETER, "Target latency has to be at least the block size of the audio streaming at client side." );
 
 	m_iTargetLatencySamples = iTargetLatency;
