@@ -104,6 +104,7 @@ private:
 
 	int m_iServerBlockId;
 	double m_dLastTimeStamp;
+	double m_dEstimatedCorrFactor;
 
 	int m_iTargetLatencySamples;
 	int m_iEstimatedClientRingBufferFreeSamples;

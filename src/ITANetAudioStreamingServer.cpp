@@ -31,6 +31,7 @@ struct CITAServerLog : public ITALogDataBase
 		os << "\t" << "ProtocolStatus";
 		os << "\t" << "EstimatedFreeSamples";
 		os << "\t" << "TransmittedSamples";
+		os << "\t" << "EstimatedCorrFactor";
 		os << std::endl;
 		return os;
 	};
@@ -42,6 +43,7 @@ struct CITAServerLog : public ITALogDataBase
 		os << "\t" << sProtocolStatus;
 		os << "\t" << iEstimatedFreeSamples;
 		os << "\t" << iTransmittedSamples;
+		os << "\t" << dEstimatedCorrFactor;
 		os << std::endl;
 		return os;
 	};
@@ -51,6 +53,7 @@ struct CITAServerLog : public ITALogDataBase
 	std::string sProtocolStatus;
 	int iEstimatedFreeSamples;
 	int iTransmittedSamples;
+	double dEstimatedCorrFactor;
 };
 
 class CITABufferedDataLoggerImplServer : public ITABufferedDataLogger < CITAServerLog > {};
@@ -67,6 +70,7 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	, m_iServerBlockId( 0 )
 	, m_iEstimatedClientRingBufferFreeSamples( 0 )
 	, m_iClientRingBufferSize( 0 )
+	, m_dEstimatedCorrFactor( 1 )
 {
 	// Careful with this:
 	//SetPriority( VistaPriority::VISTA_MID_PRIORITY );
@@ -214,7 +218,11 @@ bool CITANetAudioStreamingServer::LoopBody()
 		{
 		case CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES:
 		{
+			int iOldEstimatedRingBufferFreeSamples = m_iEstimatedClientRingBufferFreeSamples;
 			m_iEstimatedClientRingBufferFreeSamples = m_pMessage->ReadInt();
+			double dEstimatedDiffSamples = (dNow - m_dLastTimeStamp) * 44100;
+			double dRealDiffSamples = m_iEstimatedClientRingBufferFreeSamples - iOldEstimatedRingBufferFreeSamples;
+			m_dEstimatedCorrFactor = dRealDiffSamples / dEstimatedDiffSamples;
 			m_dLastTimeStamp = dNow;
 			break;
 		}
@@ -246,7 +254,7 @@ bool CITANetAudioStreamingServer::LoopBody()
 		// There is no status message, so we estimate the client-side ring buffer status
 		const double dTimeDiff = dNow - m_dLastTimeStamp;
 		m_dLastTimeStamp = dNow;
-		double dEstimatedSamples = dTimeDiff * m_pInputStream->GetSampleRate();
+		double dEstimatedSamples = m_dEstimatedCorrFactor * dTimeDiff * m_pInputStream->GetSampleRate();
 		m_iEstimatedClientRingBufferFreeSamples += ( int ) dEstimatedSamples;
 		oLog.sProtocolStatus = "SERVER_ESTIMATION";
 	}
@@ -254,6 +262,7 @@ bool CITANetAudioStreamingServer::LoopBody()
 		m_swTryReadBlockStats.stop();
 
 	oLog.iEstimatedFreeSamples = m_iEstimatedClientRingBufferFreeSamples;
+	oLog.dEstimatedCorrFactor = m_dEstimatedCorrFactor;
 	m_pServerLogger->log( oLog );
 
 	return false;
