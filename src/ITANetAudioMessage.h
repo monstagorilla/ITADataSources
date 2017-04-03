@@ -56,9 +56,11 @@ public:
 	VistaConnectionIP* GetConnection() const;
 	void ClearConnection();
 
+	//! Will always block processing until data is completely send
 	void WriteMessage();
-	// Returns false if no incomming data
-	bool ReadMessage( int timeout );
+
+	//! Returns false if no incomming data during timeout
+	bool ReadMessage( const int iTimeoutMilliseconds );
 
 	void ResetMessage();
 

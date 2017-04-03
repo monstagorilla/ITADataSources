@@ -152,8 +152,7 @@ void CITANetAudioMessage::WriteMessage()
 		VistaSerializingToolset::Swap4( &iSwapDummy );
 	std::memcpy( pBuffer, &iSwapDummy, sizeof( VistaType::sint32 ) );
 	oLog.sAction = "write_message";
-	oLog.dInternalProcessingTime = ITAClock::getDefaultClock()->getTime() - dInTime;
-	m_pMessageLogger->log( oLog );
+
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [  Writing] " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ")" << std::endl;
 #endif
@@ -168,7 +167,8 @@ void CITANetAudioMessage::WriteMessage()
 		vstr::out() << "CITANetAudioMessage [  Writing] " << m_nMessageType << " (id=" << std::setw( 4 ) << m_nMessageId << ") RAW BUFFER DONE" << std::endl;
 #endif
 
-		m_pConnection->WaitForSendFinish();
+		// Block processing until data is successfully transmitted
+		unsigned long nData = m_pConnection->WaitForSendFinish( 0 );
 		if( nRet != m_oOutgoing.GetBufferSize() )
 			VISTA_THROW( "ITANetAudioMessage: could not send all data from output buffer via network connection", 255 );
 	}
@@ -176,10 +176,14 @@ void CITANetAudioMessage::WriteMessage()
 	{
 		ITA_EXCEPT1( NETWORK_ERROR, ex.GetExceptionText() );
 	}
+
+	oLog.dInternalProcessingTime = ITAClock::getDefaultClock()->getTime() - dInTime;
+	m_pMessageLogger->log( oLog );
+
+	return;
 }
 
-
-bool CITANetAudioMessage::ReadMessage( int timeout )
+bool CITANetAudioMessage::ReadMessage( const int iTimeoutMilliseconds )
 {
 	ITANetAudioMessageLog oLog;
 	const double dInTime = ITAClock::getDefaultClock()->getTime();
@@ -188,55 +192,67 @@ bool CITANetAudioMessage::ReadMessage( int timeout )
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] Waiting for incoming data" << std::endl;
 #endif
+
 	// WaitForIncomming Data int in ca ms
-	long nIncomingBytes = m_pConnection->WaitForIncomingData( timeout );
-	// TODO Timer entfernen
+	long nIncomingBytes = m_pConnection->WaitForIncomingData( iTimeoutMilliseconds );
+
 	if( nIncomingBytes == -1 )
 		return false;
 
-	//if (timeout != 0)
-	//nIncomingBytes = m_pConnection->WaitForIncomingData( 0 );
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] " << nIncomingBytes << " bytes incoming" << std::endl;
 #endif
-
+	
 	VistaType::sint32 nMessagePayloadSize;
 	int nBytesRead = m_pConnection->ReadInt32( nMessagePayloadSize );
 	assert( nBytesRead == sizeof( VistaType::sint32 ) );
 	oLog.nMessagePayloadSize = nMessagePayloadSize;
+
 #if NET_AUDIO_SHOW_TRAFFIC
 	vstr::out() << "CITANetAudioMessage [ Reading ] Expecting " << nMessagePayloadSize << " bytes message payload" << std::endl;
 #endif
+	
 	if( nMessagePayloadSize <= 0 )
-		return false;
-	// we need at least the two protocol ints
-	//assert( nMessagePayloadSize >= 2 * sizeof( VistaType::sint32 ) );
+		return false; // Try-read failed, returning!
 
+	// we need at least the two protocol ints
+	assert( nMessagePayloadSize >= 2 * sizeof( VistaType::sint32 ) );
+	
 	if( nMessagePayloadSize > ( int ) m_vecIncomingBuffer.size() )
 		m_vecIncomingBuffer.resize( nMessagePayloadSize );
 
-	// Receive all incoming data (potentially splitted)
 
-	while( ( unsigned long ) nMessagePayloadSize > m_iBytesReceivedTotal )
+	// Receive all incoming data (potentially splitted!!)
+
+	m_iBytesReceivedTotal = 0;
+	while( ( unsigned long ) nMessagePayloadSize != m_iBytesReceivedTotal )
 	{
+		// We force a blocking-wait for the rest (or the data to be fetched until message payload is copied)
 		int iIncommingBytes = m_pConnection->WaitForIncomingData( 0 );
-		int iBytesReceived;
-		if( nMessagePayloadSize < iIncommingBytes )
-			iBytesReceived = m_pConnection->Receive( &m_vecIncomingBuffer[ m_iBytesReceivedTotal ], nMessagePayloadSize - m_iBytesReceivedTotal );
+		assert( m_iBytesReceivedTotal < m_vecIncomingBuffer.size() );
+
+		// Check if we are already receiving another message and only read until end-of-payload, then release this message-read
+		int iBytesReceived = -1;
+		const int nPendingPayloadBytes = nMessagePayloadSize - m_iBytesReceivedTotal;
+		if( iIncommingBytes > nPendingPayloadBytes )
+			iBytesReceived = m_pConnection->Receive( &m_vecIncomingBuffer[ m_iBytesReceivedTotal ], nPendingPayloadBytes );
 		else
 			iBytesReceived = m_pConnection->Receive( &m_vecIncomingBuffer[ m_iBytesReceivedTotal ], iIncommingBytes );
+
 		m_iBytesReceivedTotal += iBytesReceived;
+
 #if NET_AUDIO_SHOW_TRAFFIC
-		vstr::out() << "[ CITANetAudioMessage ] " << std::setw( 3 ) << std::floor( iBytesReceivedTotal / float( nMessagePayloadSize ) * 100.0f ) << "% transmitted" << std::endl;
+		vstr::out() << "[ CITANetAudioMessage ] " << std::setw( 3 ) << std::floor( m_iBytesReceivedTotal / float( nMessagePayloadSize ) * 100.0f ) << "% transmitted" << std::endl;
 #endif
 	}
-	m_iBytesReceivedTotal = 0;
+	assert( m_iBytesReceivedTotal == nMessagePayloadSize );
 
-	oLog.sAction = "read_message";
 	// Transfer data into members
 	m_oIncoming.SetBuffer( &m_vecIncomingBuffer[ 0 ], nMessagePayloadSize, false );
 	m_nMessageType = ReadInt();
 	m_nMessageId = ReadInt();
+
+	oLog.sAction = "read_message";
 	oLog.sMessageType = CITANetAudioProtocol::GetNPMessageID( m_nMessageType );
 	oLog.uiBlockId = m_nMessageId;
 	oLog.dWorldTimeStamp = ITAClock::getDefaultClock()->getTime() - dInTime;
