@@ -218,11 +218,7 @@ bool CITANetAudioStreamingServer::LoopBody()
 		{
 		case CITANetAudioProtocol::NP_CLIENT_SENDING_RINGBUFFER_FREE_SAMPLES:
 		{
-			int iOldEstimatedRingBufferFreeSamples = m_iEstimatedClientRingBufferFreeSamples;
 			m_iEstimatedClientRingBufferFreeSamples = m_pMessage->ReadInt();
-			double dEstimatedDiffSamples = (dNow - m_dLastTimeStamp) * 44100;
-			double dRealDiffSamples = m_iEstimatedClientRingBufferFreeSamples - iOldEstimatedRingBufferFreeSamples;
-			m_dEstimatedCorrFactor = dRealDiffSamples / dEstimatedDiffSamples;
 			m_dLastTimeStamp = dNow;
 			break;
 		}
@@ -352,6 +348,18 @@ int CITANetAudioStreamingServer::GetNetworkPort() const
 {
 	return m_pNetAudioServer->GetNetworkPort();
 }
+
+double CITANetAudioStreamingServer::GetEstimatedCorrFactor( ) const
+{
+	return m_dEstimatedCorrFactor;
+}
+
+void CITANetAudioStreamingServer::SetEstimatedCorrFactor( double dCorrFactor )
+{
+	m_dEstimatedCorrFactor = dCorrFactor;
+}
+
+
 
 void CITANetAudioStreamingServer::Stop()
 {

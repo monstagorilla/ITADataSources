@@ -65,8 +65,11 @@ public:
 	void SetInputStream( ITADatasource* pInStream );
 
 	int GetNetStreamBlocklength() const;
-	int GetNetStreamNumberOfChannels() const;
-	double GetNetStreamSampleRate() const;
+	int GetNetStreamNumberOfChannels( ) const;
+	double GetNetStreamSampleRate( ) const;
+
+	double GetEstimatedCorrFactor( ) const;
+	void SetEstimatedCorrFactor( double dcorrFactor );
 
 
 	//! Enabled/disables export of loggers
