@@ -195,7 +195,7 @@ bool CITANetAudioStreamingServer::LoopBody()
 		}
 
 #ifdef NET_AUDIO_SHOW_TRAFFIC
-		vstr::out() << "[ITANetAudioStreamingServer] Transmitted " << iSendSamples << " samples for "
+		vstr::out() << "[ITANetAudioStreamingServer] Transmitted " << m_iSendingBlockLength << " samples for "
 			<< m_pInputStream->GetNumberOfChannels() << " channels" << std::endl;
 #endif
 
