@@ -65,8 +65,11 @@ public:
 	void SetInputStream( ITADatasource* pInStream );
 
 	int GetNetStreamBlocklength() const;
-	int GetNetStreamNumberOfChannels() const;
-	double GetNetStreamSampleRate() const;
+	int GetNetStreamNumberOfChannels( ) const;
+	double GetNetStreamSampleRate( ) const;
+
+	double GetEstimatedCorrFactor( ) const;
+	void SetEstimatedCorrFactor( double dcorrFactor );
 
 
 	//! Enabled/disables export of loggers
@@ -104,6 +107,7 @@ private:
 
 	int m_iServerBlockId;
 	double m_dLastTimeStamp;
+	double m_dEstimatedCorrFactor;
 
 	int m_iTargetLatencySamples;
 	int m_iEstimatedClientRingBufferFreeSamples;

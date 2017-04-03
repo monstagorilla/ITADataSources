@@ -14,19 +14,22 @@
 
 using namespace std;
 
-string g_sServerName = "localhost";
+string g_sServerName = "137.226.61.85";
 int g_iServerPort = 12480;
 double g_dSampleRate = 44100.0;
-int g_iBlockLength = 512;
-int g_iChannels = 2;
+int g_iBlockLength = 32;
+int g_iChannels = 100;
 int g_iTargetLatencySamples = 2 * g_iBlockLength; // 1.4512ms
 int g_iRingBufferSize = 2 * g_iTargetLatencySamples;
 int g_iSendingBlockLength = 8;
 double g_dPlaybackDuration = 10 ; // seconds
+const static string g_sAudioInterface = "ASIO MADIface USB";
+//const static string g_sAudioInterface = "ASIO Hammerfall DSP";
+//const static string g_sAudioInterface = "ASIO4ALL v2";
 
 int main( int argc, char* argv[] )
 {
-	if( argc >= 8 )
+	if( argc >= 9 )
 	{
 		g_sServerName = argv[ 1 ];
 
@@ -41,8 +44,8 @@ int main( int argc, char* argv[] )
 			g_iSendingBlockLength = atoi(argv[8]);
 		}
 
-		if( argc >= 9 )
-			g_dPlaybackDuration = strtod( argv[ 8 ], NULL );;
+		if( argc >= 10 )
+			g_dPlaybackDuration = strtod( argv[ 9 ], NULL );;
 	}
 	else
 	{
@@ -78,7 +81,7 @@ int main( int argc, char* argv[] )
 	cout << "Will attempt to connect to '" << g_sServerName << "' on port " << g_iServerPort << endl;
 
 	ITAsioInitializeLibrary();
-	ITAsioInitializeDriver( "ASIO4ALL v2" );
+	ITAsioInitializeDriver( g_sAudioInterface );
 
 	long lBuffersize, lDummy;
 	ITAsioGetBufferSize( &lDummy, &lDummy, &lBuffersize, &lDummy );

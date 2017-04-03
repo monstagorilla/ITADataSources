@@ -31,6 +31,7 @@ struct CITAServerLog : public ITALogDataBase
 		os << "\t" << "ProtocolStatus";
 		os << "\t" << "EstimatedFreeSamples";
 		os << "\t" << "TransmittedSamples";
+		os << "\t" << "EstimatedCorrFactor";
 		os << std::endl;
 		return os;
 	};
@@ -42,6 +43,7 @@ struct CITAServerLog : public ITALogDataBase
 		os << "\t" << sProtocolStatus;
 		os << "\t" << iEstimatedFreeSamples;
 		os << "\t" << iTransmittedSamples;
+		os << "\t" << dEstimatedCorrFactor;
 		os << std::endl;
 		return os;
 	};
@@ -51,6 +53,7 @@ struct CITAServerLog : public ITALogDataBase
 	std::string sProtocolStatus;
 	int iEstimatedFreeSamples;
 	int iTransmittedSamples;
+	double dEstimatedCorrFactor;
 };
 
 class CITABufferedDataLoggerImplServer : public ITABufferedDataLogger < CITAServerLog > {};
@@ -67,6 +70,7 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	, m_iServerBlockId( 0 )
 	, m_iEstimatedClientRingBufferFreeSamples( 0 )
 	, m_iClientRingBufferSize( 0 )
+	, m_dEstimatedCorrFactor( 1 )
 {
 	// Careful with this:
 	//SetPriority( VistaPriority::VISTA_MID_PRIORITY );
@@ -246,7 +250,7 @@ bool CITANetAudioStreamingServer::LoopBody()
 		// There is no status message, so we estimate the client-side ring buffer status
 		const double dTimeDiff = dNow - m_dLastTimeStamp;
 		m_dLastTimeStamp = dNow;
-		double dEstimatedSamples = dTimeDiff * m_pInputStream->GetSampleRate();
+		double dEstimatedSamples = m_dEstimatedCorrFactor * dTimeDiff * m_pInputStream->GetSampleRate();
 		m_iEstimatedClientRingBufferFreeSamples += ( int ) dEstimatedSamples;
 		oLog.sProtocolStatus = "SERVER_ESTIMATION";
 	}
@@ -254,6 +258,7 @@ bool CITANetAudioStreamingServer::LoopBody()
 		m_swTryReadBlockStats.stop();
 
 	oLog.iEstimatedFreeSamples = m_iEstimatedClientRingBufferFreeSamples;
+	oLog.dEstimatedCorrFactor = m_dEstimatedCorrFactor;
 	m_pServerLogger->log( oLog );
 
 	return false;
@@ -309,7 +314,7 @@ void CITANetAudioStreamingServer::SetTargetLatencySamples( const int iTargetLate
 		ITA_EXCEPT1( MODAL_EXCEPTION, "Server not connected, client ring buffer unkown" );
 
 	if( m_pInputStream )
-		if( m_iTargetLatencySamples < int( m_pInputStream->GetBlocklength() ) )
+		if ( iTargetLatency < int( m_pInputStream->GetBlocklength( ) ) )
 			ITA_EXCEPT1( INVALID_PARAMETER, "Target latency has to be at least the block size of the audio streaming at client side." );
 
 	m_iTargetLatencySamples = iTargetLatency;
@@ -343,6 +348,18 @@ int CITANetAudioStreamingServer::GetNetworkPort() const
 {
 	return m_pNetAudioServer->GetNetworkPort();
 }
+
+double CITANetAudioStreamingServer::GetEstimatedCorrFactor( ) const
+{
+	return m_dEstimatedCorrFactor;
+}
+
+void CITANetAudioStreamingServer::SetEstimatedCorrFactor( double dCorrFactor )
+{
+	m_dEstimatedCorrFactor = dCorrFactor;
+}
+
+
 
 void CITANetAudioStreamingServer::Stop()
 {
