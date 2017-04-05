@@ -21,13 +21,14 @@ int g_iTargetLatencySamples = 10 * g_iBlockLength; // 1.4512ms
 int g_iRingBufferSize = 2 * g_iTargetLatencySamples;
 int g_iSendingBlockLength = 8;
 double g_dClientStatusMessageTimeout = 0.001; // seconds
+double g_dEstimatiedCorrFactor = 1;
 string g_sFileName = "gershwin-mono.wav";
 bool g_bDebuggingEnabled = true;
 
 int main( int argc, char** argv )
 {
 
-	if ( argc >= 8 )
+	if ( argc >= 9 )
 	{
 		g_sServerName = argv[ 1 ];
 
@@ -41,10 +42,12 @@ int main( int argc, char** argv )
 			g_iRingBufferSize = atoi(argv[7]);
 			g_iSendingBlockLength = atoi(argv[8]);
 		}
+		if (argc >= 9)
+			g_dEstimatiedCorrFactor = atoi(argv[9]);
 	}
 	else
 	{
-		cout << "Syntax: ServerName ServerPort SampleRate BufferSize Channel TargetLatencySamples RingBufferSize SnedingBlockLength" << endl;
+		cout << "Syntax: ServerName ServerPort SampleRate BufferSize Channel TargetLatencySamples RingBufferSize SnedingBlockLength EstimatiedCorrFactor" << endl;
 		cout << "Using default values ..." << endl;
 	}
 
@@ -72,9 +75,10 @@ int main( int argc, char** argv )
 	ss << "_TL" << g_iTargetLatencySamples;
 	ss << "_RB" << g_iRingBufferSize;
 	ss << "_SB" << g_iSendingBlockLength;
+	ss << "_EC" << g_dEstimatiedCorrFactor;
 	oStreamingServer.SetServerLogBaseName( ss.str() );
 	oStreamingServer.SetDebuggingEnabled( g_bDebuggingEnabled );
-
+	oStreamingServer.SetEstimatedCorrFactor( g_dEstimatiedCorrFactor );
 	oStreamingServer.SetInputStream( &oMuliplier );
 	oStreamingServer.SetTargetLatencySamples( g_iTargetLatencySamples );
 	oStreamingServer.SetSendingBlockLength( g_iSendingBlockLength );
