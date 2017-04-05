@@ -44,7 +44,7 @@ class VistaConnectionIP;
 /**
   * Audio sample transmitter for a networked signal source that can connect via TCP/IP.
   *
-  * @sa CITANetAudioStream, CITANetAudioSampleServer
+  * @sa CITANetAudioStream
   * @note not thread-safe
   */
 class ITA_DATA_SOURCES_API CITANetAudioStreamingServer : public VistaThreadLoop
