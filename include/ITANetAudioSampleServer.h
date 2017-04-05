@@ -31,16 +31,35 @@ public:
 	inline CITASampleProcessor( const double dSampleRate, const int iNumChannels, const int iBlockLength )
 		: ITADatasourceRealization( ( unsigned int ) ( iNumChannels ), dSampleRate, ( unsigned int ) ( iBlockLength ) )
 	{
+		m_vvfSampleBuffer.resize( iNumChannels );
 		for( size_t c = 0; c < iNumChannels; c++ )
-		{
-			m_vvfSampleBuffer.push_back( std::vector< float >() );
-			for( size_t n = 0; n < iBlockLength; n++ )
-				m_vvfSampleBuffer[ c ].push_back( 0.0f );
-		}
+			m_vvfSampleBuffer[ c ].resize( iBlockLength );
+
+		Zero();
 	};
 
-	inline ~CITASampleProcessor() {};
 
+	//! Sets all channels and samples to zero
+	inline void Zero()
+	{
+		/* 
+		 * Use this as an example how to work with the buffer structure.
+		*/
+		
+		// Iterate over channels
+		for( size_t c = 0; c < m_vvfSampleBuffer.size(); c++ ) 
+		{
+			std::vector< float >& vfSingleChannelSampleBuffer( m_vvfSampleBuffer[ c ] ); // One channel
+			
+			// Iterate over samples of channel
+			for( size_t n = 0; n < vfSingleChannelSampleBuffer.size(); n++ )
+			{
+				float& fSample( vfSingleChannelSampleBuffer[ n ] ); // One sample
+				fSample = 0.0f; // -> Manipulation
+			}
+		}
+	};
+	
 	//! Process samples (overwrite this virtual method)
 	/**
 	  * Method that is called in audio streaming context and requests
@@ -51,9 +70,9 @@ public:
 	virtual void Process( const ITAStreamInfo* pStreamInfo ) =0;
 
 protected:
-	std::vector< std::vector< float > > m_vvfSampleBuffer; //!< Multi-channel sample buffer
+	std::vector< std::vector< float > > m_vvfSampleBuffer; //!< Multi-channel sample buffer to be filled
 
-public:
+private:
 	//! Delegate internal buffer to audio stream
 	inline void ProcessStream( const ITAStreamInfo* pInfo )
 	{

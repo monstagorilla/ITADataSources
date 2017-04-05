@@ -115,6 +115,9 @@ private:
 	int m_iSendingBlockLength;
 	int m_iMaxSendBlocks;
 
+	double m_dStreamTimeStart; //!< Stream time start
+	long unsigned int m_nStreamSampleCounts; //!< Samples that has been streamed
+
 	friend class CITANetAudioServer;
 };
 
