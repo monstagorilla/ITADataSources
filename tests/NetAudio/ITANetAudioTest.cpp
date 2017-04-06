@@ -25,9 +25,9 @@ const static string g_sServerName = "localhost";
 const static string g_sInputFilePath = "gershwin-mono.wav";
 const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
-const static int g_iBlockLength = 512;
+const static int g_iBlockLength = 128;
 const static int g_iChannels = 2;
-const static int g_iTargetLatencySamples = g_iBlockLength * 2;
+const static int g_iTargetLatencySamples = g_iBlockLength * 4;
 const static int g_iRingerBufferCapacity = g_iBlockLength * 10;
 const static double g_dDuration = 10.0f;
 const static double g_dSyncTimout = 0.001f;
@@ -41,7 +41,7 @@ class CSampleGenerator : public CITASampleProcessor
 {
 public:
 	inline CSampleGenerator() 
-		: CITASampleProcessor( g_dSampleRate, g_iChannels, g_iBlockLength )
+		: CITASampleProcessor( g_iChannels, g_dSampleRate, g_iBlockLength )
 	{};
 	
 	inline void Process( const ITAStreamInfo* pStreamInfo )
@@ -174,26 +174,34 @@ void run_test()
 		ITAPA.Start();
 	}
 
-	vstr::out() << "[ NetAudioTestClient ] Waiting 1 second (net audio stream not connected and playing back zeros)" << endl;
-	VistaTimeUtils::Sleep( int( 1.0f * 1.0e3 ) );
+	try
+	{
+		vstr::out() << "[ NetAudioTestClient ] Waiting 1 second (net audio stream not connected and playing back zeros)" << endl;
+		VistaTimeUtils::Sleep( int( 1.0f * 1.0e3 ) );
 
-	vstr::out() << "[ NetAudioTestClient ] Will now connect to net audio server '" << g_sServerName << "' on port " << g_iServerPort << endl;
+		vstr::out() << "[ NetAudioTestClient ] Will now connect to net audio server '" << g_sServerName << "' on port " << g_iServerPort << endl;
 
-	if( !oNetAudioStream.Connect( g_sServerName, g_iServerPort, g_bUseUDP ) )
-		ITA_EXCEPT1( INVALID_PARAMETER, "Could not connect to net audio server" );
-	vstr::out() << "[ NetAudioTestClient ] Connected." << endl;
+		if( !oNetAudioStream.Connect( g_sServerName, g_iServerPort, g_bUseUDP ) )
+			vstr::out() << "[ NetAudioTestClient ] Connection failed." << endl;
+		else
+			vstr::out() << "[ NetAudioTestClient ] Connected." << endl;
 
-	// Playback
-	float fSeconds = float( g_dDuration );
-	vstr::out() << "[ NetAudioTestClient ] Playback started, waiting " << fSeconds << " seconds" << endl;
-	VistaTimeUtils::Sleep( int( fSeconds * 1.0e3 ) ); // blocking
-	vstr::out() << "[ NetAudioTestClient ] Done." << endl;
+		// Playback
+		float fSeconds = float( g_dDuration );
+		vstr::out() << "[ NetAudioTestClient ] Playback started, waiting " << fSeconds << " seconds" << endl;
+		VistaTimeUtils::Sleep( int( fSeconds * 1.0e3 ) ); // blocking
+		vstr::out() << "[ NetAudioTestClient ] Done." << endl;
 
-	oNetAudioStream.Disconnect();
+		oNetAudioStream.Disconnect();
 
-	vstr::out() << "[ NetAudioTestClient ] Will now disconnect from net audio server '" << g_sServerName << "' and port " << g_iServerPort << endl;
-	vstr::out() << "[ NetAudioTestClient ] Closing in 1 second (net audio stream not connected and playing back zeros)" << endl;
-	VistaTimeUtils::Sleep( int( 1.0f * 1.0e3 ) );
+		vstr::out() << "[ NetAudioTestClient ] Will now disconnect from net audio server '" << g_sServerName << "' and port " << g_iServerPort << endl;
+		vstr::out() << "[ NetAudioTestClient ] Closing in 1 second (net audio stream not connected and playing back zeros)" << endl;
+		VistaTimeUtils::Sleep( int( 1.0f * 1.0e3 ) );
+	}
+	catch( ITAException& e )
+	{
+		cerr << e << endl;
+	}
 
 	if( g_bUseASIO )
 	{
