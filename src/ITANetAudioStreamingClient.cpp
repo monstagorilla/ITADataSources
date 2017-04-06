@@ -250,6 +250,9 @@ std::string CITANetAudioStreamingClient::GetClientLoggerBaseName() const
 
 void CITANetAudioStreamingClient::SetClientLoggerBaseName( const std::string& sBaseName )
 {
+	if (GetIsConnected())
+		ITA_EXCEPT1(MODAL_EXCEPTION, "Streaming and logging already started.");
+
 	m_sClientLoggerBaseName = sBaseName;
 
 	m_pClientLogger->setOutputFile( m_sClientLoggerBaseName + "_Client.log" );

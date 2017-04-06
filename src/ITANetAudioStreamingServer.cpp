@@ -105,7 +105,7 @@ bool CITANetAudioStreamingServer::Start( const std::string& sAddress, const int 
 
 	m_pMessage = new CITANetAudioMessage( m_pConnection->GetByteorderSwapFlag() );
 	m_pMessage->SetMessageLoggerBaseName( GetServerLogBaseName() + "_Messages" );
-
+	m_pMessage->SetDebuggingEnabled(GetIsDebuggingEnabled());
 	m_pMessage->ResetMessage();
 	m_pMessage->SetConnection( m_pConnection );
 	while( !m_pMessage->ReadMessage( 0 ) ); //blocking
@@ -299,6 +299,7 @@ int CITANetAudioStreamingServer::GetNetStreamNumberOfChannels() const
 
 void CITANetAudioStreamingServer::SetDebuggingEnabled( bool bEnabled )
 {
+	
 	m_bDebuggingEnabled = bEnabled;
 }
 
@@ -327,6 +328,7 @@ void CITANetAudioStreamingServer::SetServerLogBaseName( const std::string& sBase
 
 	assert( !m_sServerLogBaseName.empty() );
 	m_sServerLogBaseName = sBaseName;
+
 }
 
 std::string CITANetAudioStreamingServer::GetServerLogBaseName() const
