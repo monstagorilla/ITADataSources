@@ -71,6 +71,8 @@ CITANetAudioStreamingServer::CITANetAudioStreamingServer()
 	, m_iEstimatedClientRingBufferFreeSamples( 0 )
 	, m_iClientRingBufferSize( 0 )
 	, m_dEstimatedCorrFactor( 1 )
+	, m_dStreamTimeStart( 0.0f )
+	, m_nStreamSampleCounts( 0 )
 {
 	// Careful with this:
 	//SetPriority( VistaPriority::VISTA_MID_PRIORITY );
@@ -160,6 +162,9 @@ bool CITANetAudioStreamingServer::LoopBody()
 {
 	const double dNow = ITAClock::getDefaultClock()->getTime();
 
+	if( m_dStreamTimeStart == 0.0f )
+		m_dStreamTimeStart = dNow;
+
 	CITAServerLog oLog;
 	oLog.dWorldTimeStamp = dNow;
 	oLog.uiBlockId = ++m_iServerBlockId;
@@ -182,10 +187,11 @@ bool CITANetAudioStreamingServer::LoopBody()
 			for( int i = 0; i < int( m_pInputStream->GetNumberOfChannels() ); i++ )
 			{
 				ITAStreamInfo oStreamInfo;
-				oStreamInfo.nSamples = m_iSendingBlockLength;
+				oStreamInfo.nSamples = ( m_nStreamSampleCounts += m_iSendingBlockLength );
+				oStreamInfo.dTimecode = dNow - m_dStreamTimeStart;
 
 				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
-				if( pfData != 0 )
+				if( pfData != nullptr )
 					m_sfTempTransmitBuffer[ i ].write( pfData, m_iSendingBlockLength, 0 );
 			}
 
