@@ -1,14 +1,14 @@
 %% Load
-ITANetAudioTest_Client = readtable( 'ITANetAudioTest_Client.log', 'FileType', 'text', 'Delimiter', '\t');
-ITANetAudioTest_Server = readtable( 'ITANetAudioTest_Server.log', 'FileType', 'text', 'Delimiter', '\t');
+ITANetAudioTest_Client = readtable( 'ITANetAudioTest_Client_Client.log', 'FileType', 'text', 'Delimiter', '\t');
+ITANetAudioTest_Server = readtable( 'ITANetAudioTest_Server_Server.log', 'FileType', 'text', 'Delimiter', '\t');
 ITANetAudioTest_Client_AudioStream = readtable( 'ITANetAudioTest_Client_AudioStream.log', 'FileType', 'text', 'Delimiter', '\t');
 ITANetAudioTest_Client_NetworkStream = readtable( 'ITANetAudioTest_Client_NetworkStream.log', 'FileType', 'text', 'Delimiter', '\t');
 
 
 %% Settings
-B = 265;
-TL = B * 1;
-RB = B * 5;
+B = 256;
+TL = B * 3;
+RB = B * 10;
 
 
 %% Analyse
