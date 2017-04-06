@@ -32,8 +32,9 @@ const static int g_iRingerBufferCapacity = g_iBlockLength * 10;
 const static double g_dDuration = 10.0f;
 const static double g_dSyncTimout = 0.001f;
 const static bool g_bUseASIO = true;
-const static string g_sAudioInterface = "ASIO4ALL v2";
+const static string g_sAudioInterface = "ASIO MADIface USB";
 //const static string g_sAudioInterface = "ASIO Hammerfall DSP";
+//const static string g_sAudioInterface = "ASIO4ALL v2";
 const static bool g_bUseUDP = false;
 
 class CSampleGenerator : public CITASampleProcessor
