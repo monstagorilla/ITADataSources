@@ -1,4 +1,5 @@
 #include <ITANetAudioStreamingServer.h>
+#include <ITANetAudioSampleServer.h>
 #include <ITANetAudioStream.h>
 #include <ITAPortaudioInterface.h>
 #include <ITAStreamFunctionGenerator.h>
@@ -8,6 +9,7 @@
 #include <ITAStreamProbe.h>
 #include <ITAStreamPatchBay.h>
 #include <ITAAsioInterface.h>
+#include <ITAStreamInfo.h>
 
 #include <VistaBase/VistaStreamUtils.h>
 #include <VistaBase/VistaTimeUtils.h>
@@ -24,7 +26,7 @@ const static string g_sInputFilePath = "gershwin-mono.wav";
 const static int g_iServerPort = 12480;
 const static double g_dSampleRate = 44100;
 const static int g_iBlockLength = 512;
-const static int g_iChannels = 160;
+const static int g_iChannels = 2;
 const static int g_iTargetLatencySamples = g_iBlockLength * 2;
 const static int g_iRingerBufferCapacity = g_iBlockLength * 10;
 const static double g_dDuration = 10.0f;
@@ -35,53 +37,103 @@ const static bool g_bUseASIO = true;
 const static string g_sAudioInterface = "ASIO Hammerfall DSP";
 const static bool g_bUseUDP = false;
 
-class CServer : public VistaThread
+class CSampleGenerator : public CITASampleProcessor
 {
 public:
-	inline CServer( const string& sInputFilePath )
+	inline CSampleGenerator() 
+		: CITASampleProcessor( g_dSampleRate, g_iChannels, g_iBlockLength )
+	{};
+	
+	inline void Process( const ITAStreamInfo* pStreamInfo )
 	{
-		pStreamingServer = new CITANetAudioStreamingServer;
-		pStreamingServer->SetDebuggingEnabled( true );
-		pStreamingServer->SetTargetLatencySamples( g_iTargetLatencySamples );
-		pStreamingServer->SetServerLogBaseName( "ITANetAudioTest_Server" );
+		for( size_t c = 0; c < m_vvfSampleBuffer.size(); c++ )
+		{
+			for( size_t n = 0; n < m_vvfSampleBuffer[ c ].size(); n++ )
+			{
+				float fSample = ( c == 0 ? 1.0f : -1.0f ) * ( 1.0f - 2.0f * n / float( GetBlocklength() ) );
+				m_vvfSampleBuffer[ c ][ n ] = fSample;
+			}
+		}
+	};
+};
 
-		pInputFile = new ITAFileDatasource( sInputFilePath, g_iBlockLength );
-		pInputFile->SetIsLooping( true );
-		assert( pInputFile->GetNumberOfChannels() == 1 );
-		pMuliplier = new ITAStreamMultiplier1N( pInputFile, g_iChannels );
-		pInputStreamProbe = new ITAStreamProbe( pMuliplier, "ITANetAudioTest.serverstream.wav" );
-		pStreamingServer->SetInputStream( pInputStreamProbe );
+class CSampleServerExample : public VistaThread
+{
+public:
+	inline CSampleServerExample()
+	{
+		m_pSampleGenerator = new CSampleGenerator();
+		m_pSampleServer = new CITANetAudioSampleServer( m_pSampleGenerator );
+		m_pSampleServer->SetDebuggingEnabled( true );
+		m_pSampleServer->SetTargetLatencySamples( g_iTargetLatencySamples );
+		m_pSampleServer->SetServerLogBaseName( "ITANetAudioTest_Server" );
 
 		Run();
 	};
 
-	inline ~CServer( )
+	inline ~CSampleServerExample()
 	{
-		delete pInputFile;
-		delete pMuliplier;
-		delete pStreamingServer;
-		delete pInputStreamProbe;
+		delete m_pSampleServer;
+		delete m_pSampleGenerator;
+	};
+
+	void ThreadBody()
+	{
+		vstr::out() << "[ NetAudioTestServer ] Starting net audio sample server and waiting for client connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
+		m_pSampleServer->Start( g_sServerName, g_iServerPort, g_dSyncTimout, g_bUseUDP );
+	};
+
+	CITANetAudioSampleServer* m_pSampleServer;
+	CSampleGenerator* m_pSampleGenerator;
+};
+
+class CStreamServerExample : public VistaThread
+{
+public:
+	inline CStreamServerExample( const string& sInputFilePath )
+	{
+		m_pStreamingServer = new CITANetAudioStreamingServer;
+		m_pStreamingServer->SetDebuggingEnabled( true );
+		m_pStreamingServer->SetTargetLatencySamples( g_iTargetLatencySamples );
+		m_pStreamingServer->SetServerLogBaseName( "ITANetAudioTest_Server" );
+
+		m_pInputFile = new ITAFileDatasource( sInputFilePath, g_iBlockLength );
+		m_pInputFile->SetIsLooping( true );
+		assert( m_pInputFile->GetNumberOfChannels() == 1 );
+		m_pMultiplier = new ITAStreamMultiplier1N( m_pInputFile, g_iChannels );
+		m_pInputStreamProbe = new ITAStreamProbe( m_pMultiplier, "ITANetAudioTest.serverstream.wav" );
+		m_pStreamingServer->SetInputStream( m_pInputStreamProbe );
+
+		Run();
+	};
+
+	inline ~CStreamServerExample()
+	{
+		delete m_pInputFile;
+		delete m_pMultiplier;
+		delete m_pStreamingServer;
+		delete m_pInputStreamProbe;
 	};
 
 	void ThreadBody( )
 	{
 		vstr::out() << "[ NetAudioTestServer ] Starting net audio server and waiting for client connections on '" << g_sServerName << "' on port " << g_iServerPort << endl;
-		pStreamingServer->Start( g_sServerName, g_iServerPort, g_dSyncTimout, g_bUseUDP );
+		m_pStreamingServer->Start( g_sServerName, g_iServerPort, g_dSyncTimout, g_bUseUDP );
 	};
 
 private:
-	ITAFileDatasource* pInputFile;
-	ITAStreamMultiplier1N* pMuliplier;
-	CITANetAudioStreamingServer* pStreamingServer;
-	ITAStreamProbe* pInputStreamProbe;
-
+	ITAFileDatasource* m_pInputFile;
+	ITAStreamMultiplier1N* m_pMultiplier;
+	CITANetAudioStreamingServer* m_pStreamingServer;
+	ITAStreamProbe* m_pInputStreamProbe;
 };
 
 void run_test()
 {
 
 	// Sample server (forked away into a thread)
-	CServer* pServer = new CServer( g_sInputFilePath );
+	//CStreamServerExample* pServer = new CStreamServerExample( g_sInputFilePath );
+	CSampleServerExample* pServer = new CSampleServerExample();
 
 	// Client dumping received stream and mixing down to two channels
 	CITANetAudioStream oNetAudioStream( g_iChannels, g_dSampleRate, g_iBlockLength, g_iRingerBufferCapacity );

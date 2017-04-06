@@ -111,6 +111,7 @@ endif( )
 if( ITA_DATA_SOURCES_WITH_NET_AUDIO )
 	list( APPEND ITADataSourcesHeader
 		"include/ITANetAudioStream.h"
+		"include/ITANetAudioSampleServer.h"
 		"include/ITANetAudioStreamingServer.h"
 		)
 	list( APPEND ITADataSourcesSources

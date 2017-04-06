@@ -1,24 +1,39 @@
-// $Id: $
+/*
+ * ----------------------------------------------------------------
+ *
+ *		ITA core libs
+ *		(c) Copyright Institute of Technical Acoustics (ITA)
+ *		RWTH Aachen University, Germany, 2015-2017
+ *
+ * ----------------------------------------------------------------
+ *				    ____  __________  _______
+ *				   //  / //__   ___/ //  _   |
+ *				  //  /    //  /    //  /_|  |
+ *				 //  /    //  /    //  ___   |
+ *				//__/    //__/    //__/   |__|
+ *
+ * ----------------------------------------------------------------
+ *
+ */
 
-#ifndef __ITA_STREAM_INFO_H__
-#define __ITA_STREAM_INFO_H__
+#ifndef INCLUDE_WATCHER_ITA_STREAM_INFO
+#define INCLUDE_WATCHER_ITA_STREAM_INFO
 
 #include <ITATypes.h>
 
-// Diese Datenklasse beschreibt den Zustand eines Audiostreams
-class ITAStreamInfo {
+//! Time code information for audio streams
+class ITAStreamInfo
+{
 public:
-	// Anzahl der abgespielten Samples seit Beginn des Streamings
-	uint64_t nSamples;
+	uint64_t nSamples; //!< Number of samples processed
+	double dTimecode; //!< Time code
 
-	// TODO: Beschreiben
-	double dTimecode;
+	inline ITAStreamInfo()
+		: nSamples( 0 )
+		, dTimecode( 0 )
+	{};
 
-	//! Standard-Konstruktor (setzt alle Werte 0)
-	ITAStreamInfo() : nSamples(0), dTimecode(0) {}
-
-    //! Destruktor
 	virtual ~ITAStreamInfo() {};
 };
 
-#endif // __ITA_STREAM_INFO_H__
+#endif // INCLUDE_WATCHER_ITA_STREAM_INFO
