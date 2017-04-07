@@ -4,7 +4,7 @@
 #include <ITAPortaudioInterface.h>
 #include <ITAStreamMultiplier1N.h>
 #include <ITAException.h>
-#include <ITAFileDatasource.h>
+#include <ITAFileDataSource.h>
 #include <ITAStreamProbe.h>
 #include <ITAStreamPatchbay.h>
 using namespace std;

@@ -50,7 +50,8 @@ vista_create_default_info_file( ITANetAudioStreamingServerTest )
 set_property( TARGET ITANetAudioStreamingServerTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
 
 
-if( WIN32 ) # uses ASIO
+if( ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO )
+
 	add_executable( ITANetAudioStreamingClientTest ITANetAudioStreamingClientTest.cpp )
 	target_link_libraries( ITANetAudioStreamingClientTest ${VISTA_USE_PACKAGE_LIBRARIES} )
 
@@ -59,21 +60,22 @@ if( WIN32 ) # uses ASIO
 	vista_create_default_info_file( ITANetAudioStreamingClientTest )
 
 	set_property( TARGET ITANetAudioStreamingClientTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+
+	add_executable( ITANetAudioTest ITANetAudioTest.cpp )
+	target_link_libraries( ITANetAudioTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+
+	vista_configure_app( ITANetAudioTest )
+	vista_install( ITANetAudioTest )
+	vista_create_default_info_file( ITANetAudioTest )
+
 endif( )
-
-add_executable( ITANetAudioTest ITANetAudioTest.cpp )
-target_link_libraries( ITANetAudioTest ${VISTA_USE_PACKAGE_LIBRARIES} )
-
-vista_configure_app( ITANetAudioTest )
-vista_install( ITANetAudioTest )
-vista_create_default_info_file( ITANetAudioTest )
 
 vista_install_all_dlls( bin )
 
 set_property( TARGET ITANetAudioTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
 
 if( NOT DEFINED ITA_NETAUDIO_SERVER_WITH_TESTS )
-    set( ITA_NETAUDIO_SERVER_WITH_TESTS "localhost 12480 44100 32 2" CACHE STRING "default value")
+    set( ITA_NETAUDIO_SERVER_WITH_TESTS "localhost 12480 44100 32 2" CACHE STRING "Arguments for calling NetAudio server")
 endif( )
 if( NOT DEFINED ITA_NETAUDIO_CLIENT_WITH_TESTS )
     set( ITA_NETAUDIO_CLIENT_WITH_TESTS "localhost 12480 44100 32 2 3200" CACHE STRING "default value" )
