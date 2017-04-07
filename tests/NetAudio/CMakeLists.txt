@@ -1,4 +1,5 @@
 cmake_minimum_required( VERSION 2.9 )
+cmake_minimum_required( VERSION 2.9 )
 
 project( ITANetAudioTests )
 list( APPEND CMAKE_MODULE_PATH "$ENV{VISTA_CMAKE_COMMON}" )
@@ -8,6 +9,16 @@ vista_use_package( VistaCoreLibs REQUIRED COMPONENTS VistaInterProcComm FIND_DEP
 vista_use_package( ITADataSources REQUIRED FIND_DEPENDENCIES )
 
 add_definitions(-DIEEE754_64FLOAT)
+
+add_executable( ITANetAudioStreamingPortaudioClientTest ITANetAudioStreamingPortaudioClientTest.cpp )
+target_link_libraries( ITANetAudioStreamingPortaudioClientTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+
+vista_configure_app( ITANetAudioStreamingPortaudioClientTest )
+vista_install( ITANetAudioStreamingPortaudioClientTest )
+vista_create_default_info_file( ITANetAudioStreamingPortaudioClientTest )
+
+set_property( TARGET ITANetAudioStreamingPortaudioClientTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+
 
 add_executable( ITANABufferServerTest ITANABufferServerTest.cpp )
 target_link_libraries( ITANABufferServerTest ${VISTA_USE_PACKAGE_LIBRARIES} )
@@ -60,3 +71,14 @@ vista_create_default_info_file( ITANetAudioTest )
 vista_install_all_dlls( bin )
 
 set_property( TARGET ITANetAudioTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+
+if( NOT DEFINED ITA_NETAUDIO_SERVER_WITH_TESTS )
+    set( ITA_NETAUDIO_SERVER_WITH_TESTS "localhost 12480 44100 32 2" CACHE STRING "default value")
+endif( )
+if( NOT DEFINED ITA_NETAUDIO_CLIENT_WITH_TESTS )
+    set( ITA_NETAUDIO_CLIENT_WITH_TESTS "localhost 12480 44100 32 2 3200" CACHE STRING "default value" )
+endif( )
+
+vista_set_target_msvc_arguments( ITANetAudioStreamingPortaudioClientTest ${ITA_NETAUDIO_CLIENT_WITH_TESTS} )
+vista_set_target_msvc_arguments( ITANetAudioStreamingClientTest ${ITA_NETAUDIO_CLIENT_WITH_TESTS} )
+vista_set_target_msvc_arguments( ITANetAudioStreamingServerTest ${ITA_NETAUDIO_SERVER_WITH_TESTS} )

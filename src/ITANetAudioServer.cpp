@@ -1,6 +1,7 @@
-#include <ITANetAudioServer.h>
+#include "ITANetAudioServer.h"
+#include "ITANetAudioProtocol.h"
+
 #include <ITANetAudioStreamingServer.h>
-#include <ITANetAudioProtocol.h>
 
 // ITA includes
 #include <ITADataSource.h>
@@ -12,6 +13,8 @@
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
 #include <VistaInterProcComm/IPNet/VistaTCPServer.h>
 #include <VistaInterProcComm/IPNet/VistaTCPSocket.h>
+#include <VistaInterProcComm/IPNet/VistaSocketAddress.h>
+#include <VistaInterProcComm/IPNet/VistaUDPSocket.h>
 #include <VistaBase/VistaTimeUtils.h>
 #include <VistaInterProcComm/IPNet/VistaIPAddress.h>
 
@@ -20,8 +23,9 @@
 #include <cassert>
 
 CITANetAudioServer::CITANetAudioServer()
-	: m_pServer( NULL )
-	, m_pSocket( NULL )
+	: m_pTCPServer( NULL )
+	, m_pTCPSocket( NULL )
+	, m_pUDPSocket( NULL )
 	, m_pConnection( NULL )
 	, m_iServerPort( -1 )
 {
@@ -29,9 +33,13 @@ CITANetAudioServer::CITANetAudioServer()
 
 CITANetAudioServer::~CITANetAudioServer()
 {
+	m_pTCPSocket = NULL;
+
+	delete m_pUDPSocket;
+	m_pUDPSocket = NULL;
+
 	delete m_pConnection;
-	delete m_pServer;
-	delete m_pSocket;
+	delete m_pTCPServer;
 }
 
 std::string CITANetAudioServer::GetServerAddress() const
@@ -44,21 +52,37 @@ int CITANetAudioServer::GetNetworkPort() const
 	return m_iServerPort;
 }
 
-bool CITANetAudioServer::Start(const std::string& sAddress, int iPort)
+bool CITANetAudioServer::Start( const std::string& sAddress, const int iPort, const bool bUseUDP )
 {
-	if( m_pServer )
-		ITA_EXCEPT1( MODAL_EXCEPTION, "This net sample server is already started" );
+	if( m_pTCPServer || m_pUDPSocket )
+		ITA_EXCEPT1( MODAL_EXCEPTION, "This NetAudio server is already started" );
 
-	m_pServer = new VistaTCPServer( sAddress, iPort, 1 );
 	m_sServerAddress = sAddress;
 	m_iServerPort = iPort;
+	
+	if( bUseUDP )
+	{
+		VistaSocketAddress oAddress( sAddress, iPort );
+		VistaUDPSocket* pUDPSocket = new VistaUDPSocket();
 
-	// blocking wait for connection
-	m_pSocket = m_pServer->GetNextClient();
-	if( !m_pSocket )
-		return false;
-	if( m_pSocket->GetIsConnected() )
-		m_pConnection = new VistaConnectionIP( m_pSocket );
+		// blocking wait for connection
+		pUDPSocket->ConnectToAddress( oAddress );
+
+		if( pUDPSocket->GetIsConnected() )
+			m_pConnection = new VistaConnectionIP( pUDPSocket );
+	}
+	else
+	{
+		m_pTCPServer = new VistaTCPServer( sAddress, iPort, 1 );
+
+		// blocking wait for connection
+		m_pTCPSocket = m_pTCPServer->GetNextClient();
+		if( !m_pTCPSocket )
+			return false;
+
+		if( m_pTCPSocket->GetIsConnected() )
+			m_pConnection = new VistaConnectionIP( m_pTCPSocket );
+	}
 
 	if( !m_pConnection )
 		return false;
@@ -77,10 +101,13 @@ void CITANetAudioServer::Stop()
 	delete m_pConnection;
 	m_pConnection = NULL;
 
-	m_pSocket = NULL;
+	m_pTCPSocket = NULL;
 
-	delete m_pServer;
-	m_pServer = NULL;
+	delete m_pTCPServer;
+	m_pTCPServer = NULL;
+
+	delete m_pUDPSocket;
+	m_pUDPSocket = NULL;
 }
 
 bool CITANetAudioServer::IsConnected() const

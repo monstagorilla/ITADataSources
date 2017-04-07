@@ -1,33 +1,17 @@
-
 #include "ITADataSourceRealization.h"
-
-#include <cassert>
 #include <ITAFastMath.h>
+#include <cassert>
 
-/*
-ITADatasourceRealization::ITADatasourceRealization(unsigned int uiChannels,
-		                                           unsigned int uiBlocklength,
-				                                   unsigned int uiCapacity)
-{
-	Init(uiChannels, uiBlocklength, uiCapacity);
-}
-*/
-
-ITADatasourceRealization::ITADatasourceRealization(unsigned int uiChannels,
-						                           double dSamplerate,
-		                                           unsigned int uiBlocklength,
-												   unsigned int uiCapacity)
+ITADatasourceRealization::ITADatasourceRealization( unsigned int uiChannels, double dSamplerate, unsigned int uiBlocklength, unsigned int uiCapacity )
 {
 	assert( dSamplerate > 0 );
 	m_dSampleRate = dSamplerate;
 	m_oStreamProps.dSamplerate = dSamplerate;
 
-	Init(uiChannels, uiBlocklength, uiCapacity);
-}	
+	Init( uiChannels, uiBlocklength, uiCapacity );
+}
 
-void ITADatasourceRealization::Init(unsigned int uiChannels,
-			                        unsigned int uiBlocklength,
-			                        unsigned int uiCapacity)
+void ITADatasourceRealization::Init( unsigned int uiChannels, unsigned int uiBlocklength, unsigned int uiCapacity )
 {
 	assert( uiChannels > 0 );
 	assert( uiBlocklength > 0 );
@@ -49,7 +33,7 @@ void ITADatasourceRealization::Init(unsigned int uiChannels,
 	m_oStreamProps.uiChannels = m_uiChannels;
 	m_oStreamProps.uiBlocklength = m_uiBlocklength;
 
-	m_uiBufferSize = uiBlocklength * (uiCapacity+1);
+	m_uiBufferSize = uiBlocklength * ( uiCapacity + 1 );
 
 	m_pEventHandler = NULL;
 
@@ -57,31 +41,33 @@ void ITADatasourceRealization::Init(unsigned int uiChannels,
 	   Organisation des Puffers: Damit die Blöcke der einzelnen Kanäle
 	   im Speicher ortlich näher liegen ist das Array wiefolgt indiziert:
 
-       [1. Block Kanal 1], ..., [1. Block Kanal k], [2. Block Kanal 1], ...
+	   [1. Block Kanal 1], ..., [1. Block Kanal k], [2. Block Kanal 1], ...
 
-	*/
+	   */
 
 	// Puffer erzeugen und mit Nullen initialiseren
 	// TODO: Fehlerbehandlung beim Speicherallozieren
 	/* Bugfix zu Bug #001:
-	   
+
 	   Hier wurde der Puffer einfach um 1024 Felder verlängert.
 	   Damit Funktioniert Wuschels ASIO4ALL jetzt. Ungeklärt aber
 	   warum der Fehler auftrat?
 
-       2005-2-14
-	*/
+	   2005-2-14
+	   */
 
-	m_pfBuffer = fm_falloc(m_uiBufferSize * m_uiChannels + /* >>> */ 1024 /* <<< */, false);		
+	m_pfBuffer = fm_falloc( m_uiBufferSize * m_uiChannels + /* >>> */ 1024 /* <<< */, false );
 
-	Reset();	
+	Reset();
 }
 
-ITADatasourceRealization::~ITADatasourceRealization() {
-	fm_free(m_pfBuffer);
+ITADatasourceRealization::~ITADatasourceRealization()
+{
+	fm_free( m_pfBuffer );
 }
 
-void ITADatasourceRealization::Reset() {
+void ITADatasourceRealization::Reset()
+{
 	m_uiReadCursor = 0;
 	m_uiWriteCursor = 0;
 
@@ -93,22 +79,26 @@ void ITADatasourceRealization::Reset() {
 	m_iGBPEntrances = 0;
 	m_bGBPFirst = true;
 
-	fm_zero(m_pfBuffer, m_uiBufferSize * m_uiChannels + /* >>> */ 1024 /* <<< */);
+	fm_zero( m_pfBuffer, m_uiBufferSize * m_uiChannels + /* >>> */ 1024 /* <<< */ );
 }
 
-bool ITADatasourceRealization::HasStreamErrors() const {
-	return (m_iBufferUnderflows > 0) || (m_iBufferOverflows > 0) || (m_iGBPReentrances > 0);
+bool ITADatasourceRealization::HasStreamErrors() const
+{
+	return ( m_iBufferUnderflows > 0 ) || ( m_iBufferOverflows > 0 ) || ( m_iGBPReentrances > 0 );
 }
 
-ITADatasourceRealizationEventHandler* ITADatasourceRealization::GetStreamEventHandler() const {
+ITADatasourceRealizationEventHandler* ITADatasourceRealization::GetStreamEventHandler() const
+{
 	return m_pEventHandler;
 }
 
-void ITADatasourceRealization::SetStreamEventHandler(ITADatasourceRealizationEventHandler* pHandler) {
+void ITADatasourceRealization::SetStreamEventHandler( ITADatasourceRealizationEventHandler* pHandler )
+{
 	m_pEventHandler = pHandler;
 }
 
-const float* ITADatasourceRealization::GetBlockPointer(unsigned int uiChannel, const ITAStreamInfo* pStreamInfo) {
+const float* ITADatasourceRealization::GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pStreamInfo )
+{
 	assert( uiChannel < m_uiChannels );
 
 	/*
@@ -117,7 +107,8 @@ const float* ITADatasourceRealization::GetBlockPointer(unsigned int uiChannel, c
 	 *
 	 * WICHTIG: Dies sollte nicht passieren. Fehler beim anwendenden Programmierer!
 	 */
-	if (++m_iGBPEntrances > 1) {
+	if( ++m_iGBPEntrances > 1 )
+	{
 		--m_iGBPEntrances;
 		++m_iGBPReentrances;
 		return NULL;
@@ -125,12 +116,16 @@ const float* ITADatasourceRealization::GetBlockPointer(unsigned int uiChannel, c
 
 	// Hook/Handler aufrufen
 	PreGetBlockPointer();
-	if (m_pEventHandler) m_pEventHandler->HandlePreGetBlockPointer(this, uiChannel);
+	if( m_pEventHandler )
+		m_pEventHandler->HandlePreGetBlockPointer( this, uiChannel );
 
-	if (m_bGBPFirst) {
+	if( m_bGBPFirst )
+	{
 		// Erster Eintritt in GBP seit letztem IBP => Daten produzieren
-		ProcessStream(pStreamInfo);
-		if (m_pEventHandler) m_pEventHandler->HandleProcessStream(this, pStreamInfo);
+		ProcessStream( pStreamInfo );
+
+		if( m_pEventHandler )
+			m_pEventHandler->HandleProcessStream( this, pStreamInfo );
 
 		m_bGBPFirst = false;
 	}
@@ -145,45 +140,51 @@ const float* ITADatasourceRealization::GetBlockPointer(unsigned int uiChannel, c
 	 */
 
 	unsigned int uiLocalReadCursor = m_uiReadCursor;
-	if (uiLocalReadCursor == m_uiWriteCursor) {
+	if( uiLocalReadCursor == m_uiWriteCursor )
+	{
 		++m_iBufferUnderflows;
 		--m_iGBPEntrances;
 		return NULL;
 	}
 
 	--m_iGBPEntrances;
-	return m_pfBuffer + (uiChannel * m_uiBufferSize) + uiLocalReadCursor;
+	return m_pfBuffer + ( uiChannel * m_uiBufferSize ) + uiLocalReadCursor;
 }
 
-void ITADatasourceRealization::IncrementBlockPointer() {
-
+void ITADatasourceRealization::IncrementBlockPointer()
+{
 	unsigned int uiLocalReadCursor = m_uiReadCursor;
 
-	if (uiLocalReadCursor == m_uiWriteCursor)
+	if( uiLocalReadCursor == m_uiWriteCursor )
 		// Keine Daten im Ausgabepuffer? Kein Inkrement möglich! (Fehlerfall)
 		++m_iBufferUnderflows;
 	else
 		// Lesezeiger inkrementieren
-		m_uiReadCursor = (uiLocalReadCursor + m_uiBlocklength) % m_uiBufferSize;
+		m_uiReadCursor = ( uiLocalReadCursor + m_uiBlocklength ) % m_uiBufferSize;
 
 	m_bGBPFirst = true;
 
 	PostIncrementBlockPointer();
-	if (m_pEventHandler) m_pEventHandler->HandlePostIncrementBlockPointer(this);
+
+	if( m_pEventHandler )
+		m_pEventHandler->HandlePostIncrementBlockPointer( this );
 }
 
-float* ITADatasourceRealization::GetWritePointer(unsigned int uiChannel) {
+float* ITADatasourceRealization::GetWritePointer( unsigned int uiChannel )
+{
 	assert( uiChannel < m_uiChannels );
-	return m_pfBuffer + (uiChannel * m_uiBufferSize) + m_uiWriteCursor;
+	return m_pfBuffer + ( uiChannel * m_uiBufferSize ) + m_uiWriteCursor;
 }
 
-void ITADatasourceRealization::IncrementWritePointer() {
+void ITADatasourceRealization::IncrementWritePointer()
+{
 	// Lokaler Schreibcursor
 	unsigned int uiLocalWriteCursor = m_uiWriteCursor;
-	unsigned int uiNewWriteCursor = (uiLocalWriteCursor + m_uiBlocklength) % m_uiBufferSize;
+	unsigned int uiNewWriteCursor = ( uiLocalWriteCursor + m_uiBlocklength ) % m_uiBufferSize;
 
 	// Pufferüberlauf
-	if (uiNewWriteCursor == m_uiReadCursor) {
+	if( uiNewWriteCursor == m_uiReadCursor )
+	{
 		++m_iBufferOverflows;
 		return;
 	}
@@ -192,6 +193,6 @@ void ITADatasourceRealization::IncrementWritePointer() {
 	m_uiWriteCursor = uiNewWriteCursor;
 }
 
-void ITADatasourceRealizationEventHandler::HandlePreGetBlockPointer(ITADatasourceRealization* pSender, unsigned int uiChannel) {}
-void ITADatasourceRealizationEventHandler::HandlePostIncrementBlockPointer(ITADatasourceRealization* pSender) {}
-void ITADatasourceRealizationEventHandler::HandleProcessStream(ITADatasourceRealization* pSender, const ITAStreamInfo* pStreamInfo) {}
+void ITADatasourceRealizationEventHandler::HandlePreGetBlockPointer( ITADatasourceRealization*, unsigned int ) {}
+void ITADatasourceRealizationEventHandler::HandlePostIncrementBlockPointer( ITADatasourceRealization* ) {}
+void ITADatasourceRealizationEventHandler::HandleProcessStream( ITADatasourceRealization*, const ITAStreamInfo* ) {}

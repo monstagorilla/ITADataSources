@@ -32,7 +32,7 @@ int main( int, char** )
 #ifdef ITA_WHAD_WITH_ASIO
 
 	string sASIOFileName = "ita_whad_asio.txt";
-	FILE* PASIOFile = fopen( sASIOFileName.c_str(), "w" );
+	FILE* pASIOFile = fopen( sASIOFileName.c_str(), "w" );
 
 	ITAsioInitializeLibrary();
 
@@ -44,13 +44,23 @@ int main( int, char** )
 	cout << " ### ASIO ### " << endl;
 	for( long i = 0; i < lASIODrivers; i++ )
 	{
-		cout << "[" << i + 1 << "] \"" << ITAsioGetDriverName( i ) << "\"" << endl;
+		std::string sDriverName = ITAsioGetDriverName( i );
+		ASIOError ae = ITAsioInitializeDriver( i );
+		long iIn = -1, iOut = -1;
+		
+		if( ae == ASE_OK )
+		{
+			ITAsioGetChannels( &iIn, &iOut );
+			ITAsioFinalizeDriver();
+		}
+
+		cout << "[" << i + 1 << "] \"" << sDriverName << "\" (" << iIn << " in, " << iOut << " out)"  << endl;
 	}
 	cout << endl;
 
 	ITAsioFinalizeLibrary();
 
-	fclose( PASIOFile );
+	fclose( pASIOFile );
 
 #endif // ITA_WHAD_WITH_ASIO
 #ifdef ITA_WHAD_WITH_PORTAUDIO
@@ -79,7 +89,7 @@ int main( int, char** )
 
 	fclose( pPAFile );
 
-#endif // ITA_WHAD_WITH:PORTAUDIO
+#endif // ITA_WHAD_WITH_PORTAUDIO
 
 	return 0;
 }

@@ -693,8 +693,17 @@ ITASIO_API ASIOError ITAsioInitializeDriver(const char* pszDriverName) {
 	// Mutex in Besitz bringen
 	EnterCriticalSection(&csExternal);
 
-	// Load the driver, this will setup all the necessary internal data structures	
-	asioDrivers->loadDriver((char*) pszDriverName);
+	// Load the driver, this will setup all the necessary internal data structures
+	try
+	{
+		bool bLoadSuccess = asioDrivers->loadDriver( ( char* ) pszDriverName );
+		if( !bLoadSuccess )
+			return ASE_NotPresent;
+	}
+	catch( ... )
+	{
+		return ASE_NotPresent;
+	}
 
 	ASIOError aeResult = ASIOInit(&asioDriverInfo.driverInfo);	
 	if (aeResult != ASE_OK) {

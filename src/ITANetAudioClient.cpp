@@ -1,8 +1,7 @@
-#include <ITANetAudioClient.h>
+#include "ITANetAudioClient.h"
 
-#include <ITANetAudioMessage.h>
-#include <ITANetAudioProtocol.h>
 #include <ITANetAudioStream.h>
+#include <ITAException.h>
 
 #include <VistaInterProcComm/Connections/VistaConnectionIP.h>
 
@@ -16,13 +15,15 @@ CITANetAudioClient::~CITANetAudioClient()
 	delete m_pConnection;
 }
 
-bool CITANetAudioClient::Connect( const std::string& sAddress, int iPort )
+bool CITANetAudioClient::Connect( const std::string& sAddress, const int iPort, const bool bUseUDP /* = false */ )
 {
 	if( GetIsConnected() )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "This net stream is already connected" );
 
 	// Attempt to connect and check parameters
-	m_pConnection = new VistaConnectionIP( VistaConnectionIP::CT_TCP, sAddress, iPort );
+	const VistaConnectionIP::VistaProtocol iCTProtocol = bUseUDP ? VistaConnectionIP::CT_UDP : VistaConnectionIP::CT_TCP;
+	m_pConnection = new VistaConnectionIP( iCTProtocol, sAddress, iPort );
+	
 	if( !GetIsConnected() )
 	{
 		delete m_pConnection;
@@ -46,5 +47,8 @@ void CITANetAudioClient::Disconnect()
 
 bool CITANetAudioClient::GetIsConnected() const
 {
-	return m_pConnection ? true : false;
+	if( m_pConnection )
+		return m_pConnection->GetIsOpen();
+	else
+		return false;
 }

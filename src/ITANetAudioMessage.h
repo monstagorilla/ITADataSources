@@ -21,11 +21,12 @@
 
 #include <ITADataSourcesDefinitions.h>
 
+#include "ITANetAudioProtocol.h"
+
 // ITA includes
 #include <ITAException.h>
 #include <ITASampleBuffer.h>
 #include <ITASampleFrame.h>
-#include <ITANetAudioProtocol.h>
 
 // Vista includes
 #include <VistaInterProcComm/Connections/VistaByteBufferSerializer.h>
@@ -36,6 +37,7 @@
 #include <vector>
 
 class VistaConnectionIP;
+class ITABufferedDataLoggerImplProtocol;
 
 //! Network audio messages
 /**
@@ -54,10 +56,11 @@ public:
 	VistaConnectionIP* GetConnection() const;
 	void ClearConnection();
 
+	//! Will always block processing until data is completely send
 	void WriteMessage();
-	void ReadMessage();
-	void WriteAnswer();
-	void ReadAnswer();
+
+	//! Returns false if no incomming data during timeout
+	bool ReadMessage( const int iTimeoutMilliseconds );
 
 	void ResetMessage();
 
@@ -66,9 +69,7 @@ public:
 	bool GetOutgoingMessageHasData() const;
 
 	void SetMessageType( int nType );
-	void SetAnswerType( int nType );
 	int GetMessageType() const;
-	int GetAnswerType() const;
 
 
 	void WriteInt( const int );
@@ -97,15 +98,25 @@ public:
 	int ReadRingBufferFree();
 	void ReadSampleFrame(ITASampleFrame* pSampleFrame);
 
+	void SetMessageLoggerBaseName( const std::string& );
+	std::string GetMessageLoggerBaseName() const;
+	void SetDebuggingEnabled( bool bEnabled );
+	bool GetIsDebuggingEnabled() const;
+
 private:
 	int m_nMessageType;
 	int m_nMessageId;
-	int m_nAnswerType;
+	unsigned long m_iBytesReceivedTotal;
+
 	VistaByteBufferSerializer m_oOutgoing; //!< Serialization buffer for messages
 	VistaByteBufferDeSerializer m_oIncoming; //!< Deserialization buffer for messages
 	std::vector< VistaType::byte > m_vecIncomingBuffer; // Net IO buffer
 
 	VistaConnectionIP* m_pConnection;
+
+	ITABufferedDataLoggerImplProtocol* m_pMessageLogger;
+	std::string m_sMessageLoggerBaseName;
+	bool m_bDebuggingEnabled;
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_MESSAGE

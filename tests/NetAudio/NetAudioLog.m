@@ -1,72 +1,82 @@
-%% Einlesen der Logs
-close all;
-clear all;
-NetAudioLogNet = readtable( 'NetAudioLogNet.txt', 'FileType', 'text', 'Delimiter', '\t');
-NetAudioLogStream = readtable( 'NetAudioLogStream.txt', 'FileType', 'text', 'Delimiter', '\t')
-NetAudioLogClient = readtable( 'NetAudioLogClient.txt', 'FileType', 'text', 'Delimiter', '\t' );
-NetAudioLogBaseData = readtable( 'NetAudioLogBaseData.txt', 'FileType', 'text', 'Delimiter', '\t' );
+%% Load
+ITANetAudioTest_Client = readtable( 'ITANetAudioTest_Client_Client.log', 'FileType', 'text', 'Delimiter', '\t');
+ITANetAudioTest_Server = readtable( 'ITANetAudioTest_Server_Server.log', 'FileType', 'text', 'Delimiter', '\t');
+ITANetAudioTest_Client_AudioStream = readtable( 'ITANetAudioTest_Client_AudioStream.log', 'FileType', 'text', 'Delimiter', '\t');
+ITANetAudioTest_Client_NetworkStream = readtable( 'ITANetAudioTest_Client_NetworkStream.log', 'FileType', 'text', 'Delimiter', '\t');
 
-% Save Base Data
-Channel = NetAudioLogBaseData.Channel(1);
-SampleRate = NetAudioLogBaseData.Samplerate(1);
-BufferSize = NetAudioLogBaseData.BufferSize(1);
-RingBufferSize = NetAudioLogBaseData.RingBufferSize(1);
-TargetSampleLatency = NetAudioLogBaseData.TargetSampleLatency(1);
 
-minTime = min(NetAudioLogStream.WorldTimeStamp(1),NetAudioLogNet.WorldTimeStamp(1));
-TimeNet = NetAudioLogNet.WorldTimeStamp - minTime;
-TimeStream = NetAudioLogStream.WorldTimeStamp - minTime;
+%% Settings
+B = 256;
+TL = B * 3;
+RB = B * 10;
 
-TimeState = [TimeStream NetAudioLogStream.StreamingStatus];
-TimeUnderrun = TimeState(find(TimeState(:,2)==3), 1);
-TimeOverrun = TimeState(find(TimeState(:,2)==4), 1);
-TimeStream = TimeState(find(TimeState(:,2)==2), 1);
 
-%% Plot Freie Smaples und Bufferstutus
-Data = [NetAudioLogNet.WorldTimeStamp NetAudioLogNet.FreeSamples; NetAudioLogStream.WorldTimeStamp NetAudioLogStream.FreeSamples];
-Data = sortrows(Data,1 );
-Data(:,1) = Data(:,1) - minTime();
-Data(:,2) = (Data(:,2)) / BufferSize;
-medianBlock = (max(Data(:,2)) - min(Data(:,2))) / 2;
-subplot(2,2,1:2)
-plot( Data(:,1), Data(:,2) )
+%% Analyse
+all_times = [ ITANetAudioTest_Client.WorldTimeStamp; ITANetAudioTest_Server.WorldTimeStamp; ITANetAudioTest_Client_AudioStream.WorldTimeStamp; ITANetAudioTest_Client_NetworkStream.WorldTimeStamp ];
+TS = min( all_times );
+TE = max( all_times );
+
+AudioStreamingUnderrunIndices = find( ITANetAudioTest_Client_AudioStream.FreeSamples == RB );
+AudioStreamingOverrunIndices = find( ITANetAudioTest_Client_AudioStream.FreeSamples == 0 );
+
+ClientTransmittedBufferInfoIndices = find( strcmpi( ITANetAudioTest_Client.TransmittedRingBufferFreeSamples,'true' ));
+
+ServerNetCommTiming = diff( ITANetAudioTest_Server.WorldTimeStamp );
+ClientNetCommTiming = diff( ITANetAudioTest_Client.WorldTimeStamp );
+ClientAudioStreamTiming = diff( ITANetAudioTest_Client_AudioStream.WorldTimeStamp );
+ClientNetStreamTiming = diff( ITANetAudioTest_Client_NetworkStream.WorldTimeStamp );
+
+%% Plot
+figure
+subplot( 2, 1, 1 )
+
+% Client
+plot( ITANetAudioTest_Client.WorldTimeStamp - TS, RB - ITANetAudioTest_Client.FreeSamples,  'LineWidth', 1 )
 hold on
-plot( TimeUnderrun, zeros(size(TimeUnderrun)) + max(Data(:,2)),'r*')
-plot( TimeOverrun, zeros(size(TimeOverrun)) + min(Data(:,2)),'r+')
-title(['Freie Blöcke im Ring Buffer (' num2str(RingBufferSize) ' Samples)'])
-xlabel('Zeit in s')
-ylabel('Anzahl der Blöcke')
-
-%% Plot Latenz
-DiffTime = diff(NetAudioLogClient.WorldTimeStamp * 1000);
-median = mean(DiffTime(:,1));
-medianVec = zeros(size(DiffTime(:,1))); 
-medianVec = medianVec + median;
-DiffTime = [NetAudioLogClient.WorldTimeStamp(2:end) - minTime DiffTime NetAudioLogClient.ProtocolStatus(2:end)];
-DiffTime = sortrows(DiffTime,3);
-LatenzWaiting = DiffTime(find(DiffTime(:,3)<222), (1:2));
-LatenzRunnning = DiffTime(find(DiffTime(:,3)>221), (1:2));
-medianRunning = mean(LatenzRunnning(:,2));
-medianRunningVec = zeros(size(LatenzRunnning(:,1))); 
-medianRunningVec = medianRunningVec + medianRunning;
-sollLatenz = (BufferSize / SampleRate) * 1000;
-sollLatenzVec = zeros(size(LatenzRunnning(:,1))); 
-sollLatenzVec = sollLatenzVec + sollLatenz;
-
-subplot(2,2,1:4)
-plot( LatenzRunnning(:,1), LatenzRunnning(:,2), 'b.')
+plot( ITANetAudioTest_Client.WorldTimeStamp( ClientTransmittedBufferInfoIndices ) - TS, RB - ITANetAudioTest_Client.FreeSamples( ClientTransmittedBufferInfoIndices ), '^' )
 hold on
-plot( LatenzRunnning(:,1), medianRunningVec, 'r')
-plot( LatenzRunnning(:,1), sollLatenzVec, 'g')
-plot( TimeUnderrun, zeros(size(TimeUnderrun)) + sollLatenz,'r*')
-plot( TimeOverrun, zeros(size(TimeOverrun)) + medianRunning,'r*')
-AnzahlUnderruns = size(TimeUnderrun);
-AnzahlUnderruns = AnzahlUnderruns(1);
-AnzahlUnderruns = num2str(AnzahlUnderruns);
-RelativeUnderruns = 100 * size(TimeUnderrun) / size(TimeState);
-Durchsatz = [num2str((32 * SampleRate * Channel)/1000) ' kbit/s']
-title(['Latenz pro Block (' num2str(BufferSize) ' Samples) bei ' num2str(Channel) ' Kanälen'])
-legend('Latenz', ['Latenz (' num2str(medianRunning) ' ms)'], ['SollLatenz (' num2str(sollLatenz) ' ms)' ], ['Underruns (Anz. ' AnzahlUnderruns ' - ' num2str(RelativeUnderruns) '%)'], 'Overruns')
-xlabel('Zeit in s')
-ylabel('Latenz in ms')
-legend('show') 
+plot( ITANetAudioTest_Client_NetworkStream.WorldTimeStamp - TS, RB - ITANetAudioTest_Client_NetworkStream.FreeSamples )
+
+% Estimated by server
+plot( ITANetAudioTest_Server.WorldTimeStamp - TS, RB - ITANetAudioTest_Server.EstimatedFreeSamples, 'LineWidth', 1 )
+hold on
+
+% Target latency
+plot( [ 0 TE - TS ], repmat( TL, 1, 2 ), 'LineWidth', 4  )
+hold on
+
+% Ringbuffer capacity
+plot( [ 0 TE - TS ], repmat( RB, 1, 2 ), 'LineWidth', 4  )
+hold on
+
+% Underruns (might be empty)
+plot( ITANetAudioTest_Client_AudioStream.WorldTimeStamp( AudioStreamingUnderrunIndices ) - TS, RB - ITANetAudioTest_Client_AudioStream.FreeSamples( AudioStreamingUnderrunIndices ) , 'ro' )
+hold on
+
+% Overruns (might be empty)
+plot( ITANetAudioTest_Client_AudioStream.WorldTimeStamp( AudioStreamingOverrunIndices ) - TS, RB - ITANetAudioTest_Client_AudioStream.FreeSamples( AudioStreamingOverrunIndices ) , 'm*' )
+hold on
+
+legend( { 'RealBufferStatus', 'BufferInfoTransmit', 'NetworkStreamBufferStatus', 'EstimatedBufferStatus', 'TargetLatency', 'RingBufferCapacity', 'Underruns', 'Overruns' } )
+ylabel( 'NumSamples' )
+xlabel( 'Time' )
+ylim( [ -B/10 RB + B/10 ] );
+hold off
+
+% Timing
+subplot( 2, 1, 2 )
+plot( ITANetAudioTest_Client.WorldTimeStamp( 2:end ) - TS, ClientNetCommTiming )
+hold on
+plot( ITANetAudioTest_Client_AudioStream.WorldTimeStamp( 2:end ) - TS, ClientAudioStreamTiming )
+hold on
+plot( ITANetAudioTest_Client_NetworkStream.WorldTimeStamp( 2:end ) - TS, ClientNetStreamTiming )
+hold on
+plot( ITANetAudioTest_Server.WorldTimeStamp( 2:end ) - TS, ServerNetCommTiming )
+hold on
+
+title( 'Clock Timing' )
+legend( { 'ClientNet', 'ClientAudioStream', 'ClientNetStream', 'ServerNet' } )
+ylabel( 'Process timing' )
+xlabel( 'Streaming time' )
+
+hold off
