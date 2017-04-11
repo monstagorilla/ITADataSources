@@ -220,7 +220,7 @@ private:
 		ITADatasource* pDatasource;				//!< Datasource assigned to the input
 		std::vector< const float* > vpfInputData;	//!< Pointers to the next stream blocks
 
-		inline InputDesc( const int iChannels, const int iBlockLength )
+		inline InputDesc( const int iChannels, const int )
 			: vpfInputData( iChannels, nullptr )
 			, iChannels( iChannels )
 			, fCurrentGain( 1.0f )

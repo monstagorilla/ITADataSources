@@ -4,7 +4,7 @@
 #include <ITAPortaudioInterface.h>
 #include <ITAStreamMultiplier1N.h>
 #include <ITAException.h>
-#include <ITAFileDatasource.h>
+#include <ITAFileDataSource.h>
 #include <ITAStreamProbe.h>
 #include <ITAStreamPatchbay.h>
 using namespace std;
@@ -32,6 +32,7 @@ int main(int argc, char* argv[])
 	int iBufferSize = atoi(argv[6]);
 	
 	CITANetAudioStream oNetAudioStream( iChannels, dSampleRate, iBlockLength, iBlockLength*16 );
+	oNetAudioStream.SetDebuggingEnabled( true );
 	ITAStreamPatchbay oPatchbay( dSampleRate, iBlockLength );
 	oPatchbay.AddInput( &oNetAudioStream );
 	int iOutputID = oPatchbay.AddOutput( 2 );
