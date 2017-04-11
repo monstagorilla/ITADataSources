@@ -31,7 +31,7 @@ const static int g_iTargetLatencySamples = g_iBlockLength * 4;
 const static int g_iRingerBufferCapacity = g_iBlockLength * 10;
 const static double g_dDuration = 10.0f;
 const static double g_dSyncTimout = 0.001f;
-const static bool g_bUseASIO = true;
+static bool g_bUseASIO = true;
 //const static string g_sAudioInterface = "ASIO MADIface USB";
 //const static string g_sAudioInterface = "ASIO4ALL v2";
 const static string g_sAudioInterface = "ASIO Hammerfall DSP";
@@ -44,7 +44,7 @@ public:
 		: CITASampleProcessor( g_iChannels, g_dSampleRate, g_iBlockLength )
 	{};
 	
-	inline void Process( const ITAStreamInfo* pStreamInfo )
+	inline void Process( const ITAStreamInfo* )
 	{
 		for( size_t c = 0; c < m_vvfSampleBuffer.size(); c++ )
 		{
