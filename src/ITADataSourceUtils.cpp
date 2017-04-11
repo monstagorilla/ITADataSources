@@ -8,6 +8,8 @@
 #include <ITAStreamInfo.h>
 #include <ITAAudiofileWriter.h>
 #include <ITAException.h>
+#include <ITAClock.h>
+
 #include <cmath>
 #include <string>
 #include <vector>
@@ -90,7 +92,8 @@ void WriteFromDatasourceToBuffer(ITADatasource* pSource,
 			n += uiBlocklength;
 
 			siState.nSamples += uiBlocklength;
-			siState.dTimecode = (double) (siState.nSamples) / dSamplerate;
+			siState.dStreamTimeCode = (double) (siState.nSamples) / dSamplerate;
+			siState.dSysTimeCode = ITAClock::getDefaultClock()->getTime();
 
 			if (bDisplayProgress) 
 			{
@@ -193,7 +196,8 @@ void WriteFromDatasourceToFile(ITADatasource* pSource,
 			pSource->IncrementBlockPointer();
 	
 			siState.nSamples += uiBlocklength;
-			siState.dTimecode = (double) (siState.nSamples) / dSamplerate;
+			siState.dStreamTimeCode = (double) (siState.nSamples) / dSamplerate;
+			siState.dSysTimeCode = ITAClock::getDefaultClock()->getTime();
 
 			// Daten schreiben
 			writer->write((std::min)(uiBlocklength, (uiNumberOfSamples - n)), vpfData);

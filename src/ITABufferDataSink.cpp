@@ -6,6 +6,7 @@
 #include <ITAException.h>
 #include <ITAFunctors.h>
 #include <ITANumericUtils.h>
+#include <ITAClock.h>
 
 #ifndef WIN32
 #include <memory.h>
@@ -98,7 +99,8 @@ void ITABufferDataSink::Transfer( unsigned int uiSamples )
 
 			m_uiWriteCursor += m;
 			m_siState.nSamples += m_pdsSource->GetBlocklength();
-			m_siState.dTimecode = ( double ) ( m_siState.nSamples ) / m_pdsSource->GetSampleRate();
+			m_siState.dStreamTimeCode = ( double ) ( m_siState.nSamples ) / m_pdsSource->GetSampleRate();
+			m_siState.dSysTimeCode = ITAClock::getDefaultClock()->getTime();
 
 			m_pdsSource->IncrementBlockPointer();
 		}

@@ -207,7 +207,7 @@ const float* CITANetAudioStream::GetBlockPointer( unsigned int uiChannel, const 
 	}
 
 	if( uiChannel == 0 )
-		m_dLastStreamingTimeCode = pInfo->dTimecode;
+		m_dLastStreamingTimeCode = pInfo->dStreamTimeCode;
 
 
 	return m_sfOutputStreamBuffer[uiChannel].GetData();

@@ -26,14 +26,16 @@ class ITAStreamInfo
 {
 public:
 	uint64_t nSamples; //!< Number of samples processed
-	double dTimecode; //!< Time code
+	double dStreamTimeCode; //!< Stream time code (starts with zero)
+	double dSysTimeCode; //!< System time stamp code (begings with current time stamp of system)
 
 	inline ITAStreamInfo()
 		: nSamples( 0 )
-		, dTimecode( 0 )
+		, dStreamTimeCode( 0.0f )
+		, dSysTimeCode( 0.0f )
 	{};
 
-	virtual ~ITAStreamInfo() {};
+	inline virtual ~ITAStreamInfo() {};
 };
 
 #endif // INCLUDE_WATCHER_ITA_STREAM_INFO

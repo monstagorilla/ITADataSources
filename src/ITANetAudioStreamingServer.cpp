@@ -188,7 +188,8 @@ bool CITANetAudioStreamingServer::LoopBody()
 			{
 				ITAStreamInfo oStreamInfo;
 				oStreamInfo.nSamples = ( m_nStreamSampleCounts += m_iSendingBlockLength );
-				oStreamInfo.dTimecode = dNow - m_dStreamTimeStart;
+				oStreamInfo.dStreamTimeCode = dNow - m_dStreamTimeStart;
+				oStreamInfo.dSysTimeCode = dNow;
 
 				const float* pfData = m_pInputStream->GetBlockPointer( i, &oStreamInfo );
 				if( pfData != nullptr )
