@@ -31,7 +31,7 @@
  * ... just derive and implement Process() method. Have a look at Zero() method
  * for exemplary usage of sample buffer.
  */ 
-class ITA_DATA_SOURCES_API CITASampleProcessor : public ITADatasourceRealization
+class CITASampleProcessor : public ITADatasourceRealization
 {
 public:
 	//! Create a sample processor with streaming parameters
@@ -48,6 +48,10 @@ public:
 			m_vvfSampleBuffer[ c ].resize( iBlockLength );
 
 		Zero();
+	};
+
+	inline ~CITASampleProcessor()
+	{
 	};
 
 	//! Sets all channels and samples to zero
@@ -108,7 +112,7 @@ private:
   * @sa CITANetAudioStream CITANetAudioStreamingServer CITASampleProcessor
   * @note not thread-safe
   */
-class ITA_DATA_SOURCES_API CITANetAudioSampleServer : public CITANetAudioStreamingServer
+class CITANetAudioSampleServer : public CITANetAudioStreamingServer
 {
 public:
 	inline CITANetAudioSampleServer( CITASampleProcessor* pProcessor )
