@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <float.h>
 #include <iostream>
+#include <cmath>
 
 #include <ITAFastMath.h>
 #include <ITAException.h>
