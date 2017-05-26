@@ -20,7 +20,7 @@
 #define INCLUDE_WATCHER_ITA_BUFFER_DATA_SOURCE
 
 #include <ITADataSourcesDefinitions.h>
-          
+
 #include <ITADataSource.h>
 #include <ITAAtomicPrimitives.h>
 
@@ -38,7 +38,7 @@
  * legt ITABufferDatasource die Kapazität als nächstkleineres Blocklänge-Vielfaches
  * der Buffergröße (uiBufferSize) fest.
  *
- * Die Klasse bietet ferner die Möglichkeit einen bestimmten Bereich der Puffer 
+ * Die Klasse bietet ferner die Möglichkeit einen bestimmten Bereich der Puffer
  * für das Freisetzen der Audiodaten zu benutzen, den sogenannten Arbeitsbereich
  * (<i>region of interest, ROI</i>). Zwei Wiedergabemodi werden unterstützt:
  * Einmaliges Freisetzen/Abspielen und Wiederholung.
@@ -46,7 +46,7 @@
  * Über den geschützen Konstruktor und die geschützte Init-Methode können von
  * ITABufferDatasource abgeleitete Klasse eine verzögert Initialisierung und damit
  * Festgelegung auf konkrete Puffer und Parameter realisieren. Dies ist notwendig,
- * wenn beim Aufruf des ITABufferDatasource-Konstruktors diese Parameter noch nicht 
+ * wenn beim Aufruf des ITABufferDatasource-Konstruktors diese Parameter noch nicht
  * bekannt sind. Instanzen müssen dann mittels der Init-Methode initialisiert werden.
  *
  * \important <b>Thread-Safety</b>: Ist in dieser Implementierung nicht konsequent durchgezogen.
@@ -54,10 +54,11 @@
  *            und einem speziellen Einsatzschema der Klasse, beidem Thread-safety ausserhalb
  *            der Klasse realisiert wird, wurde auf eine strikte Thread-sichere Implementierung zunächst
  *            verzichtet. But remember: <b>You have been warned!</b> :-P [fwe: Dezember 2005]
- * 
+ *
  * \ingroup datasources
  */
-class ITA_DATA_SOURCES_API ITABufferDatasource : public ITADatasource {
+class ITA_DATA_SOURCES_API ITABufferDatasource : public ITADatasource
+{
 public:
 	//! Konstruktor (2D-Array)
 	/**
@@ -68,14 +69,9 @@ public:
 	 * \param uiBlocklength Blocklänge mit der die Datenquelle arbeiten soll
 	 * \param bLoopMode Wiederholungsmodus? [Optional]
 	 *
-	 * \note Bei ungültigen Parametern wird eine Ausnahme vom Typ LLCException ausgelöst
+	 * \note Bei ungültigen Parametern wird eine Ausnahme vom Typ ITAException ausgelöst
 	 */
-	ITABufferDatasource(const float** ppfBuffer,
-		                unsigned int uiChannels,
-					    unsigned int uiBuffersize,
-						double dSamplerate,
-		                unsigned int uiBlocklength,
-						bool bLoopMode=false);	
+	ITABufferDatasource( const float** ppfBuffer, unsigned int uiChannels, unsigned int uiBuffersize, double dSamplerate, unsigned int uiBlocklength, bool bLoopMode = false );
 
 	//! Konstruktor (Vektor von Arrays)
 	/**
@@ -86,13 +82,9 @@ public:
 	 * \param bLoopMode Wiederholungsmodus? [Optional]
 	 *
 	 * \note Die Kanalanzahl wird aus der Anzahl der Elemente im Vektor bestimmt
-	 * \note Bei ungültigen Parametern wird eine Ausnahme vom Typ LLCException ausgelöst
+	 * \note Bei ungültigen Parametern wird eine Ausnahme vom Typ CIAException ausgelöst
 	 */
-	ITABufferDatasource(const std::vector<float*>& vpfBuffer,
-					    unsigned int uiBuffersize,
-						double dSamplerate,
-		                unsigned int uiBlocklength,
-						bool bLoopMode=false);	
+	ITABufferDatasource( const std::vector< float* >& vpfBuffer, unsigned int uiBuffersize, double dSamplerate, unsigned int uiBlocklength, bool bLoopMode = false );
 
 	//! Spezieller Konstruktor (Einkanal-Betrieb)
 	/**
@@ -104,18 +96,18 @@ public:
 	 * \param uiBlocklength Blocklänge mit der die Datenquelle arbeiten soll
 	 * \param bLoopMode Wiederholungsmodus? [Optional]
 	 *
-	 * \note Bei ungültigen Parametern wird eine Ausnahme vom Typ LLCException ausgelöst
+	 * \note Bei ungültigen Parametern wird eine Ausnahme vom Typ CITAException ausgelöst
 	 */
-	ITABufferDatasource(const float* pfBuffer,
-					    unsigned int uiBuffersize,
-						double dSamplerate,
-		                unsigned int uiBlocklength,
-						bool bLoopMode=false);	
+	ITABufferDatasource( const float* pfBuffer,
+		unsigned int uiBuffersize,
+		double dSamplerate,
+		unsigned int uiBlocklength,
+		bool bLoopMode = false );
 
 	//! Kapazität der Datenquelle zurückgeben
-	/** 
+	/**
 	 * Gibt die Anzahl der Samples der Daten der Quelle zurück.
-	 * Dieser Wert ist das nächstkleinere Blocklängen-Vielfache der 
+	 * Dieser Wert ist das nächstkleinere Blocklängen-Vielfache der
 	 * Pufferlänge uiBuffersize und muß somit nicht unbedingt dem
 	 * wert uiBuffersize entsprechen. Er ist unabhängig von der
 	 * Wahl des Start- und Endcursors und kann als Obergrenze für
@@ -137,30 +129,30 @@ public:
 	unsigned int GetCursor();
 
 	//! Wiedergabeposition setzen bezogen auf den Arbeitsbereich
-	void SetCursor(unsigned int uiNewCursor);
+	void SetCursor( unsigned int uiNewCursor );
 
 	//! Wiedergabe pausiert?
 	bool IsPaused() const;
-	
+
 	//! Pausierung für Wiedergabe ein-/ausschalten
-	void SetPaused(bool bPaused);
+	void SetPaused( bool bPaused );
 
 	//! Zurückgeben ob die Wiederholung eingeschaltet ist
 	bool GetLoopMode();
 
 	//! Wiederholung Ein-/Ausschalten
-	void SetLoopMode(bool bLoopMode);
+	void SetLoopMode( bool bLoopMode );
 
 	//! Sets the looping mode
 	/**
 	  * @param[in] bLoopingEnabled True means looping, false will play until EOF
 	  */
 	void SetIsLooping( bool bLoopingEnabled );
-	
+
 	//! Looping mode getter
 	/**
 	  * @return True means looping, false will play until EOF
-  	  */
+	  */
 	bool GetIsLooping();
 
 	//! Arbeitsbereich (region of interest) festlegen
@@ -168,15 +160,15 @@ public:
 	 * Legt den Arbeitsbereich fest, d.h. das Interval in den Quellendaten, aus dem die
 	 * Quelle ihre Daten freisetzt. Dabei stellt uiStartOffset die Nummer des Samples
 	 * dar, an dem der Arbeitsbereich beginnt. Dieser Wert muß NICHT unbedingt ein Vielfaches der
-	 * Blöcklänge sein und darf frei gewählt werden. Der Wert uiEndOffset ist die Nummer 
+	 * Blöcklänge sein und darf frei gewählt werden. Der Wert uiEndOffset ist die Nummer
 	 * des ersten Samples, welches nicht mehr im Arbeitsbereich enthalten ist.
-	 * Somit ist definieren beide Werte das HALBOFFENE Interval [uiStartOffset, uiEndOffset). 
+	 * Somit ist definieren beide Werte das HALBOFFENE Interval [uiStartOffset, uiEndOffset).
 	 * Die Datenquelle setzt also Audiodaten aus dem Bereich [uiStartOffset, uiEndOffset-1]
 	 * frei. Das Ende des Arbeitsbereiches uiEndOffset wird von der Methode so
 	 * angepasst, das die Differenz uiEndOffset-uiStartOffset das nächstkleinere Vielfache
 	 * der Blocklänge ergibt.
 	 */
-	void SetROI(unsigned int uiStartOffset, unsigned int uiEndOffset);
+	void SetROI( unsigned int uiStartOffset, unsigned int uiEndOffset );
 
 	//! Startposition des Arbeitsbereiches (region of interest) zurückgeben
 	unsigned int GetROIStart();
@@ -206,7 +198,7 @@ public:
 	unsigned int GetNumberOfChannels() const;
 	double GetSampleRate() const;
 
-    const float* GetBlockPointer(unsigned int uiChannel, const ITAStreamInfo* pStreamInfo);	
+	const float* GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pStreamInfo );
 	void IncrementBlockPointer();
 
 protected:
@@ -226,11 +218,11 @@ protected:
 	/**
 	 * Zu benutzen im Verbund mit dem geschützen Konstruktor.
 	 */
-	void Init(const std::vector<float*>& vpfBuffer,
-		      unsigned int uiBuffersize,
-			  double dSamplerate,
-			  unsigned int uiBlocklength,
-			  bool bLoopMode);
+	void Init( const std::vector<float*>& vpfBuffer,
+		unsigned int uiBuffersize,
+		double dSamplerate,
+		unsigned int uiBlocklength,
+		bool bLoopMode );
 
 private:
 	unsigned int m_uiBuffersize;		// Größe der einzelnen Kanalpuffer
