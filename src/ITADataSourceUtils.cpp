@@ -1,9 +1,5 @@
 #include <ITADataSourceUtils.h>
 
-// Wichtig: Folgendes Makro definiert Windows-NT als Umgebung und
-//          bewirkt somit die Nutzbarkeit der WaitableTimer.
-#define _WIN32_WINNT 0x0500
-
 #include <ITADataSource.h>
 #include <ITAStreamInfo.h>
 #include <ITAAudiofileWriter.h>
