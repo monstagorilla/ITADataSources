@@ -2,7 +2,9 @@
 
 // Wichtig: Folgendes Makro definiert Windows-NT als Umgebung und
 //          bewirkt somit die Nutzbarkeit der WaitableTimer.
+#ifndef  _WIN32_WINNT // @todo: remove
 #define _WIN32_WINNT 0x0500
+#endif
 
 #include <ITADataSource.h>
 #include <ITAStreamInfo.h>
