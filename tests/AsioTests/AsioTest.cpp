@@ -18,7 +18,8 @@ void AsioBufferSwitch( long index, ASIOBool processNow )
 	if( ASIOGetSamplePosition( &timeInfo.timeInfo.samplePosition, &timeInfo.timeInfo.systemTime ) == ASE_OK )
 		timeInfo.timeInfo.flags = kSystemTimeValid | kSamplePositionValid;
 
-	bufferSwitchTimeInfo( &timeInfo, index, processNow );
+	// @todo:
+	//bufferSwitchTimeInfo( &timeInfo, index, processNow );
 };
 
 void AsioSampleRateChanged( ASIOSampleRate ) {};
@@ -27,6 +28,8 @@ long AsioMessages( long selector, long value, void*, double* ) { return 0; };
 
 ASIOTime *AsioBufferSwitchTimeInfo( ASIOTime *timeInfo, long index, ASIOBool processNow )
 {
+	// @todo:
+	/*
 	for( int i = 0; i < oAsioDriverInfo.inputBuffers + asioDriverInfo.outputBuffers; i++ )
 	{
 		if( asioDriverInfo.bufferInfos[ i ].isInput == TRUE )
@@ -34,7 +37,9 @@ ASIOTime *AsioBufferSwitchTimeInfo( ASIOTime *timeInfo, long index, ASIOBool pro
 			assert( asioDriverInfo.channelInfos[ i ].type == ASIOSTInt24LSB );
 		}
 	}
+	*/
 
+	return nullptr;
 };
 
 int main( int argc, char* argv[] )
