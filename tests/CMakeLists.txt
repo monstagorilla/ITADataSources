@@ -117,6 +117,7 @@ set_property( TARGET StreamProbeTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataS
 # tests
 if( ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO )
 	add_subdirectory( ITAAsioTests )
+	add_subdirectory( AsioTests )
 endif( ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO )
 
 if( ITA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO )
