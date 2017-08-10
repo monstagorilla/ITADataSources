@@ -26,12 +26,3 @@ vista_install( NativeAsioThreadedMultiInstanceTest )
 vista_create_default_info_file( NativeAsioThreadedMultiInstanceTest )
 
 set_property( TARGET NativeAsioThreadedMultiInstanceTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/Asio" )
-
-add_executable( ReciprocalDAADLatencyMeasurement ReciprocalDAADLatencyMeasurement.cpp )
-target_link_libraries( ReciprocalDAADLatencyMeasurement ${VISTA_USE_PACKAGE_LIBRARIES} )
-
-vista_configure_app( ReciprocalDAADLatencyMeasurement )
-vista_install( ReciprocalDAADLatencyMeasurement )
-vista_create_default_info_file( ReciprocalDAADLatencyMeasurement )
-
-set_property( TARGET ReciprocalDAADLatencyMeasurement PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/Asio" )
