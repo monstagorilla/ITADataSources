@@ -28,22 +28,28 @@ public:
 	inline CThreadedASIO( const int iDriverIndex )
 		: m_iDriverIndex( iDriverIndex )
 	{
-		assert( iDriverIndex < g_oAsioDriverList.asioGetNumDev() && iDriverIndex > 0 );
+		ASIOError ae;
+
+		assert( m_iDriverIndex < g_oAsioDriverList.asioGetNumDev() && m_iDriverIndex >= 0 );
 		m_sDriverName.resize( 256 );
-		m_oDriver.asioGetDriverName( iDriverIndex, &m_sDriverName[ 0 ], int( m_sDriverName.size() ) );
+		m_oDriver.asioGetDriverName( m_iDriverIndex, &m_sDriverName[ 0 ], int( m_sDriverName.size() ) );
 		m_sDriverName = std::string( m_sDriverName.c_str() ); // Strip
-		cout << "New threaded ASIO instance with driver name: " << m_sDriverName << endl;
+
+		cout << "[" << m_sDriverName << "] Initializing ASIO from thread " << VistaThread::GetThreadIdentity() << endl;
+
+		VistaTimeUtils::Sleep( 1000 );
 
 		bool bLoadSuccess = m_oDriver.loadDriver( &m_sDriverName[ 0 ] );
+		assert( bLoadSuccess );
+
+		VistaTimeUtils::Sleep( 1000 );
 
 		ASIODriverInfo oDriverInfo;
 		oDriverInfo.asioVersion = 2;
-		assert( ASIOInit( &oDriverInfo ) == ASE_OK );
+		assert( ( ae = ASIOInit( &oDriverInfo ) ) == ASE_OK );
 
 		ASIOCallbacks oAsioCallback;
-		//long AsioMessages( long selector, long value, void*, double* )
-		
-		oAsioCallback.asioMessage = long( CThreadedASIO::* )( long, long, void*, double* );
+		oAsioCallback.asioMessage = &( CThreadedASIO::AsioMessages );
 		oAsioCallback.bufferSwitch = &( CThreadedASIO::AsioBufferSwitch );
 		oAsioCallback.bufferSwitchTimeInfo = &( CThreadedASIO::AsioBufferSwitchTimeInfo );
 		oAsioCallback.sampleRateDidChange = &( CThreadedASIO::AsioSampleRateChanged );
@@ -72,22 +78,15 @@ public:
 		assert( ASE_OK == ASIOCreateBuffers( &voBufferInfos.front(), 4, preferredSize, &oAsioCallback ) );
 
 		g_oRegistry[ VistaThread::GetThreadIdentity() ] = this;
-	};
 
-	inline void StartStreaming()
-	{
 		assert( ASE_OK == ASIOStart() );
+		cout << "[" << m_sDriverName << "] Started ASIO from thread " << VistaThread::GetThreadIdentity() << endl;
+		VistaTimeUtils::Sleep( 10000 );
+		assert( ASE_OK == ASIOStop() );
 	};
-
+	
 	inline void ThreadBody()
 	{
-		cout << "[" << m_sDriverName << "] Tic Toc" << endl;
-		VistaTimeUtils::Sleep( 1000 );
-	};
-
-	inline void StopStreaming()
-	{
-		assert( ASE_OK == ASIOStop() );
 	};
 
 	inline static ASIOTime* AsioBufferSwitchTimeInfo( ASIOTime *timeInfo, long index, ASIOBool processNow )
@@ -104,9 +103,10 @@ public:
 			timeInfo.timeInfo.flags = kSystemTimeValid | kSamplePositionValid;
 
 		AsioBufferSwitchTimeInfo( &timeInfo, index, processNow );
-
-		long iThreadID = VistaThread::GetThreadIdentity();
-		g_oRegistry[ iThreadID ];
+		
+		long iThreadID = VistaThread::GetCallingThreadIdentity();
+		cout << "Buffer switch called from thread " << iThreadID << endl;
+		//g_oRegistry[ iThreadID ];
 	};
 
 	inline static void AsioSampleRateChanged( ASIOSampleRate fs )
@@ -115,7 +115,7 @@ public:
 		return;
 	};
 	
-	inline long AsioMessages( long selector, long value, void*, double* )
+	inline static long AsioMessages( long selector, long value, void*, double* )
 	{
 		return 0;
 	};
@@ -129,16 +129,14 @@ private:
 
 int main( int, char[] )
 {
-	CThreadedASIO oAsio1( 2 );
-	CThreadedASIO oAsio2( 2 );
+	cout << "Main thread is called by " << VistaThread::GetCallingThreadIdentity() << endl;
+	CThreadedASIO oAsio1( 1 );
+	//CThreadedASIO oAsio2( 1 );
 
-	oAsio1.StartStreaming();
-	oAsio2.StartStreaming();
+	oAsio1.Run();
+	//oAsio2.Run();
 
-	VistaTimeUtils::Sleep( 3000 );
-
-	oAsio1.StopStreaming();
-	oAsio2.StopStreaming();
+	VistaTimeUtils::Sleep( 10000 );
 
 	return 0;
 }
