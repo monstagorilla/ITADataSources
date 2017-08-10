@@ -9,15 +9,26 @@
 #include <common/asio.h>
 
 #include <VistaBase/VistaTimeUtils.h>
+#include <VistaInterProcComm/Concurrency/VistaThread.h>
 
 using namespace std;
 
-ASIOTime* AsioBufferSwitchTimeInfo( ASIOTime *timeInfo, long, ASIOBool )
+ASIOTime* AsioBufferSwitchTimeInfo( ASIOTime *timeInfo, long index, ASIOBool processNow )
 {
+	/*
+	for( int i = 0; i < oAsioDriverInfo.inputBuffers + asioDriverInfo.outputBuffers; i++ )
+	{
+	if( asioDriverInfo.bufferInfos[ i ].isInput == TRUE )
+	{
+	assert( asioDriverInfo.channelInfos[ i ].type == ASIOSTInt24LSB );
+	}
+	}
+	*/
+
 	return timeInfo;
 };
 
-void AsioBufferSwitch( long nIndex, ASIOBool processNow )
+void AsioBufferSwitch( long index, ASIOBool processNow )
 {
 	ASIOTime timeInfo;
 	memset( &timeInfo, 0, sizeof( timeInfo ) );
@@ -25,7 +36,7 @@ void AsioBufferSwitch( long nIndex, ASIOBool processNow )
 	if( ASIOGetSamplePosition( &timeInfo.timeInfo.samplePosition, &timeInfo.timeInfo.systemTime ) == ASE_OK )
 		timeInfo.timeInfo.flags = kSystemTimeValid | kSamplePositionValid;
 
-	AsioBufferSwitchTimeInfo( &timeInfo, nIndex, processNow );
+	AsioBufferSwitchTimeInfo( &timeInfo, index, processNow );
 };
 
 void AsioSampleRateChanged( ASIOSampleRate fs )
@@ -34,12 +45,12 @@ void AsioSampleRateChanged( ASIOSampleRate fs )
 	return;
 };
 
-long AsioMessages( long, long, void*, double* )
+long AsioMessages( long selector, long value, void*, double* )
 {
 	return 0;
 };
 
-int main( int, char[] )
+int main( int argc, char* argv[] )
 {
 	ASIOError ae;
 	AsioDriverList* pDrivers = new AsioDriverList();
@@ -49,12 +60,11 @@ int main( int, char[] )
 
 	for( int i = 0; i < nNumDrivers; i++ )
 	{
-		int iDriverIndex = int( i );
 		AsioDrivers* pDriver = new AsioDrivers();
 
 		string sDriverName;
 		sDriverName.resize( 256 );
-		pDriver->asioGetDriverName( iDriverIndex, &sDriverName[ 0 ], int( sDriverName.size() ) );
+		pDriver->asioGetDriverName( i, &sDriverName[ 0 ], sDriverName.size() );
 		sDriverName = std::string( sDriverName.c_str() ); // Strip
 		cout << "Driver name: " << sDriverName << "." << endl;
 
@@ -63,7 +73,7 @@ int main( int, char[] )
 		{
 			string sDriverPath;
 			sDriverPath.resize( 256 );
-			pDriver->asioGetDriverPath( iDriverIndex, &sDriverPath[ 0 ], int( sDriverPath.size() ) );
+			pDriver->asioGetDriverPath( i, &sDriverPath[ 0 ], sDriverPath.size() );
 			sDriverPath = std::string( sDriverPath.c_str() ); // Strip
 			cout << "Driver path: " << sDriverPath << endl;
 
@@ -74,7 +84,8 @@ int main( int, char[] )
 			pDriver->getCurrentDriverName( &sCurrentDriverName[ 0 ] );
 			sCurrentDriverName = std::string( sCurrentDriverName.c_str() ); // Strip
 			cout << "Current driver name: " << sCurrentDriverName << endl;
-			
+
+
 			ASIODriverInfo oDriverInfo;
 			oDriverInfo.asioVersion = 2;
 			if( ASIOInit( &oDriverInfo ) != ASE_OK )
@@ -108,7 +119,7 @@ int main( int, char[] )
 				continue;
 
 			long minSize, maxSize, preferredSize, granularity;
-			ae = ASIOGetBufferSize( &minSize, &maxSize, &preferredSize, &granularity );
+			ASIOError aeResult = ASIOGetBufferSize( &minSize, &maxSize, &preferredSize, &granularity );
 			preferredSize = ( preferredSize == 0 ? min( 1024, maxSize ) : preferredSize );
 
 
@@ -118,7 +129,7 @@ int main( int, char[] )
 			ae = ASIOStart();
 			assert( ae == ASE_OK );
 
-			VistaTimeUtils::Sleep( int( 2e3 ) );
+			VistaTimeUtils::Sleep( 2e3 );
 
 			ae = ASIOStop();
 			assert( ae == ASE_OK );
