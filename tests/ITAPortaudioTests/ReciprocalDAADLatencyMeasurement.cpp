@@ -30,12 +30,17 @@ int main( int argc, char *argv[] )
 		// --- Device A ---
 		
 		ITAPortaudioInterface oPADeviceA( dSampleRate, iBlockLength );
-		oPADeviceA.Initialize( iDeviceA );
-		string sInDevice = oPADeviceA.GetDeviceName( iDeviceA );
-		cout << "Input device identifier: " << sInDevice << endl;
+		ITAPortaudioInterface::ITA_PA_ERRORCODE err;
+		if( ( err = oPADeviceA.Initialize( iDeviceA ) ) != ITAPortaudioInterface::ITA_PA_NO_ERROR )
+			ITA_EXCEPT1( INVALID_PARAMETER, "Could not initialize device A: " + ITAPortaudioInterface::GetErrorCodeString( err ) );
+
+		string sDeviceA = oPADeviceA.GetDeviceName( iDeviceA );
+		cout << "Input device identifier: " << sDeviceA << endl;
 		int iNumInputChannelsA, iNumOutputChannelsA;
 		oPADeviceA.GetNumChannels( iDeviceA, iNumInputChannelsA, iNumOutputChannelsA );
-		assert( iNumInputChannelsA > 1 && iNumOutputChannelsA > 1 );
+
+		if( iNumInputChannelsA == 0 || iNumOutputChannelsA == 0 )
+			ITA_EXCEPT1( INVALID_PARAMETER, "Not enough I/O channels for device A: " + sDeviceA );
 
 		ITAFileDatasource oPlaybackA( sExcitationSignalPath, iBlockLength );
 		oPADeviceA.SetPlaybackEnabled( true );
@@ -49,8 +54,8 @@ int main( int argc, char *argv[] )
 		
 		ITAPortaudioInterface oPADeviceB( dSampleRate, iBlockLength );
 		oPADeviceB.Initialize( iDeviceB );
-		sInDevice = oPADeviceB.GetDeviceName( iDeviceB );
-		cout << "Input device identifier: " << sInDevice << endl;
+		string sDeviceB = oPADeviceB.GetDeviceName( iDeviceB );
+		cout << "Input device identifier: " << sDeviceB << endl;
 		int iNumInputChannelsB, iNumOutputChannelsB;
 		oPADeviceB.GetNumChannels( iDeviceB, iNumInputChannelsB, iNumOutputChannelsB );
 
