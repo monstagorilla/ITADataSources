@@ -83,6 +83,9 @@ int main( int, char[] )
 				continue;
 			}
 
+			long iInputLatencyDeviceA, iOutputLatencyDeviceA;
+			ASIOError ae = ASIOGetLatencies( &iInputLatencyDeviceA, &iOutputLatencyDeviceA );
+
 			ASIOCallbacks oAsioCallback;
 			oAsioCallback.asioMessage = &AsioMessages;
 			oAsioCallback.bufferSwitch = &AsioBufferSwitch;
