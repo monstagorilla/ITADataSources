@@ -1,14 +1,20 @@
+// ITADataSources
 #include <ITADataSourceUtils.h>
 #include <ITAPortaudioInterface.h>
 #include <ITAStreamProbe.h>
 #include <ITAFileDataSource.h>
+#include <ITAStreamMultiplier1N.h>
+
+// ITABase
 #include <ITAException.h>
 #include <ITAStringUtils.h>
 
+// STL
 #include <iostream>
 #include <string>
 
 using namespace std;
+void list_portaudio_devices();
 
 int main( int argc, char *argv[] )
 {
@@ -18,13 +24,13 @@ int main( int argc, char *argv[] )
 	try
 	{
 		// Arguments
-		int iDeviceA = StringToInt( string( argv[ 1 ] ) );
-		int iDeviceB = StringToInt( string( argv[ 2 ] ) );
+		const int iDeviceA = StringToInt( string( argv[ 1 ] ) ) - 1;
+		const int iDeviceB = StringToInt( string( argv[ 2 ] ) ) - 1;
 		string sExcitationSignalPath = string( argv[ 3 ] );
 		string sRecordingSignalPathA = string( argv[ 4 ] );
 		string sRecordingSignalPathB = string( argv[ 5 ] );
-		double dSampleRate = StringToDouble( string( argv[ 6 ] ) );
-		int iBlockLength = StringToInt( string( argv[ 7 ] ) );
+		const double dSampleRate = StringToDouble( string( argv[ 6 ] ) );
+		const int iBlockLength = StringToInt( string( argv[ 7 ] ) );
 
 
 		// --- Device A ---
@@ -35,16 +41,25 @@ int main( int argc, char *argv[] )
 			ITA_EXCEPT1( INVALID_PARAMETER, "Could not initialize device A: " + ITAPortaudioInterface::GetErrorCodeString( err ) );
 
 		string sDeviceA = oPADeviceA.GetDeviceName( iDeviceA );
-		cout << "Input device identifier: " << sDeviceA << endl;
+		cout << "Device A device identifier: " << sDeviceA << endl;
 		int iNumInputChannelsA, iNumOutputChannelsA;
 		oPADeviceA.GetNumChannels( iDeviceA, iNumInputChannelsA, iNumOutputChannelsA );
 
 		if( iNumInputChannelsA == 0 || iNumOutputChannelsA == 0 )
 			ITA_EXCEPT1( INVALID_PARAMETER, "Not enough I/O channels for device A: " + sDeviceA );
 
+		cout << "Using " << iNumOutputChannelsA << " outputs and " << iNumInputChannelsA << " inputs for device A" << endl;
+		
+
 		ITAFileDatasource oPlaybackA( sExcitationSignalPath, iBlockLength );
+		if( oPlaybackA.GetNumberOfChannels() != 1 )
+			ITA_EXCEPT_INVALID_PARAMETER( "Excitation signal must be single channel" );
+
+
+		ITAStreamMultiplier1N oMultiplierA( &oPlaybackA, iNumOutputChannelsA );
+
 		oPADeviceA.SetPlaybackEnabled( true );
-		oPADeviceA.SetPlaybackDatasource( &oPlaybackA );
+		oPADeviceA.SetPlaybackDatasource( &oMultiplierA );
 
 		oPADeviceA.SetRecordEnabled( true );
 		ITAStreamProbe oRecordStreamProbeA( oPADeviceA.GetRecordDatasource(), sRecordingSignalPathA );
@@ -55,13 +70,23 @@ int main( int argc, char *argv[] )
 		ITAPortaudioInterface oPADeviceB( dSampleRate, iBlockLength );
 		oPADeviceB.Initialize( iDeviceB );
 		string sDeviceB = oPADeviceB.GetDeviceName( iDeviceB );
-		cout << "Input device identifier: " << sDeviceB << endl;
+		cout << "Device B device identifier: " << sDeviceB << endl;
 		int iNumInputChannelsB, iNumOutputChannelsB;
 		oPADeviceB.GetNumChannels( iDeviceB, iNumInputChannelsB, iNumOutputChannelsB );
+		
+		if( iNumInputChannelsB == 0 || iNumOutputChannelsB == 0 )
+			ITA_EXCEPT1( INVALID_PARAMETER, "Not enough I/O channels for device B: " + sDeviceB );
+
+		cout << "Using " << iNumOutputChannelsB << " outputs and " << iNumInputChannelsB << " inputs for device B" << endl;
 
 		ITAFileDatasource oPlaybackB( sExcitationSignalPath, iBlockLength );
+		if( oPlaybackB.GetNumberOfChannels() != 1 )
+			ITA_EXCEPT_INVALID_PARAMETER( "Excitation signal must be single channel" );
+
+		ITAStreamMultiplier1N oMultiplierB( &oPlaybackB, iNumOutputChannelsB );
+
 		oPADeviceB.SetPlaybackEnabled( true );
-		oPADeviceB.SetPlaybackDatasource( &oPlaybackB );
+		oPADeviceB.SetPlaybackDatasource( &oMultiplierB );
 
 		oPADeviceB.SetRecordEnabled( true );
 		ITAStreamProbe oRecordStreamProbeB( oPADeviceB.GetRecordDatasource(), sRecordingSignalPathB );
@@ -71,15 +96,26 @@ int main( int argc, char *argv[] )
 
 		// Open
 		oPADeviceA.Open();
-		oPADeviceA.Open();
+		oPADeviceB.Open();
 
 		// Start streaming
 		oPADeviceA.Start();
 		oPADeviceB.Start();
 
 		// Measurement
-		WriteFromDatasourceToFile( &oRecordStreamProbeA, sRecordingSignalPathA, oPlaybackA.GetFileCapacity(), 1.0, true, true );
-		WriteFromDatasourceToFile( &oRecordStreamProbeB, sRecordingSignalPathA, oPlaybackB.GetFileCapacity(), 1.0, true, true );
+		std::vector< float* > vpfSamples;
+		std::vector< std::vector< float >* > vpfSamplesVector;
+		for( unsigned int i = 0; i < oRecordStreamProbeB.GetNumberOfChannels(); i++ )
+		{
+			std::vector< float >* pvfData = new std::vector< float >( oPlaybackA.GetFileCapacity() );
+			vpfSamplesVector.push_back( pvfData );
+			vpfSamples.push_back( &( *pvfData )[ 0 ] );
+		}
+		//WriteFromDatasourceToBuffer( &oRecordStreamProbeA, &vpfSamples[ 0 ], oPlaybackA.GetFileCapacity(), 1.0, true, true );
+		WriteFromDatasourceToBuffer( &oRecordStreamProbeB, &vpfSamples[ 0 ], oPlaybackB.GetFileCapacity(), 1.0, true, true );
+
+		for( size_t i = 0; i < vpfSamplesVector.size(); i++ )
+			delete vpfSamplesVector[ i ];
 
 		// Stop streaming
 		oPADeviceA.Stop();
@@ -96,7 +132,20 @@ int main( int argc, char *argv[] )
 	catch( const ITAException& e )
 	{
 		cerr << e << endl;
+		cout << "Listing all available Portaudio devices: " << endl;
+		list_portaudio_devices();
 	}
 
 	return 0;
+}
+
+void list_portaudio_devices()
+{
+	ITAPortaudioInterface oITAPA( 44.1e3, 1024 );
+	oITAPA.Initialize();
+	int iPANumDevices = oITAPA.GetNumDevices();
+	for( int i = 0; i < iPANumDevices; i++ )
+		cout << "[" << i + 1 << "] \"" << oITAPA.GetDeviceName( i ) << "\"" << endl;
+	cout << endl;
+	oITAPA.Finalize();
 }

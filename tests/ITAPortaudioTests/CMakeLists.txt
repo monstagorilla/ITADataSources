@@ -41,7 +41,7 @@ set_property( TARGET ITAPortaudioMeasurementTest PROPERTY FOLDER "ITACoreLibs/Te
 add_executable( ReciprocalDAADLatencyMeasurement ReciprocalDAADLatencyMeasurement.cpp )
 target_link_libraries( ReciprocalDAADLatencyMeasurement ${VISTA_USE_PACKAGE_LIBRARIES} )
 
-vista_set_target_msvc_arguments( ReciprocalDAADLatencyMeasurement 1 1 "${CMAKE_CURRENT_SOURCE_DIR}/sweep.wav ${CMAKE_CURRENT_SOURCE_DIR}/recordA.wav ${CMAKE_CURRENT_SOURCE_DIR}/recordB.wav 44100 2048" )
+vista_set_target_msvc_arguments( ReciprocalDAADLatencyMeasurement "1 1 ${CMAKE_CURRENT_SOURCE_DIR}/sweep.wav ${CMAKE_CURRENT_SOURCE_DIR}/recordA.wav ${CMAKE_CURRENT_SOURCE_DIR}/recordB.wav 44100 2048" )
 
 vista_configure_app( ReciprocalDAADLatencyMeasurement )
 vista_install( ReciprocalDAADLatencyMeasurement )

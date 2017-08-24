@@ -41,20 +41,15 @@ class ITADatasource;
  * \param uiNumberOfSamples Anzahl der Samples
  * \param dGain Verstärkungsfaktor (optional)
  * \param bOnline Echtzeit-Modus verwenden? (d.h. reale Dauern zwischen den
- *                Datenanforderungen verwenden). Falls false, werden die 
+ *                Datenanforderungen verwenden). Falls false, werden die
  *                Daten direkt hintereinander angefordert (Maximaler Datendurchsatz)
  * \param bDisplayProgress Fortschritt auf der Konsole ausgeben? (Optional, Standard: Nein)
  *
- * \note Gibt die Datenquelle den Nullzeiger zurück, wird für 
+ * \note Gibt die Datenquelle den Nullzeiger zurück, wird für
  *       den betreffenden Block Stille in den Puffer geschrieben
  * \note Ausnahmebehandlung mittels der Klasse ITAException
  */
-ITA_DATA_SOURCES_API void WriteFromDatasourceToBuffer(ITADatasource* pSource,
-				  		         float** ppfDest,
-						         unsigned int uiNumberOfSamples,
-						         double dGain=1.0,
-							     bool bOnline=true,
-							     bool bDisplayProgress=false);
+ITA_DATA_SOURCES_API void WriteFromDatasourceToBuffer( ITADatasource* pSource, float** ppfDest, unsigned int uiNumberOfSamples, double dGain = 1.0, bool bOnline = true, bool bDisplayProgress = false );
 
 //! Daten einer Datenquelle in eine Datei schreiben
 /**
@@ -66,20 +61,14 @@ ITA_DATA_SOURCES_API void WriteFromDatasourceToBuffer(ITADatasource* pSource,
  * \param uiNumberOfSamples Anzahl der Samples
  * \param dGain Verstärkungsfaktor (optional)
  * \param bOnline Echtzeit-Modus verwenden? (d.h. reale Dauern zwischen den
- *                Datenanforderungen verwenden). Falls false, werden die 
+ *                Datenanforderungen verwenden). Falls false, werden die
  *                Daten direkt hintereinander angefordert (Maximaler Datendurchsatz)
  * \param bDisplayProgress Fortschritt auf der Konsole ausgeben? (Optional, Standard: Nein)
  *
- * \note Gibt die Datenquelle den Nullzeiger zurück, wird für 
+ * \note Gibt die Datenquelle den Nullzeiger zurück, wird für
  *       den betreffenden Block Stille in die Datei geschrieben
  * \note Ausnahmebehandlung mittels der Klasse ITAException
  */
-ITA_DATA_SOURCES_API void WriteFromDatasourceToFile(ITADatasource* pSource,
-				  		       std::string sFilename,
-						       unsigned int uiNumberOfSamples,
-						       double dGain=1.0,
-							   bool bOnline=true,
-							   bool bDisplayProgress=false);
-
+ITA_DATA_SOURCES_API void WriteFromDatasourceToFile( ITADatasource* pSource, std::string sFilename, unsigned int uiNumberOfSamples, double dGain = 1.0, bool bOnline = true, bool bDisplayProgress = false );
 
 #endif // INCLUDE_WATCHER_ITA_DATA_SOURCES_UTILS
