@@ -6,7 +6,7 @@
 #include <ITAException.h>
 #include <ITAFileDataSource.h>
 #include <ITAStreamProbe.h>
-#include <ITAStreamPatchbay.h>
+#include <ITAStreamPatchBay.h>
 using namespace std;
 
 int main(int argc, char* argv[])

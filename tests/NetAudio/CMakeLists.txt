@@ -68,11 +68,12 @@ if( ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO )
 	vista_install( ITANetAudioTest )
 	vista_create_default_info_file( ITANetAudioTest )
 
+	set_property( TARGET ITANetAudioTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+
 endif( )
 
 vista_install_all_dlls( bin )
 
-set_property( TARGET ITANetAudioTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
 
 if( NOT DEFINED ITA_NETAUDIO_SERVER_WITH_TESTS )
     set( ITA_NETAUDIO_SERVER_WITH_TESTS "localhost 12480 44100 32 2" CACHE STRING "Arguments for calling NetAudio server")
