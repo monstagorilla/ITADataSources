@@ -1,32 +1,31 @@
 /*
-* ----------------------------------------------------------------
-*
-*		ITA core libs
-*		(c) Copyright Institute of Technical Acoustics (ITA)
-*		RWTH Aachen University, Germany, 2015-2017
-*
-* ----------------------------------------------------------------
-*				    ____  __________  _______
-*				   //  / //__   ___/ //  _   |
-*				  //  /    //  /    //  /_|  |
-*				 //  /    //  /    //  ___   |
-*				//__/    //__/    //__/   |__|
-*
-* ----------------------------------------------------------------
-*
-*/
-// $Id: ITAPeakDetector.h 2900 2012-09-17 08:42:42Z stienen $
+ * ----------------------------------------------------------------
+ *
+ *		ITA core libs
+ *		(c) Copyright Institute of Technical Acoustics (ITA)
+ *		RWTH Aachen University, Germany, 2015-2017
+ *
+ * ----------------------------------------------------------------
+ *				    ____  __________  _______
+ *				   //  / //__   ___/ //  _   |
+ *				  //  /    //  /    //  /_|  |
+ *				 //  /    //  /    //  ___   |
+ *				//__/    //__/    //__/   |__|
+ *
+ * ----------------------------------------------------------------
+ *
+ */
 
 #ifndef INCLUDE_WATCHER_ITA_PEAK_DETECTOR
 #define INCLUDE_WATCHER_ITA_PEAK_DETECTOR
 
 #include <ITADataSourcesDefinitions.h>
-          
+
 #include <ITACriticalSection.h>
 #include <ITADataSource.h>
 #include <vector>
 
-//! Detektor für Spitzwerte (peak values) in Audiostreams
+//! Detektor for peak values in audio stream (i.e. for level metering)
 /**
  * Die Klasse ITAPeakDetector wird zwischen eine Datenquelle und einen
  * Konsumenten für die Datenquelle geschaltet und detektiert dabei
@@ -45,19 +44,23 @@
  *
  * \note Die Klasse ist Thread-safe
  */
-class ITA_DATA_SOURCES_API ITAPeakDetector : public ITADatasource {
+class ITA_DATA_SOURCES_API ITAPeakDetector : public ITADatasource
+{
 public:
 	//! Konstruktor
 	/**
 	 * \note Es darf kein Nullzeiger übergeben werden.
 	 */
-	ITAPeakDetector(ITADatasource* pDatasource);	
+	ITAPeakDetector( ITADatasource* pDatasource );
 
 	//! Destruktor
 	virtual ~ITAPeakDetector();
 
 	//! Datenquelle zurückgeben
-	ITADatasource* GetDatasource() const { return m_pDataSource; }
+	inline ITADatasource* GetDatasource() const
+	{
+		return m_pDataSource;
+	};
 
 	//! Messung zurücksetzen
 	void Reset();
@@ -71,7 +74,7 @@ public:
 	 * so bleibt der bisherige Spitzenwert und der Kanal im dem er auftrat
 	 * für die weitere Analyse erhalten.
 	 */
-	void GetOverallPeak(float* pfPeak, unsigned int* puiChannel=0, bool bReset=true);
+	void GetOverallPeak( float* pfPeak, unsigned int* puiChannel = 0, bool bReset = true );
 
 	//! Spitzenwert über alle Kanäle in Dezibel zurückgeben
 	/**
@@ -79,24 +82,24 @@ public:
 	 *       symbolische Konstante DECIBEL_MINUS_INFINITY zurück
 	 *       (siehe ITANumericUtils.h)
 	 */
-	void GetOverallPeakDecibel(double* pdPeakDecibel, unsigned int* puiChannel=0, bool bReset=true);
+	void GetOverallPeakDecibel( double* pdPeakDecibel, unsigned int* puiChannel = 0, bool bReset = true );
 
 	//! Spitzenwert eines Kanals zurückgeben
 	/**
-	 * \note Wenn Sie die Spitzenwerte aller Kanäle abrufen möchten, 
+	 * \note Wenn Sie die Spitzenwerte aller Kanäle abrufen möchten,
 	 *       so empfiehlt sich die Methode GetChannelPeaks, da diese schneller ist.
 	 */
-	float GetPeak(unsigned int uiChannel, bool bReset=true);
+	float GetPeak( unsigned int uiChannel, bool bReset = true );
 
 	//! Spitzenwert eines Kanals in Dezibel zurückgeben
 	/**
 	 * \note Falls der Spitzenwert 0 ist, gibt die Methode die
 	 *       symbolische Konstante DECIBEL_MINUS_INFINITY zurück
 	 *       (siehe ITANumericUtils.h)
-	 * \note Wenn Sie die Spitzenwerte aller Kanäle abrufen möchten, 
+	 * \note Wenn Sie die Spitzenwerte aller Kanäle abrufen möchten,
 	 *       so empfiehlt sich die Methode GetChannelPeaksDecibel, da diese schneller ist.
 	 */
-	double GetPeakDecibel(unsigned int uiChannel, bool bReset=true);
+	double GetPeakDecibel( unsigned int uiChannel, bool bReset = true );
 
 	//! Spitzenwerte aller Kanäle abrufen
 	/**
@@ -106,7 +109,7 @@ public:
 	 * \note Das Zielarray muß mindestens so viele Felder haben,
 	 *       wie die Datenquelle Kanäle hat
 	 */
-	void GetPeaks(float* pfDest, bool bReset=true);
+	void GetPeaks( float* pfDest, bool bReset = true );
 
 	//! Spitzenwerte aller Kanäle abrufen
 	/**
@@ -116,46 +119,55 @@ public:
 	 * \note Falls der Vektor weniger Felder als Kanäle hat,
 	 *       so wird er automatisch vergrößert.
 	 */
-	void GetPeaks(std::vector<float>& vfDest, bool bReset=true);
+	void GetPeaks( std::vector<float>& vfDest, bool bReset = true );
 
 	//! Spitzenwerte aller Kanäle in Dezibel abrufen
 	/**
-	 * Diese Methode speichert die Spitzenwerte aller Kanäle 
+	 * Diese Methode speichert die Spitzenwerte aller Kanäle
 	 * in Dezibel im angegebenen Zielarray.
 	 *
 	 * \note Das Zielarray muß mindestens so viele Felder haben,
 	 *       wie die Datenquelle Kanäle hat
 	 */
-	void GetPeaksDecibel(double* pdDestDecibel, bool bReset=true);
+	void GetPeaksDecibel( double* pdDestDecibel, bool bReset = true );
 
 	//! Spitzenwerte aller Kanäle in Dezibel abrufen
 	/**
-	 * Diese Methode speichert die Spitzenwerte aller Kanäle 
+	 * Diese Methode speichert die Spitzenwerte aller Kanäle
 	 * in Dezibel im angegebenen Vektor.
 	 *
 	 * \note Falls der Vektor weniger Felder als Kanäle hat,
 	 *       so wird er automatisch vergrößert.
 	 */
-	void GetPeaksDecibel(std::vector<double>& vdDestDecibel, bool bReset=true);
+	void GetPeaksDecibel( std::vector<double>& vdDestDecibel, bool bReset = true );
 
-	// -= Überladene Methoden von ITADatasource =-
-	
-	unsigned int GetBlocklength() const { return m_uiBlocklength; }
-	unsigned int GetNumberOfChannels() const { return m_uiChannels; }
-	double GetSampleRate() const { return m_dSamplerate; }
+	inline unsigned int GetBlocklength() const
+	{
+		return m_uiBlocklength;
+	};
 
-	virtual const float* GetBlockPointer(unsigned int uiChannel, const ITAStreamInfo* pStreamInfo);	
+	inline unsigned int GetNumberOfChannels() const
+	{
+		return m_uiChannels;
+	};
+
+	double GetSampleRate() const
+	{
+		return m_dSamplerate;
+	};
+
+	virtual const float* GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pStreamInfo );
 	virtual void IncrementBlockPointer();
 
 protected:
-	ITADatasource* m_pDataSource;			// Angeschlossene Datenquelle
-	double m_dSamplerate;					// Abtastrate [Hz]
-	unsigned int m_uiChannels;				// Anzahl Kanäle
-	unsigned int m_uiBlocklength;			// Streaming Puffergröße [Samples]
-	ITACriticalSection m_cs;				// Sichert exklusiven Zugriff auf die Daten (s.u.)
-	float* m_pfPeaks;						// Spitzenwerte der einzelnen Kanäle
-	float m_fOverallPeak;					// Spitzenwert über alle Kanäle
-	unsigned int m_uiOverallPeakChannel;	// Kanal in dem der Spitzenwert auftrat
+	ITADatasource* m_pDataSource;			//!< Angeschlossene Datenquelle
+	double m_dSamplerate;					//!< Abtastrate [Hz]
+	unsigned int m_uiChannels;				//!< Anzahl Kanäle
+	unsigned int m_uiBlocklength;			//!< Streaming Puffergröße [Samples]
+	ITACriticalSection m_cs;				//!< Sichert exklusiven Zugriff auf die Daten (s.u.)
+	float* m_pfPeaks;						//!< Spitzenwerte der einzelnen Kanäle
+	float m_fOverallPeak;					//!< Spitzenwert über alle Kanäle
+	unsigned int m_uiOverallPeakChannel;	//!< Kanal in dem der Spitzenwert auftrat
 };
 
 #endif // INCLUDE_WATCHER_ITA_PEAK_DETECTOR
