@@ -64,14 +64,14 @@ set_property( TARGET DatasourceUtilsTest PROPERTY FOLDER "ITACoreLibs/Tests/ITAD
 # set_property( TARGET Patchbay1Test PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
-add_executable( PeakDetectorTest PeakDetectorTest.cpp )
-target_link_libraries( PeakDetectorTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+add_executable( StreamDetectorTest StreamDetectorTest.cpp )
+target_link_libraries( StreamDetectorTest ${VISTA_USE_PACKAGE_LIBRARIES} )
 
-vista_configure_app( PeakDetectorTest )
-vista_install( PeakDetectorTest )
-vista_create_default_info_file( PeakDetectorTest )
+vista_configure_app( StreamDetectorTest )
+vista_install( StreamDetectorTest )
+vista_create_default_info_file( StreamDetectorTest )
 
-set_property( TARGET PeakDetectorTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
+set_property( TARGET StreamDetectorTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
 
 
 add_executable( StreamFunctionGeneratorTest StreamFunctionGeneratorTest.cpp )

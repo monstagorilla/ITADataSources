@@ -34,14 +34,15 @@ class ITAAudiofileWriter;
 
 //! A measuring sensor for audio streams
 /**
-  * Instanzen der Klasse ITAStreamProbe können als "Messspitze" in Audiostreams
-  * eingehängt werden. Sie schreiben dann alle vorbeigeflossenen Daten in eine Audiodatei.
+  * This class captures (records) the entire data stream passing through and stores
+  * the result into a file on the hard drive.
   */
 class ITA_DATA_SOURCES_API ITAStreamProbe : public ITADatasource
 {
 public:
-	ITAStreamProbe( ITADatasource* pDatasource, const std::string& sFilename, ITAQuantization iQuantization = ITAQuantization::ITA_FLOAT );
+	ITAStreamProbe( ITADatasource* pDatasource, const std::string& sFilePath, ITAQuantization iQuantization = ITAQuantization::ITA_FLOAT );
 
+	//! Destructor also moves saples from memory to hard drive once.
 	virtual ~ITAStreamProbe();
 
 	inline ITADatasource* GetDatasource() const 
@@ -49,6 +50,7 @@ public:
 		return m_pDataSource;
 	}
 
+	//! Deprecated
 	inline std::string GetFilename() const
 	{
 		return GetFilePath();

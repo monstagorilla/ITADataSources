@@ -23,13 +23,15 @@
 
 #include <ITACriticalSection.h>
 #include <ITADataSource.h>
+
+#include <atomic>
 #include <vector>
 
-//! Detektor for peak values in audio stream (i.e. for level metering)
+//! Detektor for statistic values in audio stream (i.e. for level metering)
 /**
- * Die Klasse ITAPeakDetector wird zwischen eine Datenquelle und einen
+ * Die Klasse ITAStreamDetector wird zwischen eine Datenquelle und einen
  * Konsumenten für die Datenquelle geschaltet und detektiert dabei
- * die Spitzenwerte (peak values) in den Audiostreams der Kanäle der
+ * die Spitzenwerte (peak values) und Mittelwerte (RMS) in den Audiostreams der Kanäle der
  * Datenquelle. Die Klasse bekommt im Konstruktor ihre Datenquelle gesetzt
  * und stellt selber die Schnittstelle ITADatasource zur Verfügung.
  * Aufrufe von GetBlockPointer und IncrementBlockPointer werden an die
@@ -44,17 +46,27 @@
  *
  * \note Die Klasse ist Thread-safe
  */
-class ITA_DATA_SOURCES_API ITAPeakDetector : public ITADatasource
+class ITA_DATA_SOURCES_API ITAStreamDetector : public ITADatasource
 {
 public:
+
+	//! Mode of detection
+	enum Mode
+	{
+		DEACTIVATED = -1,
+		PEAK_AND_RMS,
+		PEAK,
+		RMS
+	};
+
 	//! Konstruktor
 	/**
 	 * \note Es darf kein Nullzeiger übergeben werden.
 	 */
-	ITAPeakDetector( ITADatasource* pDatasource );
+	ITAStreamDetector( ITADatasource* pDatasource, int iMode = PEAK_AND_RMS );
 
 	//! Destruktor
-	virtual ~ITAPeakDetector();
+	virtual inline ~ITAStreamDetector() {};
 
 	//! Datenquelle zurückgeben
 	inline ITADatasource* GetDatasource() const
@@ -65,6 +77,10 @@ public:
 	//! Messung zurücksetzen
 	void Reset();
 
+	void SetMode( const int iMode );
+
+	int GetMode() const;
+
 	//! Spitzenwert über alle Kanäle abrufen
 	/**
 	 * Diese Methode dient zum Abrufen des Spitzenwertes über alle
@@ -74,7 +90,7 @@ public:
 	 * so bleibt der bisherige Spitzenwert und der Kanal im dem er auftrat
 	 * für die weitere Analyse erhalten.
 	 */
-	void GetOverallPeak( float* pfPeak, unsigned int* puiChannel = 0, bool bReset = true );
+	float GetOverallPeak( int& iPeakChannelIndex, const bool bReset = true );
 
 	//! Spitzenwert über alle Kanäle in Dezibel zurückgeben
 	/**
@@ -82,14 +98,14 @@ public:
 	 *       symbolische Konstante DECIBEL_MINUS_INFINITY zurück
 	 *       (siehe ITANumericUtils.h)
 	 */
-	void GetOverallPeakDecibel( double* pdPeakDecibel, unsigned int* puiChannel = 0, bool bReset = true );
+	double GetOverallPeakDecibel( int& iPeakChannelIndex, const bool bReset = true );
 
 	//! Spitzenwert eines Kanals zurückgeben
 	/**
 	 * \note Wenn Sie die Spitzenwerte aller Kanäle abrufen möchten,
 	 *       so empfiehlt sich die Methode GetChannelPeaks, da diese schneller ist.
 	 */
-	float GetPeak( unsigned int uiChannel, bool bReset = true );
+	float GetPeak( const int iChannel, const bool bReset = true );
 
 	//! Spitzenwert eines Kanals in Dezibel zurückgeben
 	/**
@@ -99,17 +115,7 @@ public:
 	 * \note Wenn Sie die Spitzenwerte aller Kanäle abrufen möchten,
 	 *       so empfiehlt sich die Methode GetChannelPeaksDecibel, da diese schneller ist.
 	 */
-	double GetPeakDecibel( unsigned int uiChannel, bool bReset = true );
-
-	//! Spitzenwerte aller Kanäle abrufen
-	/**
-	 * Diese Methode speichert die Spitzenwerte aller Kanäle im
-	 * angegebenen Zielarray.
-	 *
-	 * \note Das Zielarray muß mindestens so viele Felder haben,
-	 *       wie die Datenquelle Kanäle hat
-	 */
-	void GetPeaks( float* pfDest, bool bReset = true );
+	double GetPeakDecibel( const int iChannel, bool bReset = true );
 
 	//! Spitzenwerte aller Kanäle abrufen
 	/**
@@ -119,18 +125,8 @@ public:
 	 * \note Falls der Vektor weniger Felder als Kanäle hat,
 	 *       so wird er automatisch vergrößert.
 	 */
-	void GetPeaks( std::vector<float>& vfDest, bool bReset = true );
-
-	//! Spitzenwerte aller Kanäle in Dezibel abrufen
-	/**
-	 * Diese Methode speichert die Spitzenwerte aller Kanäle
-	 * in Dezibel im angegebenen Zielarray.
-	 *
-	 * \note Das Zielarray muß mindestens so viele Felder haben,
-	 *       wie die Datenquelle Kanäle hat
-	 */
-	void GetPeaksDecibel( double* pdDestDecibel, bool bReset = true );
-
+	void GetPeaks( std::vector< float >& vfDest, const bool bReset = true );
+	
 	//! Spitzenwerte aller Kanäle in Dezibel abrufen
 	/**
 	 * Diese Methode speichert die Spitzenwerte aller Kanäle
@@ -139,19 +135,26 @@ public:
 	 * \note Falls der Vektor weniger Felder als Kanäle hat,
 	 *       so wird er automatisch vergrößert.
 	 */
-	void GetPeaksDecibel( std::vector<double>& vdDestDecibel, bool bReset = true );
+	void GetPeaksDecibel( std::vector< double >& vdDestDecibel, const bool bReset = true );
+
+	float GetOverallRMS( const bool bReset = true );
+	double GetOverallRMSDecibel( const bool bReset = true );
+	float GetRMS( const int iChannel, const bool bReset = true );
+	double GetRMSDecibel( const int iChannel, const bool bReset = true );
+	void GetRMSs( std::vector< float >& vfDest, const bool bReset = true );
+	void GetRMSsDecibel( std::vector< float >& vfDestDecibel, const bool bReset = true );
 
 	inline unsigned int GetBlocklength() const
 	{
-		return m_uiBlocklength;
+		return m_iBlocklength;
 	};
 
 	inline unsigned int GetNumberOfChannels() const
 	{
-		return m_uiChannels;
+		return m_iChannels;
 	};
 
-	double GetSampleRate() const
+	inline double GetSampleRate() const
 	{
 		return m_dSamplerate;
 	};
@@ -162,12 +165,15 @@ public:
 protected:
 	ITADatasource* m_pDataSource;			//!< Angeschlossene Datenquelle
 	double m_dSamplerate;					//!< Abtastrate [Hz]
-	unsigned int m_uiChannels;				//!< Anzahl Kanäle
-	unsigned int m_uiBlocklength;			//!< Streaming Puffergröße [Samples]
+	int m_iChannels;				//!< Anzahl Kanäle
+	int m_iBlocklength;			//!< Streaming Puffergröße [Samples]
+	std::atomic< int > m_iMode;
 	ITACriticalSection m_cs;				//!< Sichert exklusiven Zugriff auf die Daten (s.u.)
-	float* m_pfPeaks;						//!< Spitzenwerte der einzelnen Kanäle
+	std::vector< float > m_vfPeaks;			//!< Spitzenwerte der einzelnen Kanäle
 	float m_fOverallPeak;					//!< Spitzenwert über alle Kanäle
-	unsigned int m_uiOverallPeakChannel;	//!< Kanal in dem der Spitzenwert auftrat
+	int m_iOverallPeakChannel;	//!< Kanal in dem der Spitzenwert auftrat
+	std::vector< double > m_vdRMSSquaredSums;
+	int m_iRMSBlocks;
 };
 
 #endif // INCLUDE_WATCHER_ITA_PEAK_DETECTOR
