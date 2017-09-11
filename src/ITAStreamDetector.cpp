@@ -55,7 +55,7 @@ void ITAStreamDetector::SetMode( const int iMode )
 
 float ITAStreamDetector::GetOverallPeak( int& iChannel, const bool bReset )
 {
-	if( m_iMode != ITAStreamDetector::PEAK || m_iMode != ITAStreamDetector::PEAK_AND_RMS )
+	if( m_iMode != ITAStreamDetector::PEAK && m_iMode != ITAStreamDetector::PEAK_AND_RMS )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "Can not provide stream detector data because it is not calculated in this mode" );
 
 	m_cs.enter();
@@ -97,7 +97,7 @@ double ITAStreamDetector::GetOverallPeakDecibel( int& iChannel, const bool bRese
 
 float ITAStreamDetector::GetPeak( const int iChannel, const bool bReset )
 {
-	if( m_iMode != ITAStreamDetector::PEAK || m_iMode != ITAStreamDetector::PEAK_AND_RMS )
+	if( m_iMode != ITAStreamDetector::PEAK && m_iMode != ITAStreamDetector::PEAK_AND_RMS )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "Can not provide stream detector data because it is not calculated in this mode" );
 
 	if( iChannel >= m_iChannels )
@@ -123,7 +123,7 @@ double ITAStreamDetector::GetPeakDecibel( int iChannel, const bool bReset )
 
 void ITAStreamDetector::GetPeaks( std::vector< float >& vfDest, const bool bReset )
 {
-	if( m_iMode != ITAStreamDetector::PEAK || m_iMode != ITAStreamDetector::PEAK_AND_RMS )
+	if( m_iMode != ITAStreamDetector::PEAK && m_iMode != ITAStreamDetector::PEAK_AND_RMS )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "Can not provide stream detector data because it is not calculated in this mode" );
 
 	m_cs.enter();
