@@ -1,4 +1,4 @@
- #include "ITAStreamFunctionGenerator.h"
+#include "ITAStreamFunctionGenerator.h"
 
 #include <ITAConstants.h>
 #include <ITADataSourceRealization.h>
@@ -53,8 +53,13 @@ double ITAStreamFunctionGenerator::GetFrequency() const
 
 void ITAStreamFunctionGenerator::SetFrequency( double dFrequency )
 {
-	assert( dFrequency >= 0 );
-	m_iPeriodLengthSamples = ( int ) round( m_dSampleRate / dFrequency );
+	if( GetFunction() == DIRAC && dFrequency <= 0.0f )
+		m_iPeriodLengthSamples = m_iSampleCount;
+	else
+	{
+		assert( dFrequency > 0.0f );
+		m_iPeriodLengthSamples = ( int ) round( m_dSampleRate / dFrequency );
+	}
 }
 
 int ITAStreamFunctionGenerator::GetPeriodAsSamples() const
@@ -185,16 +190,18 @@ void ITAStreamFunctionGenerator::ProcessStream( const ITAStreamInfo* )
 	case DIRAC:
 
 		iNumSamples = ( m_bPeriodic ? ( int ) m_uiBlocklength : ( std::min )( ( int ) m_uiBlocklength, m_iPeriodLengthSamples - m_iSampleCount ) );
-
+		
 		if( m_bPeriodic )
 		{
-
-			for( int i = 0; i < iNumSamples; i++ ) pfOutputData[ i ] = ( m_iSampleCount++ % N ? 0 : a );
+			for( int i = 0; i < iNumSamples; i++ )
+				pfOutputData[ i ] = ( m_iSampleCount++ % N ? 0 : a );
 		}
-		else {
+		else
+		{
 			pfOutputData[ 0 ] = ( m_iSampleCount == 0 ? a : 0 );
-			for( int i = 1; i < iNumSamples; i++ ) pfOutputData[ i ] = 0;
-			m_iSampleCount += iNumSamples;
+			for( int i = 1; i < GetBlocklength(); i++ )
+				pfOutputData[ i ] = 0.0f;
+			m_iSampleCount += GetBlocklength();
 		}
 
 		break;
