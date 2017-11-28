@@ -7,6 +7,13 @@ include( VistaCommon )
 vista_use_package( VistaCoreLibs REQUIRED COMPONENTS VistaInterProcComm FIND_DEPENDENCIES )
 vista_use_package( ITABase REQUIRED FIND_DEPENDENCIES )
 
+if( ITA_VISTA_BUILD_STATIC AND WIN32 )
+	list( APPEND VISTA_USE_PACKAGE_LIBRARIES Ws2_32 Winmm )
+endif( )
+
+if( ITA_CORE_LIBS_BUILD_STATIC )
+	add_definitions( -DITA_BASE_STATIC )
+endif( )
 
 add_executable( ITAVistaNetTest VistaNetTest.cpp )
 target_link_libraries( ITAVistaNetTest ${VISTA_USE_PACKAGE_LIBRARIES} )

@@ -12,7 +12,11 @@ endif( )
 
 if( ITA_VISTA_BUILD_STATIC )
 	add_definitions( -DVISTABASE_STATIC -DVISTAMATH_STATIC -DVISTAASPECTS_STATIC -DVISTATOOLS_STATIC -DVISTAINTERPROCCOMM_STATIC )
+	if( WIN32 )
+		list( APPEND VISTA_USE_PACKAGE_LIBRARIES Ws2_32 Winmm )
+	endif( )
 endif( )
+
 
 add_executable( BufferDataSourceTest BufferDataSourceTest.cpp )
 target_link_libraries( BufferDataSourceTest ${VISTA_USE_PACKAGE_LIBRARIES} )

@@ -3,9 +3,19 @@ cmake_minimum_required( VERSION 2.8 )
 project( ITADataSourcesTest )
 list( APPEND CMAKE_MODULE_PATH "$ENV{VISTA_CMAKE_COMMON}" )
 include( VistaCommon )
-	
 
 vista_use_package( ITADataSources REQUIRED FIND_DEPENDENCIES )
+
+if( ITA_CORE_LIBS_BUILD_STATIC )
+	add_definitions( -DITA_BASE_STATIC -DITA_DATA_SOURCES_STATIC )
+endif( )
+
+if( ITA_VISTA_BUILD_STATIC )
+	add_definitions( -DVISTATOOLS_STATIC -DVISTABASE_STATIC -DVISTAMATH_STATIC -DVISTAASPECTS_STATIC -DVISTAINTERPROCCOMM_STATIC )
+	if( WIN32 )
+		list( APPEND VISTA_USE_PACKAGE_LIBRARIES Ws2_32 Winmm )
+	endif( )
+endif( )
 
 
 add_executable( ListDevices ListDevices.cpp )

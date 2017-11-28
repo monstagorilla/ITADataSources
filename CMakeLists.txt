@@ -135,7 +135,11 @@ endif( )
 if( BUILD_SHARED_LIBS )
 	add_definitions( -DITA_DATA_SOURCES_EXPORT )
 else( )
-	add_definitions( -DITA_BASE_STATIC -DITA_DATA_SOURCES_STATIC )
+	add_definitions( -DITA_DATA_SOURCES_STATIC )
+endif( )
+
+if( ITA_CORE_LIBS_BUILD_STATIC )
+	add_definitions( -DITA_BASE_STATIC )
 endif( )
 
 

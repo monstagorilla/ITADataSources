@@ -69,7 +69,8 @@ ITAPortaudioInterface::ITA_PA_ERRORCODE ITAPortaudioInterface::Initialize( int i
 	if( m_iError != ITA_PA_NO_ERROR )
 		return m_iError;
 
-	if( iDriverID < 0 || iDriverID >= Pa_GetDeviceCount() ) {
+	if( iDriverID < 0 || iDriverID >= Pa_GetDeviceCount() )
+	{
 		Pa_Terminate();
 		m_bInitialized = false;
 		return ITA_PA_INVALID_DEVICE;
