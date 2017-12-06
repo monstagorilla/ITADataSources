@@ -163,7 +163,10 @@ float ITAStreamDetector::GetOverallRMS( const bool bReset )
 	m_cs.enter();
 
 	if( m_iRMSBlocks == 0 )
+	{
+		m_cs.leave();
 		return 0.0f;
+	}
 
 	double dOverallRMSSums = 0;
 	for( size_t i = 0; i < m_vdRMSSquaredSums.size(); i++ )
@@ -220,7 +223,10 @@ void ITAStreamDetector::GetRMSs( std::vector< float >& vfDest, const bool bReset
 
 	vfDest.resize( m_vdRMSSquaredSums.size(), 0.0f );
 	if( m_iRMSBlocks == 0 )
+	{
+		m_cs.leave();
 		return;
+	}
 
 	for( size_t c = 0; c < m_vdRMSSquaredSums.size(); c++ )
 		vfDest[ c ] = float( std::sqrt( ( m_vdRMSSquaredSums[ c ] / double( m_iRMSBlocks ) ) ) ); // RMS
@@ -236,9 +242,14 @@ void ITAStreamDetector::GetRMSsDecibel( std::vector< float >& vdDestDecibel, con
 	if( m_iMode != ITAStreamDetector::RMS && m_iMode != ITAStreamDetector::PEAK_AND_RMS )
 		ITA_EXCEPT1( MODAL_EXCEPTION, "Can not provide stream detector data because it is not calculated in this mode" );
 
+	m_cs.enter();
+
 	vdDestDecibel.resize( m_vdRMSSquaredSums.size(), ITAConstants::MINUS_INFINITY_F );
 	if( m_iRMSBlocks == 0 )
+	{
+		m_cs.leave();
 		return;
+	}
 
 	for( size_t c = 0; c < m_vdRMSSquaredSums.size(); c++ )
 		vdDestDecibel[ c ] = float( ratio_to_db20( std::sqrt( m_vdRMSSquaredSums[ c ] / double( m_iRMSBlocks * m_iBlocklength ) ) ) ); // RMS
