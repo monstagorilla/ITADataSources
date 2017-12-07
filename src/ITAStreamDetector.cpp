@@ -9,6 +9,7 @@
 ITAStreamDetector::ITAStreamDetector( ITADatasource* pDataSource, const int iMode )
 	: m_pDataSource( pDataSource )
 	, m_iMode( iMode )
+	, m_bProfilerEnabled( false )
 {
 	m_dSamplerate = pDataSource->GetSampleRate();
 	m_iChannels = int( pDataSource->GetNumberOfChannels() );
@@ -76,23 +77,7 @@ float ITAStreamDetector::GetOverallPeak( int& iChannel, const bool bReset )
 
 double ITAStreamDetector::GetOverallPeakDecibel( int& iChannel, const bool bReset )
 {
-	if( m_iMode != ITAStreamDetector::PEAK && m_iMode != ITAStreamDetector::PEAK_AND_RMS )
-		ITA_EXCEPT1( MODAL_EXCEPTION, "Can not provide stream detector data because it is not calculated in this mode" );
-
-	m_cs.enter();
-
-	const double dOverallPeakDB = ratio_to_db20( m_fOverallPeak );
-	iChannel = m_iOverallPeakChannel;
-
-	if( bReset )
-	{
-		m_fOverallPeak = 0;
-		m_iOverallPeakChannel = 0;
-	}
-
-	m_cs.leave();
-
-	return dOverallPeakDB;
+	return ratio_to_db20( GetOverallPeak( iChannel, bReset ) );
 }
 
 float ITAStreamDetector::GetPeak( const int iChannel, const bool bReset )
@@ -264,6 +249,10 @@ const float* ITAStreamDetector::GetBlockPointer( unsigned int uiChannel, const I
 {
 	const float* pfData = m_pDataSource->GetBlockPointer( uiChannel, pStreamInfo );
 
+	const bool bProfilerEnabled = GetProfilerEnabled();
+	if( bProfilerEnabled )
+		m_sw.start();
+
 	if( pfData && m_iMode != ITAStreamDetector::DEACTIVATED )
 	{
 		m_cs.enter();
@@ -297,6 +286,9 @@ const float* ITAStreamDetector::GetBlockPointer( unsigned int uiChannel, const I
 		m_cs.leave();
 	}
 
+	if( bProfilerEnabled )
+		m_sw.stop();
+
 	return pfData;
 }
 
@@ -304,4 +296,42 @@ void ITAStreamDetector::IncrementBlockPointer()
 {
 	m_iRMSBlocks++;
 	m_pDataSource->IncrementBlockPointer();
+}
+
+void ITAStreamDetector::SetProfilerEnabled( bool bEnabled )
+{
+	m_bProfilerEnabled = bEnabled;
+}
+
+bool ITAStreamDetector::GetProfilerEnabled() const
+{
+	return m_bProfilerEnabled;
+}
+
+double ITAStreamDetector::GetProfilerMeanCalculationTime( bool bReset )
+{
+	double dResult = 0.0f;
+
+	if( GetProfilerEnabled() )
+	{
+		dResult = m_sw.mean();
+		if( bReset )
+			m_sw.reset();
+	}
+
+	return dResult;
+}
+
+std::string ITAStreamDetector::GetProfilerResult( bool bReset )
+{
+	std::string sResult;
+
+	if( GetProfilerEnabled() )
+	{
+		sResult = m_sw.ToString();
+		if( bReset )
+			m_sw.reset();
+	}
+
+	return sResult;
 }

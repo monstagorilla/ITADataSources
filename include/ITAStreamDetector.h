@@ -23,8 +23,10 @@
 
 #include <ITACriticalSection.h>
 #include <ITADataSource.h>
+#include <ITAStopWatch.h>
 
 #include <atomic>
+#include <string>
 #include <vector>
 
 //! Detektor for statistic values in audio stream (i.e. for level metering)
@@ -162,6 +164,12 @@ public:
 	virtual const float* GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pStreamInfo );
 	virtual void IncrementBlockPointer();
 
+	void SetProfilerEnabled( bool bEnabled );
+	bool GetProfilerEnabled() const;
+
+	double GetProfilerMeanCalculationTime( bool bReset = true );
+	std::string GetProfilerResult( bool bReset = true );
+
 protected:
 	ITADatasource* m_pDataSource;			//!< Angeschlossene Datenquelle
 	double m_dSamplerate;					//!< Abtastrate [Hz]
@@ -174,6 +182,8 @@ protected:
 	int m_iOverallPeakChannel;	//!< Kanal in dem der Spitzenwert auftrat
 	std::vector< double > m_vdRMSSquaredSums;
 	int m_iRMSBlocks;
+	bool m_bProfilerEnabled;
+	ITAStopWatch m_sw;
 };
 
 #endif // INCLUDE_WATCHER_ITA_PEAK_DETECTOR
