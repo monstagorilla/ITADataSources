@@ -421,7 +421,8 @@ void ITAStreamPatchbay::HandlePreGetBlockPointer( ITADatasourceRealization*, uns
 void ITAStreamPatchbay::HandlePostIncrementBlockPointer( ITADatasourceRealization*  )
 {
 	// Ignore, if already called for another output
-	if( !m_bProcessIncrement ) return;
+	if( !m_bProcessIncrement )
+		return;
 
 	// Turn data producion on again, when the first output's block pointer is incremented
 	m_bProcessData = true;
@@ -432,9 +433,11 @@ void ITAStreamPatchbay::HandlePostIncrementBlockPointer( ITADatasourceRealizatio
 
 	// Build a unique list of sources
 	std::set<ITADatasource*> vSources;
-	for( int i = 0; i < GetNumInputs(); i++ ) {
+	for( int i = 0; i < GetNumInputs(); i++ )
+	{
 		ITADatasource* pdsInputSource = m_vpInputs[ i ]->pDatasource;
-		if( pdsInputSource ) vSources.insert( pdsInputSource );
+		if( pdsInputSource )
+			vSources.insert( pdsInputSource );
 	}
 
 	// Increment each data source only once
