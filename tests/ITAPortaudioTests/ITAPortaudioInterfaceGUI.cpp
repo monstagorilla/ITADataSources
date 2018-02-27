@@ -1,5 +1,3 @@
-// $Id: ITAPortaudioInterfaceGUI.cpp.cpp 2333 2012-03-05 14:21:39Z stienen $
-
 #include <fx.h>
 #include <ITAPortaudioInterface.h>
 #include <ITAFileDatasource.h>

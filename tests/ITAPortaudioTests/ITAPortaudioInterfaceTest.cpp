@@ -1,5 +1,3 @@
-// $Id: ITAPortaudioInterfaceTest.cpp 2333 2012-03-05 14:21:39Z stienen $
-
 #include <string.h>
 #include <stdio.h>
 #include <iostream>
