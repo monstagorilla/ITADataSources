@@ -20,7 +20,7 @@
 #define INCLUDE_WATCHER_ITA_STREAM_Y_JUNCTION
 
 #include <ITADataSourcesDefinitions.h>
-          
+
 #include <ITATypes.h>
 
 class ITADatasource;
@@ -31,9 +31,10 @@ class ITAStreamPatchbay;
  * Die Klasse ITAStreamYJunction realisiert eine 1:n-Verzweigung für Audiodatenströme.
  * Hierbei wird eine Eingangsdatenquelle auf n Ausgänge repliziert.
  */
-class ITAStreamYJunction {
+class ITA_DATA_SOURCES_API ITAStreamYJunction
+{
 public:
-	ITAStreamYJunction(unsigned int uiOutputs, ITADatasource* pdsInput=NULL);
+	ITAStreamYJunction( unsigned int uiOutputs, ITADatasource* pdsInput = NULL );
 
 	virtual ~ITAStreamYJunction();
 
@@ -43,20 +44,20 @@ public:
 	//! Eingangsdatenquelle setzen
 	/**
 	 * Setzt die eingangsseitige Datenquelle.
-	 * 
+	 *
 	 * \important Die Methode darf nicht mit dem Nullzeiger als Parameter aufgerufen werden.
 	 *            Ferner muss die neue Datenquelle die gleichen Eigenschaften wie die zuvor
 	 *            zugeordnete Datenquelle aufweisen, falls letztere zugeordnet war.
 	 *
 	 * \note Im Fehlerfall löst die Methode ein ITAException aus
 	 */
-	void SetInputDatasource(ITADatasource* pdsInput);
+	void SetInputDatasource( ITADatasource* pdsInput );
 
 	//! Anzahl der Ausgänge zurückgeben
 	unsigned int GetNumberOfOutputs();
 
 	//! Eine Ausgangsdatenquelle zurückgeben
-	ITADatasource* GetOutputDatasource(unsigned int uiIndex);
+	ITADatasource* GetOutputDatasource( unsigned int uiIndex );
 
 protected:
 	ITAStreamPatchbay* m_pImpl;
