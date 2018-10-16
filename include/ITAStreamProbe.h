@@ -24,7 +24,7 @@
 
 #include <ITASampleFrame.h>
 #include <ITAAtomicPrimitives.h>
-#include <ITAAudiofileCommon.h>
+#include <ITABufferedAudiofileWriter.h>
 
 #include <string>
 #include <vector>
@@ -34,13 +34,14 @@ class ITAAudiofileWriter;
 
 //! A measuring sensor for audio streams
 /**
-  * This class captures (records) the entire data stream passing through and stores
-  * the result into a file on the hard drive.
+  * This class captures (records) the entire data stream passing through. It uses
+  * a sample buffer and holds the data in the memory until destructor is called.
+  * The result is exported into a WAV file on the hard drive.
   */
 class ITA_DATA_SOURCES_API ITAStreamProbe : public ITADatasource
 {
 public:
-	ITAStreamProbe( ITADatasource* pDatasource, const std::string& sFilePath, ITAQuantization iQuantization = ITAQuantization::ITA_FLOAT );
+	ITAStreamProbe( ITADatasource* pDatasource, const std::string& sFilePath = "", ITAQuantization iQuantization = ITAQuantization::ITA_FLOAT );
 
 	//! Destructor also moves saples from memory to hard drive once.
 	virtual ~ITAStreamProbe();
@@ -56,10 +57,8 @@ public:
 		return GetFilePath();
 	};
 
-	inline std::string GetFilePath() const
-	{ 
-		return m_sFilePath;
-	};
+	std::string GetFilePath() const;
+	void SetFilePath( const std::string& sFilePath );
 
 	inline unsigned int GetNumRecordedSamples() const 
 	{ 
@@ -84,8 +83,7 @@ protected:
 	ITASampleFrame m_sfBuffer;
 	std::vector< bool > m_vbDataPresent;
 	
-	std::string m_sFilePath;			//!< File path
-	ITAAudiofileWriter* m_pWriter;
+	ITABufferedAudiofileWriter* m_pBufferedWriter; //!< Buffering audio file writer
 
 };
 

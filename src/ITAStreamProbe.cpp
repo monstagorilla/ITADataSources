@@ -4,10 +4,9 @@
 #include <cassert>
 
 
-ITAStreamProbe::ITAStreamProbe( ITADatasource* pDatasource, const std::string& sFilePath, ITAQuantization iQuantization )
+ITAStreamProbe::ITAStreamProbe( ITADatasource* pDatasource, const std::string& sFilePath /* = "" */, ITAQuantization iQuantization /* = ITAQuantization::ITA_FLOAT */ )
 	: m_pDataSource( pDatasource )
-	, m_pWriter( NULL )
-	, m_sFilePath( sFilePath )
+	, m_pBufferedWriter( NULL )
 {
 	assert( pDatasource != NULL );
 
@@ -28,12 +27,27 @@ ITAStreamProbe::ITAStreamProbe( ITADatasource* pDatasource, const std::string& s
 	props.eDomain = ITADomain::ITA_TIME_DOMAIN;
 	props.eQuantization = iQuantization;
 
-	m_pWriter = ITABufferedAudiofileWriter::create( m_sFilePath, props );
+	m_pBufferedWriter = ITABufferedAudiofileWriter::create( props );
+	if( !sFilePath.empty() )
+		m_pBufferedWriter->SetFilePath( sFilePath );
 }
 
 ITAStreamProbe::~ITAStreamProbe()
 {
-	delete m_pWriter;
+	delete m_pBufferedWriter;
+}
+
+std::string ITAStreamProbe::GetFilePath() const
+{
+	if( m_pBufferedWriter )
+		return m_pBufferedWriter->GetFilePath();
+	else
+		return "";
+}
+
+void ITAStreamProbe::SetFilePath( const std::string& sFilePath )
+{
+	m_pBufferedWriter->SetFilePath( sFilePath );
 }
 
 unsigned int ITAStreamProbe::GetBlocklength() const
@@ -71,7 +85,7 @@ const float* ITAStreamProbe::GetBlockPointer( unsigned int uiChannel, const ITAS
 void ITAStreamProbe::IncrementBlockPointer()
 {
 	// Moves the internal buffer of a single block into the file writer
-	m_pWriter->write( &m_sfBuffer );
+	m_pBufferedWriter->write( &m_sfBuffer );
 
 	m_iRecordedSamples = m_iRecordedSamples + GetBlocklength();
 
