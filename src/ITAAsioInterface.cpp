@@ -4,7 +4,6 @@
 #include <ITADatasource.h>
 #include <ITADatasourceRealization.h>
 
-#include <ITAAtomicPrimitives.h>
 #include <ITAClock.h>
 #include <ITADatasource.h>
 #include <ITAException.h>
@@ -16,6 +15,7 @@
 #include <windows.h>
 #include <iostream>
 #include <vector>
+#include <atomic>
 
 
 // Puffer-Vielfachheit (Doppelpuffer, Dreifachpuffer, etc.)
@@ -137,7 +137,7 @@ int iInputBufferNrOffset = 0;
 
 long lBuffersize = 0;	// Ausgewählte Puffergröße
 
-ITAAtomicInt iBufferswitchEntrances( 0 );
+std::atomic< int > iBufferswitchEntrances( 0 );
 
 ITAStopWatch g_swStreamOutputProcessing;
 

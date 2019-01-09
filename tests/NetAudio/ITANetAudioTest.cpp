@@ -15,6 +15,7 @@
 #include <VistaBase/VistaTimeUtils.h>
 #include <VistaBase/VistaExceptionBase.h>
 
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <string>

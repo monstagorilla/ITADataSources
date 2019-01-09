@@ -22,7 +22,6 @@
 #include <ITADataSourcesDefinitions.h>
 
 #include <ITADataSource.h>
-#include <ITAAtomicPrimitives.h>
 
 #include <vector>
 
@@ -233,10 +232,10 @@ private:
 	unsigned int m_uiBlocklength;		// Streaming Puffergröße [Samples]
 
 	unsigned int m_uiCapacity;			// Kapazität der Quelle
-	ITAAtomicInt m_iCursor;				// Leseposition
+	std::atomic< int > m_iCursor;				// Leseposition
 
-	ITAAtomicBool m_bPaused;			// Wiedergabezustand
-	ITAAtomicBool m_bPausedInternal;	// Wiedergabezustand (interne Variable)
+	std::atomic< bool> m_bPaused;			// Wiedergabezustand
+	std::atomic< bool > m_bPausedInternal;	// Wiedergabezustand (interne Variable)
 	bool m_bLoopMode, m_bNewLoopMode;	// Wiederholungsmodusm, neuer Wiederholungsmodus
 	bool m_bChangeLoopMode;				// true = Wiederholungsmodus soll geändert werden
 	bool m_bRewind;						// Als nächstes Zurückspulen?

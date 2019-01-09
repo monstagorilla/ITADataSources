@@ -21,7 +21,7 @@
 
 #include <ITADataSourcesDefinitions.h>
 
-#include <ITAAtomicPrimitives.h>
+#include <atomic>
 
 /*
     Versionshistorie:
@@ -247,7 +247,7 @@ protected:
 	ITADatasource();
 
 private:
-	ITAAtomicInt m_iRefCount;
+	std::atomic< int > m_iRefCount;
 };
 
 #endif // INCLUDE_WATCHER_ITA_DATA_SOURCE

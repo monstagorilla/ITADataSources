@@ -21,9 +21,10 @@
 
 #include <ITADataSourcesDefinitions.h>
 
-#include <ITAAtomicPrimitives.h>
 #include <ITADataSourceRealization.h>
 #include <ITAUncopyable.h>
+
+#include <atomic>
 #include <set>
 #include <string>
 #include <vector>
@@ -215,8 +216,8 @@ private:
 	{
 	public:
 		int iChannels;		        //!< Number of channels;
-		ITAAtomicFloat fCurrentGain, fNewGain;	//!< Gain (amplification factor)
-		ITAAtomicBool bMuted;					//!< Muted?
+		std::atomic< float > fCurrentGain, fNewGain;	//!< Gain (amplification factor)
+		std::atomic< bool > bMuted;					//!< Muted?
 		ITADatasource* pDatasource;				//!< Datasource assigned to the input
 		std::vector< const float* > vpfInputData;	//!< Pointers to the next stream blocks
 
@@ -236,8 +237,8 @@ private:
 	public:
 		int iFirst;								//!< Input index
 		int iSecond;							//!< Input channel
-		ITAAtomicFloat fCurrentGain; //!< Gain (current block amplification factor)
-		ITAAtomicFloat fNewGain;	//!< Gain (next block amplification factor)
+		std::atomic< float > fCurrentGain; //!< Gain (current block amplification factor)
+		std::atomic< float > fNewGain;	//!< Gain (next block amplification factor)
 
 		inline Connection( const int iFirst, const int iSecond, const float fGain = 1.0f )
 			: iFirst( iFirst )
@@ -245,6 +246,14 @@ private:
 			, fCurrentGain( fGain )
 			, fNewGain( fGain )
 		{
+		};
+
+		inline Connection(const Connection& oOther)
+			: iFirst( oOther.iFirst)
+			, iSecond( oOther.iSecond )
+		{
+			fCurrentGain.exchange(oOther.fCurrentGain);
+			fNewGain.exchange(oOther.fNewGain);
 		};
 	};
 
@@ -267,8 +276,8 @@ private:
 	{
 	public:
 		int iChannels;				// Number of channels;
-		ITAAtomicFloat fCurrentGain, fNewGain;	// Gain (amplification factor)
-		ITAAtomicBool bMuted;					// Muted?
+		std::atomic< float > fCurrentGain, fNewGain;	// Gain (amplification factor)
+		std::atomic< bool > bMuted;					// Muted?
 		Connections conns;						// Input -> Output assignments
 
 		inline OutputDesc( ITAStreamPatchbay* pParent, const int iChannels, const double dSamplerate, const int iBlockLength )
@@ -291,8 +300,8 @@ private:
 	int m_iGainFadeLength;
 	std::vector< InputDesc* > m_vpInputs;
 	std::vector< OutputDesc* > m_vpOutputs;
-	ITAAtomicBool m_bProcessData;
-	ITAAtomicBool m_bProcessIncrement;
+	std::atomic< bool > m_bProcessData;
+	std::atomic< bool > m_bProcessIncrement;
 	float m_fTempGain;
 
 	//! Processes all the data for one streaming cycle

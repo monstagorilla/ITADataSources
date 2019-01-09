@@ -11,6 +11,8 @@
 #include <ITASampleFrame.h>
 #include <ITAStreamMultiplier1N.h>
 
+#include <cassert>
+
 using namespace std;
 
 static string g_sServerName = "localhost";

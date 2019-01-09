@@ -278,7 +278,7 @@ const float* ITABufferDatasource::GetBlockPointer( unsigned int uiChannel, const
 	if( m_bGetBlockPointerTouched == false )
 	{
 		bool bIncRequired = Update();
-		m_bPausedInternal = m_bPaused;
+		m_bPausedInternal.exchange( m_bPaused );
 		m_bGetBlockPointerTouched = true;
 	}
 

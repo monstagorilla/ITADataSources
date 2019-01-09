@@ -4,6 +4,7 @@
 #include <float.h>
 #include <iostream>
 #include <cmath>
+#include <cassert>
 
 #include <ITAFastMath.h>
 #include <ITAException.h>
@@ -510,7 +511,7 @@ void ITAStreamPatchbay::ProcessData( const ITAStreamInfo* pStreamInfo )
 				{
 					// Update connection gains
 					Connection& conn = *const_cast< Connection* >( &( *it ) );
-					conn.fCurrentGain = conn.fNewGain;
+					conn.fCurrentGain.exchange( conn.fNewGain );
 					continue;
 				}
 
@@ -550,18 +551,18 @@ void ITAStreamPatchbay::ProcessData( const ITAStreamInfo* pStreamInfo )
 				// Update connection gains, do a dirty const removal
 				const Connection& cconn( *it );
 				Connection& conn = const_cast< Connection& >( cconn );
-				conn.fCurrentGain.set( conn.fNewGain.get() );
+				conn.fCurrentGain.exchange( conn.fNewGain );
 			}
 		}
 
 		// Update output gains (after processing data)
-		pOutput->fCurrentGain = pOutput->fNewGain;
+		pOutput->fCurrentGain.exchange( pOutput->fNewGain );
 		pOutput->IncrementWritePointer();
 	}
 
 	// Update input gains (can first be done after all outputs are processed!)
 	for( int i = 0; i < GetNumInputs(); i++ )
-		m_vpInputs[ i ]->fCurrentGain = m_vpInputs[ i ]->fNewGain;
+		m_vpInputs[ i ]->fCurrentGain.exchange( m_vpInputs[ i ]->fNewGain );
 
 	return;
 }

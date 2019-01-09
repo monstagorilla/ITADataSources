@@ -1,6 +1,8 @@
 #include "ITAFileDataSource.h"
 #include <ITAAudiofileReader.h>
 
+#include <cassert>
+
 #ifndef WIN32
 #include <memory.h>
 #endif

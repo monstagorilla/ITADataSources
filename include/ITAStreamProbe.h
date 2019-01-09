@@ -23,9 +23,9 @@
 #include <ITADataSource.h>
 
 #include <ITASampleFrame.h>
-#include <ITAAtomicPrimitives.h>
 #include <ITABufferedAudiofileWriter.h>
 
+#include <atomic>
 #include <string>
 #include <vector>
 
@@ -79,7 +79,7 @@ protected:
 	int m_iChannels;					//!< Number of channels
 	int m_iBlockLength;					//!< Streaming buffer size [Samples]
 
-	ITAAtomicInt m_iRecordedSamples;	//!< Number of recorded samples
+	std::atomic< int > m_iRecordedSamples;	//!< Number of recorded samples
 	ITASampleFrame m_sfBuffer;
 	std::vector< bool > m_vbDataPresent;
 	

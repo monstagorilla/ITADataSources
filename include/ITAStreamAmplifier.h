@@ -21,7 +21,6 @@
 
 #include <ITADataSourcesDefinitions.h>
           
-#include <ITAAtomicPrimitives.h>
 #include <ITADataSourceRealization.h>
 #include <ITATypes.h>
 
@@ -59,8 +58,8 @@ public:
 
 protected:
 	ITADatasource* m_pInputDatasource;
-	ITAAtomicBool m_bMuted;
-	ITAAtomicFloat m_fCurGain;
+	std::atomic< bool > m_bMuted;
+	std::atomic< float > m_fCurGain;
 	float m_fPrevGain;
 };
 

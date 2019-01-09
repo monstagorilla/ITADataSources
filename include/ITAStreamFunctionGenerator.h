@@ -22,6 +22,8 @@
 #include <ITADataSourcesDefinitions.h>
 #include <ITADataSourceRealization.h>
 
+#include <atomic>
+
 class ITA_DATA_SOURCES_API ITAStreamFunctionGenerator : public ITADatasourceRealization
 {
 public:
@@ -102,12 +104,12 @@ public:
 	void SetAmplitude(float fAmplitude);
 
 private:
-	ITAAtomicInt m_iFunction;
-	ITAAtomicBool m_bPeriodic;
-	ITAAtomicBool m_bMuted;
-	ITAAtomicInt m_iNumSamples;
-	ITAAtomicFloat m_fAmplitude;
-	ITAAtomicInt m_iPeriodLengthSamples; //!< Number of samples per period
+	std::atomic< int > m_iFunction;
+	std::atomic< bool > m_bPeriodic;
+	std::atomic< bool > m_bMuted;
+	std::atomic< int > m_iNumSamples;
+	std::atomic< float > m_fAmplitude;
+	std::atomic< int > m_iPeriodLengthSamples; //!< Number of samples per period
 	float m_fPhase;			//!< Current phase information [radiants]
 	int m_iSampleCount;		//!< Number of generated output samples
 	

@@ -23,7 +23,6 @@
 
 #include <ITADataSource.h>
 #include <ITAStreamProperties.h>
-#include <ITAAtomicPrimitives.h>
 
 // Vorwärtsdeklarationen
 class ITADatasourceRealizationEventHandler;
@@ -176,8 +175,8 @@ private:
 	unsigned int m_uiWriteCursor;		// Schreibposition
 
 	float* m_pfBuffer;					// Puffer (Kanäle interleaved!)
-	ITAAtomicInt m_iGBPEntrances;		// Anzahl paralleler Eintritte in GBP
-	ITAAtomicBool m_bGBPFirst;			// Erster Eintritt in GBP seit letztem IBP (=> Daten produzieren)
+	std::atomic< int > m_iGBPEntrances;		// Anzahl paralleler Eintritte in GBP
+	std::atomic< bool > m_bGBPFirst;			// Erster Eintritt in GBP seit letztem IBP (=> Daten produzieren)
 	int m_iBufferUnderflows;			// DEBUG: Zähler für Buffer-Leerläufe
 	int m_iBufferOverflows;				// DEBUG: Zähler für Buffer-Überläufe
 	int m_iGBPReentrances;				// DEBUG: Zähler parallele Wiedereintritte in GBP
