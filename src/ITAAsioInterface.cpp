@@ -443,7 +443,7 @@ ASIOTime *bufferSwitchTimeInfo( ASIOTime *timeInfo, long index, ASIOBool process
 	const double dOutputProcessingTime = g_swStreamOutputProcessing.stop();
 	const double dAvailabelProcessingTime = double( lBuffersize ) / double( asioDriverInfo.sampleRate );
 	if( dOutputProcessingTime > dAvailabelProcessingTime )
-		std::cerr << "[ ITAAsioInterface ] Output stream panic, processing time exceeded ( took " << timeToString( dOutputProcessingTime ) << " but got only " << timeToString( dAvailabelProcessingTime ) << " )" << std::endl;
+		std::cerr << "[ ITAAsioInterface ] Dropout detected, block processing time exceeded ( took " << timeToString( dOutputProcessingTime ) << " but got only " << timeToString( dAvailabelProcessingTime ) << " )" << std::endl;
 
 	ulOutputBlockCounter++;
 
