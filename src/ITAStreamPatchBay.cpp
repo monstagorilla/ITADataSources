@@ -190,8 +190,18 @@ void ITAStreamPatchbay::ConnectChannels( const int iInput,
 		ITA_EXCEPT1( INVALID_PARAMETER, "Output index out of range" );
 	if( iOutputChannel >= m_vpOutputs[ iOutput ]->iChannels )
 		ITA_EXCEPT1( INVALID_PARAMETER, "Output channel index out of range" );
-
-	m_vpOutputs[ iOutput ]->conns[ iOutputChannel ].insert( Connection( iInput, iInputChannel, ( float ) dGain ) );
+	// Check if connections already exists
+	std::set<Connection, CompareConnection>& conns = m_vpOutputs[iOutput]->conns[iOutputChannel];
+	std::set<Connection, CompareConnection>::iterator it = conns.find(Connection(iInput, iInputChannel));
+	if (it == conns.end())
+	{
+		m_vpOutputs[iOutput]->conns[iOutputChannel].insert(Connection(iInput, iInputChannel, (float)dGain));
+	}
+	else
+	{
+		Connection& conn = *const_cast<Connection*>(&(*it));
+		conn.fNewGain = (float)dGain;
+	}
 }
 
 void ITAStreamPatchbay::Disconnect( const int iInput, const int iOutput )
