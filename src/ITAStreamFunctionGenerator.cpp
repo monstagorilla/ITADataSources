@@ -136,9 +136,8 @@ void ITAStreamFunctionGenerator::ProcessStream( const ITAStreamInfo* )
 
 		iNumSamples = m_bPeriodic ? ( int ) m_uiBlocklength : ( std::min )( ( int ) m_uiBlocklength, m_iPeriodLengthSamples - m_iSampleCount );
 
-		for( int i = 0; i < iNumSamples; i++ ) {
+		for( int i = 0; i < iNumSamples; i++ )
 			pfOutputData[ i ] = a * sin( omega*i + m_fPhase );
-		}
 
 		m_fPhase = fmodf( iNumSamples*omega + m_fPhase, ITAConstants::TWO_PI_F );
 
