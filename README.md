@@ -7,7 +7,7 @@ ITADataSources is a component of [ITACoreLibs](https://git.rwth-aachen.de/ita/IT
 
 ### License
 
-Copyright 2015-2017 Institute of Technical Acoustics, RWTH Aachen University
+Copyright 2015-2020 Institute of Technical Acoustics, RWTH Aachen University
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use files of this project except in compliance with the License.
