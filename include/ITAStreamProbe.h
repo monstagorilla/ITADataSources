@@ -23,13 +23,13 @@
 #include <ITADataSource.h>
 
 #include <ITASampleFrame.h>
-#include <ITABufferedAudiofileWriter.h>
+#include <ITABufferedAudioFileWriter.h>
 
 #include <atomic>
 #include <string>
 #include <vector>
 
-// Vorwärtedeklarationen
+// Vorwï¿½rtedeklarationen
 class ITAAudiofileWriter;
 
 //! A measuring sensor for audio streams
