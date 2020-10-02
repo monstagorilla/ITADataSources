@@ -51,6 +51,7 @@ set( ITADataSourcesHeader
 	"include/ITADataSource.h"
 	"include/ITADataSourceRealization.h"
 	"include/ITADataSourcesDefinitions.h"
+	"include/ITADataSourceDelegator.h"
 	"include/ITAFileDataSink.h"
 	"include/ITAFileDataSource.h"
 	"include/ITAStreamDetector.h"
@@ -62,6 +63,7 @@ set( ITADataSourcesHeader
 	"include/ITAStreamProbe.h"
 	"include/ITAStreamProperties.h"
 	"include/ITAStreamYJunction.h"
+	"include/ITAStreamInfo.h"
 	)
 
 set( ITADataSourcesSources
