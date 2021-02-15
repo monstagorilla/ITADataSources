@@ -3,7 +3,7 @@
 *
 *		ITA core libs
 *		(c) Copyright Institute of Technical Acoustics (ITA)
-*		RWTH Aachen University, Germany, 2015-2019
+*		RWTH Aachen University, Germany, 2015-2021
 *
 * ----------------------------------------------------------------
 *				    ____  __________  _______
