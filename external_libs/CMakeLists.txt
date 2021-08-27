@@ -65,8 +65,21 @@ CPMAddPackage (
 	NAME portaudio
 	GITHUB_REPOSITORY PortAudio/portaudio
 	GIT_TAG v19.7.0
+	OPTIONS "PA_BUILD_STATIC OFF" "PA_DISABLE_INSTALL ON"
 )
 
 if (portaudio_ADDED)
-	set_target_properties (portaudio portaudio_static uninstall PROPERTIES FOLDER "external_libs")
+	set_target_properties (portaudio PROPERTIES FOLDER "external_libs")
+
+	packageProject (
+		NAME portaudio
+		VERSION 19.7.0
+		BINARY_DIR ${PROJECT_BINARY_DIR}
+		INCLUDE_DIR ${portaudio_SOURCE_DIR}/include
+		INCLUDE_DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+		COMPATIBILITY ExactVersion
+		NAMESPACE portaudio
+		DEPENDENCIES ""
+		DISABLE_VERSION_SUFFIX YES
+	)
 endif()
