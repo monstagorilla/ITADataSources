@@ -14,6 +14,10 @@ if (NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY AND WIN32)
 	set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 endif ()
 
+if (CMAKE_GENERATOR MATCHES "Visual Studio")
+	set_property (GLOBAL PROPERTY USE_FOLDERS ON)
+endif ()
+
 add_subdirectory (external_libs)
 
 include (CMakeDependentOption)
