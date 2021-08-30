@@ -1,87 +1,70 @@
-cmake_minimum_required( VERSION 2.9 )
-cmake_minimum_required( VERSION 2.9 )
+cmake_minimum_required (VERSION 3.14 FATAL_ERROR)
 
-project( ITANetAudioTests )
-list( APPEND CMAKE_MODULE_PATH "$ENV{VISTA_CMAKE_COMMON}" )
-include( VistaCommon )
+project (ITANetAudioTests)
 
-vista_use_package( VistaCoreLibs REQUIRED COMPONENTS VistaInterProcComm FIND_DEPENDENCIES )
-vista_use_package( ITADataSources REQUIRED FIND_DEPENDENCIES )
+# ######################################################################################################################
 
-add_definitions(-DIEEE754_64FLOAT)
+add_executable (ITANABufferServerTest ITANABufferServerTest.cpp)
+target_link_libraries (ITANABufferServerTest PUBLIC ITADataSources::ITADataSources)
 
-add_executable( ITANetAudioStreamingPortaudioClientTest ITANetAudioStreamingPortaudioClientTest.cpp )
-target_link_libraries( ITANetAudioStreamingPortaudioClientTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+set_property (TARGET ITANABufferServerTest PROPERTY FOLDER "Tests/ITADataSources/NetAudio")
 
-vista_configure_app( ITANetAudioStreamingPortaudioClientTest )
-vista_install( ITANetAudioStreamingPortaudioClientTest )
-vista_create_default_info_file( ITANetAudioStreamingPortaudioClientTest )
+install (TARGETS ITANABufferServerTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-set_property( TARGET ITANetAudioStreamingPortaudioClientTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+# ######################################################################################################################
 
+add_executable (ITANetAudioStreamingServerTest ITANetAudioStreamingServerTest.cpp)
+target_link_libraries (ITANetAudioStreamingServerTest PUBLIC ITADataSources::ITADataSources)
 
-add_executable( ITANABufferServerTest ITANABufferServerTest.cpp )
-target_link_libraries( ITANABufferServerTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+set_property (TARGET ITANetAudioStreamingServerTest PROPERTY FOLDER "Tests/ITADataSources/NetAudio")
 
-vista_configure_app( ITANABufferServerTest )
-vista_install( ITANABufferServerTest )
-vista_create_default_info_file( ITANABufferServerTest )
+install (TARGETS ITANetAudioStreamingServerTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-set_property( TARGET ITANABufferServerTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+# ######################################################################################################################
 
+if (ITA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO)
+	add_executable (ITANAPlayerTest ITANAPlayerTest.cpp)
+	target_link_libraries (ITANAPlayerTest PUBLIC ITADataSources::ITADataSources)
 
-add_executable( ITANAPlayerTest ITANAPlayerTest.cpp )
-target_link_libraries( ITANAPlayerTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+	set_property (TARGET ITANAPlayerTest PROPERTY FOLDER "Tests/ITADataSources/NetAudio")
 
-vista_configure_app( ITANAPlayerTest )
-vista_install( ITANAPlayerTest )
-vista_create_default_info_file( ITANAPlayerTest )
+	install (TARGETS ITANAPlayerTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-set_property( TARGET ITANAPlayerTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+	# ##################################################################################################################
 
+	add_executable (ITANetAudioStreamingPortaudioClientTest ITANetAudioStreamingPortaudioClientTest.cpp)
+	target_link_libraries (ITANetAudioStreamingPortaudioClientTest PUBLIC ITADataSources::ITADataSources)
 
-add_executable( ITANetAudioStreamingServerTest ITANetAudioStreamingServerTest.cpp )
-target_link_libraries( ITANetAudioStreamingServerTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+	set_property (TARGET ITANetAudioStreamingPortaudioClientTest PROPERTY FOLDER "Tests/ITADataSources/NetAudio")
 
-vista_configure_app( ITANetAudioStreamingServerTest )
-vista_install( ITANetAudioStreamingServerTest )
-vista_create_default_info_file( ITANetAudioStreamingServerTest )
+	install (TARGETS ITANetAudioStreamingPortaudioClientTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-set_property( TARGET ITANetAudioStreamingServerTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+endif ()
 
+# ######################################################################################################################
 
-if( ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO )
+if (ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO)
 
-	add_executable( ITANetAudioStreamingClientTest ITANetAudioStreamingClientTest.cpp )
-	target_link_libraries( ITANetAudioStreamingClientTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+	add_executable (ITANetAudioStreamingClientTest ITANetAudioStreamingClientTest.cpp)
+	target_link_libraries (ITANetAudioStreamingClientTest PUBLIC ITADataSources::ITADataSources)
 
-	vista_configure_app( ITANetAudioStreamingClientTest )
-	vista_install( ITANetAudioStreamingClientTest )
-	vista_create_default_info_file( ITANetAudioStreamingClientTest )
+	set_property (TARGET ITANetAudioStreamingClientTest PROPERTY FOLDER "Tests/ITADataSources/NetAudio")
 
-	set_property( TARGET ITANetAudioStreamingClientTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+	install (TARGETS ITANetAudioStreamingClientTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-	add_executable( ITANetAudioTest ITANetAudioTest.cpp )
-	target_link_libraries( ITANetAudioTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+endif ()
 
-	vista_configure_app( ITANetAudioTest )
-	vista_install( ITANetAudioTest )
-	vista_create_default_info_file( ITANetAudioTest )
+# ######################################################################################################################
 
-	set_property( TARGET ITANetAudioTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/NetAudio" )
+if (ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO AND ITA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO)
 
-endif( )
+	add_executable (ITANetAudioTest ITANetAudioTest.cpp)
+	target_link_libraries (ITANetAudioTest PUBLIC ITADataSources::ITADataSources)
 
-vista_install_all_dlls( bin )
+	set_property (TARGET ITANetAudioTest PROPERTY FOLDER "Tests/ITADataSources/NetAudio")
 
+	install (TARGETS ITANetAudioTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-if( NOT DEFINED ITA_NETAUDIO_SERVER_WITH_TESTS )
-    set( ITA_NETAUDIO_SERVER_WITH_TESTS "localhost 12480 44100 32 2" CACHE STRING "Arguments for calling NetAudio server")
-endif( )
-if( NOT DEFINED ITA_NETAUDIO_CLIENT_WITH_TESTS )
-    set( ITA_NETAUDIO_CLIENT_WITH_TESTS "localhost 12480 44100 32 2 3200" CACHE STRING "default value" )
-endif( )
+endif ()
 
-vista_set_target_msvc_arguments( ITANetAudioStreamingPortaudioClientTest ${ITA_NETAUDIO_CLIENT_WITH_TESTS} )
-vista_set_target_msvc_arguments( ITANetAudioStreamingClientTest ${ITA_NETAUDIO_CLIENT_WITH_TESTS} )
-vista_set_target_msvc_arguments( ITANetAudioStreamingServerTest ${ITA_NETAUDIO_SERVER_WITH_TESTS} )
+# ######################################################################################################################

@@ -1,136 +1,86 @@
-cmake_minimum_required( VERSION 2.8 )
+cmake_minimum_required (VERSION 3.14 FATAL_ERROR)
 
-project( ITADataSourcesTest )
-list( APPEND CMAKE_MODULE_PATH "$ENV{VISTA_CMAKE_COMMON}" )
-include( VistaCommon )
+project (ITADataSourcesTest)
 
-vista_use_package( ITADataSources REQUIRED FIND_DEPENDENCIES )
+# ######################################################################################################################
 
-if( ITA_CORE_LIBS_BUILD_STATIC )
-	add_definitions( -DITA_BASE_STATIC -DITA_DATA_SOURCES_STATIC )
-endif( )
+add_executable (BufferDataSourceTest BufferDataSourceTest.cpp)
+target_link_libraries (BufferDataSourceTest PUBLIC ITADataSources::ITADataSources)
 
-if( ITA_VISTA_BUILD_STATIC )
-	add_definitions( -DVISTABASE_STATIC -DVISTAMATH_STATIC -DVISTAASPECTS_STATIC -DVISTATOOLS_STATIC -DVISTAINTERPROCCOMM_STATIC )
-	if( WIN32 )
-		list( APPEND VISTA_USE_PACKAGE_LIBRARIES Ws2_32 Winmm )
-	endif( )
-endif( )
+set_property (TARGET BufferDataSourceTest PROPERTY FOLDER "Tests/ITADataSources")
 
+install (TARGETS BufferDataSourceTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_executable( BufferDataSourceTest BufferDataSourceTest.cpp )
-target_link_libraries( BufferDataSourceTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+# ######################################################################################################################
 
-vista_configure_app( BufferDataSourceTest )
-vista_install( BufferDataSourceTest )
-vista_create_default_info_file( BufferDataSourceTest )
+add_executable (FileDataSourceTest FileDataSourceTest.cpp)
+target_link_libraries (FileDataSourceTest PUBLIC ITADataSources::ITADataSources)
 
-set_property( TARGET BufferDataSourceTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
+set_property (TARGET FileDataSourceTest PROPERTY FOLDER "Tests/ITADataSources")
 
+install (TARGETS FileDataSourceTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_executable( FileDataSourceTest FileDataSourceTest.cpp )
-target_link_libraries( FileDataSourceTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+# ######################################################################################################################
 
-vista_configure_app( FileDataSourceTest )
-vista_install( FileDataSourceTest )
-vista_create_default_info_file( FileDataSourceTest )
+add_executable (DatasourceUtilsTest DatasourceUtilsTest.cpp)
+target_link_libraries (DatasourceUtilsTest PUBLIC ITADataSources::ITADataSources)
 
-set_property( TARGET FileDataSourceTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
+set_property (TARGET DatasourceUtilsTest PROPERTY FOLDER "Tests/ITADataSources")
 
+install (TARGETS DatasourceUtilsTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_executable( DatasourceUtilsTest DatasourceUtilsTest.cpp )
-target_link_libraries( DatasourceUtilsTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+# ######################################################################################################################
 
-vista_configure_app( DatasourceUtilsTest )
-vista_install( DatasourceUtilsTest )
-vista_create_default_info_file( DatasourceUtilsTest )
+add_executable (StreamDetectorTest StreamDetectorTest.cpp)
+target_link_libraries (StreamDetectorTest PUBLIC ITADataSources::ITADataSources)
 
-set_property( TARGET DatasourceUtilsTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
+set_property (TARGET StreamDetectorTest PROPERTY FOLDER "Tests/ITADataSources")
 
+install (TARGETS StreamDetectorTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-# add_executable( FilterTest FilterTest.cpp )
-# target_link_libraries( FilterTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+# ######################################################################################################################
 
-# vista_configure_app( FilterTest )
-# vista_install( FilterTest )
-# vista_create_default_info_file( FilterTest )
+add_executable (StreamFunctionGeneratorTest StreamFunctionGeneratorTest.cpp)
+target_link_libraries (StreamFunctionGeneratorTest PUBLIC ITADataSources::ITADataSources)
 
-# set_property( TARGET FilterTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
+set_property (TARGET StreamFunctionGeneratorTest PROPERTY FOLDER "Tests/ITADataSources")
 
+install (TARGETS StreamFunctionGeneratorTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-# add_executable( Patchbay1Test Patchbay1Test.cpp )
-# target_link_libraries( Patchbay1Test ${VISTA_USE_PACKAGE_LIBRARIES} )
+# ######################################################################################################################
 
-# vista_configure_app( Patchbay1Test )
-# vista_install( Patchbay1Test )
-# vista_create_default_info_file( Patchbay1Test )
+add_executable (StreamPatchbayTest StreamPatchbayTest.cpp)
+target_link_libraries (StreamPatchbayTest PUBLIC ITADataSources::ITADataSources)
 
-# set_property( TARGET Patchbay1Test PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
+set_property (TARGET StreamPatchbayTest PROPERTY FOLDER "Tests/ITADataSources")
 
+install (TARGETS StreamPatchbayTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_executable( StreamDetectorTest StreamDetectorTest.cpp )
-target_link_libraries( StreamDetectorTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+# ######################################################################################################################
 
-vista_configure_app( StreamDetectorTest )
-vista_install( StreamDetectorTest )
-vista_create_default_info_file( StreamDetectorTest )
+add_executable (StreamProbeTest StreamProbeTest.cpp)
+target_link_libraries (StreamProbeTest PUBLIC ITADataSources::ITADataSources)
 
-set_property( TARGET StreamDetectorTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
+set_property (TARGET StreamProbeTest PROPERTY FOLDER "Tests/ITADataSources")
 
+install (TARGETS StreamProbeTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_executable( StreamFunctionGeneratorTest StreamFunctionGeneratorTest.cpp )
-target_link_libraries( StreamFunctionGeneratorTest ${VISTA_USE_PACKAGE_LIBRARIES} )
-
-vista_configure_app( StreamFunctionGeneratorTest )
-vista_install( StreamFunctionGeneratorTest )
-vista_create_default_info_file( StreamFunctionGeneratorTest )
-
-set_property( TARGET StreamFunctionGeneratorTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
-
-
-add_executable( StreamPatchbayTest StreamPatchbayTest.cpp )
-target_link_libraries( StreamPatchbayTest ${VISTA_USE_PACKAGE_LIBRARIES} )
-
-vista_configure_app( StreamPatchbayTest )
-vista_install( StreamPatchbayTest )
-vista_create_default_info_file( StreamPatchbayTest )
-
-set_property( TARGET StreamPatchbayTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
-
-
-add_executable( StreamProbeTest StreamProbeTest.cpp )
-target_link_libraries( StreamProbeTest ${VISTA_USE_PACKAGE_LIBRARIES} )
-
-vista_configure_app( StreamProbeTest )
-vista_install( StreamProbeTest )
-vista_create_default_info_file( StreamProbeTest )
-
-set_property( TARGET StreamProbeTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
-
-
-# add_executable( YJunctionTest YJunctionTest.cpp )
-# target_link_libraries( YJunctionTest ${VISTA_USE_PACKAGE_LIBRARIES} )
-
-# vista_configure_app( YJunctionTest )
-# vista_install( YJunctionTest )
-# vista_create_default_info_file( YJunctionTest )
-
-# set_property( TARGET YJunctionTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources" )
-
+# ######################################################################################################################
 
 # tests
-if( ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO )
-	add_subdirectory( ITAAsioTests )
-	add_subdirectory( AsioTests )
-endif( ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO )
+if (ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO)
+	add_subdirectory (ITAAsioTests)
+	add_subdirectory (AsioTests)
+endif (ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO)
 
-if( ITA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO )
-	add_subdirectory( "ITAPortaudioTests" )
-endif( ITA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO )
+if (ITA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO)
+	add_subdirectory (ITAPortaudioTests)
+endif ()
 
-if( VJACK_FOUND AND ITA_DATA_SOURCES_WITH_INTEGRATED_JACK )
-	add_subdirectory( "ITAJACKTests" )
-endif( VJACK_FOUND AND ITA_DATA_SOURCES_WITH_INTEGRATED_JACK )
+if (VJACK_FOUND AND ITA_DATA_SOURCES_WITH_INTEGRATED_JACK)
+	message (WARNING "Jack support is not tested")
+	add_subdirectory (ITAJACKTests)
+endif (VJACK_FOUND AND ITA_DATA_SOURCES_WITH_INTEGRATED_JACK)
 
-add_subdirectory( "NetAudio" )
-add_subdirectory( "VistaNetTest" )
+add_subdirectory (NetAudio)
+add_subdirectory (VistaNetTest)
