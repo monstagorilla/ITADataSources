@@ -153,7 +153,7 @@ if (ITA_DATA_SOURCES_NET_AUDIO_SHOW_TRAFFIC)
 endif ()
 #---END: Compile definitions---
 
-#If build out of VA project, add parent folder "ITACoreLibs"
+#If build out of ITACoreLibs project, add parent folder "ITACoreLibs"
 if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 	set_property (TARGET ${PROJECT_NAME} PROPERTY FOLDER "ITACoreLibs")
 endif ()
