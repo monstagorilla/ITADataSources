@@ -158,6 +158,9 @@ if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 	set_property (TARGET ${PROJECT_NAME} PROPERTY FOLDER "ITACoreLibs")
 endif ()
 
+# Organize sources in folders
+GroupSourcesByFolder(${PROJECT_NAME})
+
 #Install & export
 packageProject (
 	NAME ${PROJECT_NAME}
