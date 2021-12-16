@@ -1,31 +1,30 @@
 /*
-* ----------------------------------------------------------------
-*
-*		ITA core libs
-*		(c) Copyright Institute of Technical Acoustics (ITA)
-*		RWTH Aachen University, Germany, 2015-2021
-*
-* ----------------------------------------------------------------
-*				    ____  __________  _______
-*				   //  / //__   ___/ //  _   |
-*				  //  /    //  /    //  /_|  |
-*				 //  /    //  /    //  ___   |
-*				//__/    //__/    //__/   |__|
-*
-* ----------------------------------------------------------------
-*
-*/
+ * ----------------------------------------------------------------
+ *
+ *		ITA core libs
+ *		(c) Copyright Institute of Technical Acoustics (ITA)
+ *		RWTH Aachen University, Germany, 2015-2021
+ *
+ * ----------------------------------------------------------------
+ *				    ____  __________  _______
+ *				   //  / //__   ___/ //  _   |
+ *				  //  /    //  /    //  /_|  |
+ *				 //  /    //  /    //  ___   |
+ *				//__/    //__/    //__/   |__|
+ *
+ * ----------------------------------------------------------------
+ *
+ */
 
 #ifndef INCLUDE_WATCHER_ITA_BUFFER_DATA_SINK
 #define INCLUDE_WATCHER_ITA_BUFFER_DATA_SINK
 
-#include <ITADataSourcesDefinitions.h>
-
 #include <ITAAudiofileCommon.h>
+#include <ITADataSourcesDefinitions.h>
 #include <ITAStreamInfo.h>
 
 // STL-Includes
-#include <string> 
+#include <string>
 #include <vector>
 
 // Vorwärtsdeklarationen
@@ -66,19 +65,19 @@ public:
 	 *
 	 * \note Bei Fehlern werden ITAExceptions aufgelöst.
 	 */
-	ITABufferDataSink( ITADatasource* pdsSource, std::vector< float* > vpfBuffer, int uiBuffersize );
+	ITABufferDataSink( ITADatasource* pdsSource, std::vector<float*> vpfBuffer, int uiBuffersize );
 
 	//! Destruktor
-	virtual ~ITABufferDataSink();
+	virtual ~ITABufferDataSink( );
 
 	//! Puffergröße [Anzahl Samples] zurückgeben
-	int GetBuffersize() const;
+	int GetBuffersize( ) const;
 
 	//! Pufferzeiger zurückgeben
-	std::vector< float* > GetBuffers() const;
+	std::vector<float*> GetBuffers( ) const;
 
 	//! Schreibposition in den Puffern zurückgeben
-	unsigned int GetWriteCursor() const;
+	unsigned int GetWriteCursor( ) const;
 
 	//! Schreibposition in den Puffern setzen
 	void SetWriteCursor( unsigned int uiWriteCursor );
@@ -92,13 +91,13 @@ public:
 	void Transfer( unsigned int uiSamples );
 
 private:
-	ITADatasource* m_pdsSource;				// Datenquelle
-	std::vector<float*> m_vpfBuffer;		// Puffervektor
-	std::vector<const float*> m_vpfBufferX;	// Export-Puffervektor (const)
-	bool m_bManagedBuffer;					// Werden die Puffer verwaltet?
-	unsigned int m_uiBuffersize;			// Anzahl Samples im Puffer
-	unsigned int m_uiWriteCursor;			// Schreibcursor auf den Puffern
-	ITAStreamInfo m_siState;				// Streamzustand
+	ITADatasource* m_pdsSource;             // Datenquelle
+	std::vector<float*> m_vpfBuffer;        // Puffervektor
+	std::vector<const float*> m_vpfBufferX; // Export-Puffervektor (const)
+	bool m_bManagedBuffer;                  // Werden die Puffer verwaltet?
+	unsigned int m_uiBuffersize;            // Anzahl Samples im Puffer
+	unsigned int m_uiWriteCursor;           // Schreibcursor auf den Puffern
+	ITAStreamInfo m_siState;                // Streamzustand
 };
 
 #endif // INCLUDE_WATCHER_ITA_BUFFER_DATA_SINK

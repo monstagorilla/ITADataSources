@@ -20,7 +20,6 @@
 #define INCLUDE_WATCHER_ITA_DATA_SOURCES_UTILS
 
 #include <ITADataSourcesDefinitions.h>
-
 #include <string> // Strings der Standard Template Library (STL)
 
 // Vorwärtsdeklarationen
@@ -49,7 +48,8 @@ class ITADatasource;
  *       den betreffenden Block Stille in den Puffer geschrieben
  * \note Ausnahmebehandlung mittels der Klasse ITAException
  */
-ITA_DATA_SOURCES_API void WriteFromDatasourceToBuffer( ITADatasource* pSource, float** ppfDest, unsigned int uiNumberOfSamples, double dGain = 1.0, bool bOnline = true, bool bDisplayProgress = false );
+ITA_DATA_SOURCES_API void WriteFromDatasourceToBuffer( ITADatasource* pSource, float** ppfDest, unsigned int uiNumberOfSamples, double dGain = 1.0, bool bOnline = true,
+                                                       bool bDisplayProgress = false );
 
 //! Daten einer Datenquelle in eine Datei schreiben
 /**
@@ -69,6 +69,7 @@ ITA_DATA_SOURCES_API void WriteFromDatasourceToBuffer( ITADatasource* pSource, f
  *       den betreffenden Block Stille in die Datei geschrieben
  * \note Ausnahmebehandlung mittels der Klasse ITAException
  */
-ITA_DATA_SOURCES_API void WriteFromDatasourceToFile( ITADatasource* pSource, std::string sFilename, unsigned int uiNumberOfSamples, double dGain = 1.0, bool bOnline = true, bool bDisplayProgress = false );
+ITA_DATA_SOURCES_API void WriteFromDatasourceToFile( ITADatasource* pSource, std::string sFilename, unsigned int uiNumberOfSamples, double dGain = 1.0,
+                                                     bool bOnline = true, bool bDisplayProgress = false );
 
 #endif // INCLUDE_WATCHER_ITA_DATA_SOURCES_UTILS

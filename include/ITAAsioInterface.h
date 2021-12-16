@@ -24,37 +24,36 @@
 // ASIO-Includes
 //#include <asiosys.h>
 #include <common/asio.h>
-
 #include <string>
 
 #define ITASIO_API ITA_DATA_SOURCES_API
 
 /*
     Versionshistorie:
-    
-    CVS     24.9.2008    - Anpassung Buildkonfiguration: Jetzt standardmäßig Static Lib
-	                       Zusätzlich spezielle Projektdatei für alte DLL-Konfiguration
-					     - Wichtiges Bugfix in einer Konvertierungsroutine für 32 LSB.
 
-	CVS		1.8.2005	 - Erweiterung: Abspielen von Nullblöcken nach bei ITAsioStop()
-	                     - Bugfix: SetPlaybackDatasource(NULL) repariert (Nullzeigerproblem)
+    CVS     24.9.2008    - Anpassung Buildkonfiguration: Jetzt standardmäßig Static Lib
+                           Zusätzlich spezielle Projektdatei für alte DLL-Konfiguration
+                         - Wichtiges Bugfix in einer Konvertierungsroutine für 32 LSB.
+
+    CVS		1.8.2005	 - Erweiterung: Abspielen von Nullblöcken nach bei ITAsioStop()
+                         - Bugfix: SetPlaybackDatasource(NULL) repariert (Nullzeigerproblem)
 
     CVS     30.11.2005   - Bugfix: Anzahl an Eingangsblöcken wird verworfen
-	                     - Bugfix: Reset in ASIOSource
+                         - Bugfix: Reset in ASIOSource
 
-	2.1		9.6.2005	 - Umstellung auf MS-VC7
-	                     - Nun statische Bibliothek - Keine DLL mehr
-						 - std::strings wieder gegen const char*
-						   getauscht, wegen Problem mit std::string & DLL
+    2.1		9.6.2005	 - Umstellung auf MS-VC7
+                         - Nun statische Bibliothek - Keine DLL mehr
+                         - std::strings wieder gegen const char*
+                           getauscht, wegen Problem mit std::string & DLL
 
     X.XX	18.1.2005	 ...
-      
-		
-    Todo: - Wie werden Parameter-Konflikte zwischen den Einstellungen im ITAsioInterface
-	        (Samplerate, Anzahl der Kanäle, Puffergröße) und der ausgewählten Datenquelle
-			behandelt? Hier fehlt noch eine Systematik.
 
-*/                        
+
+    Todo: - Wie werden Parameter-Konflikte zwischen den Einstellungen im ITAsioInterface
+            (Samplerate, Anzahl der Kanäle, Puffergröße) und der ausgewählten Datenquelle
+            behandelt? Hier fehlt noch eine Systematik.
+
+*/
 
 /*! \mainpage ITAsioInterface
  *
@@ -65,7 +64,7 @@
  * ITADatasources zu realisieren.
  *
  * \section diffs_sec Unterschiede zum alten ITAsioInterface (<=2004)
- * 
+ *
  *  - Microsoft Visual Studio 7.0 Portierung
  *  - Dokumentation der Funktionen auf doxygen umgestellt
  *  - Einstige Erweiterung "BufferswitchCallback" entfernt
@@ -74,15 +73,15 @@
  *	  bereitgestellt werden.
  *
  *  - Neue Funktionen: ITAsioGetDriverName (Einzelnamen ermitteln)
- *  
+ *
  *  - Folgende Funktionen sind in Folge der Umstrukturierung entfernt wurden
  *
  *    ITAsioPreInit (Initialisierung geschieht nun automatisch)
- * 
+ *
  * \section install_sec Verwendung
  *
  * Das ITAsioInterface ist als dynamische C++-Bibliothek (DLL) verfügbar.
- * Um Sie zu verwenden benötigen sie die folgenden Verzeichnisse: 
+ * Um Sie zu verwenden benötigen sie die folgenden Verzeichnisse:
  * <b>\\Include</b> (Headerdateien) sowie <b>\\Lib</b> (DLL und Bibliothek).
  *
  * Die Bibliothek gibt es in zwei Varianten:
@@ -95,7 +94,7 @@
  *
  * \section compile_sec Erstellen
  *
- * Um das ITAsioInterface selbst aus den Quellen zu Erstellen (Compilieren) 
+ * Um das ITAsioInterface selbst aus den Quellen zu Erstellen (Compilieren)
  * benötigen Sie die vollständigen Quellen. Dies beeinhaltet folgende Verzeichnisse:
  *
  *  - Doc (Dokumentation)
@@ -105,7 +104,7 @@
  *  - Temp (Temporäres Build-Verzeichnis)
  *  - Tests (Testprogramme)
  *
- * Im Verzeichnis Sources\\ITAsioInterface befinden sich die Quellen für die Bibliothek 
+ * Im Verzeichnis Sources\\ITAsioInterface befinden sich die Quellen für die Bibliothek
  * (Verwenden Sie den Visual C++ Arbeitbeitsbereich ITAsioInterface.sln im Basisverzeichnis).
  *
  * \section test_sec Testen
@@ -141,23 +140,23 @@ class ITADatasource;
  */
 /*@{*/
 
-//! ASIO-Bibliothek initialisieren 
+//! ASIO-Bibliothek initialisieren
 /**
  * Initialisiert die Bibliothek. Muss als erstes aufgerufen werden.
  */
-ITASIO_API void ITAsioInitializeLibrary(void);
+ITASIO_API void ITAsioInitializeLibrary( void );
 
-//! ASIO-Bibliothek finalisieren 
+//! ASIO-Bibliothek finalisieren
 /**
  * Finalisiert die Bibliothek. Muss als erstes aufgerufen werden.
  */
-ITASIO_API void ITAsioFinalizeLibrary(void);
+ITASIO_API void ITAsioFinalizeLibrary( void );
 
 //! Anzahl der verfügbaren ASIO-Treiber zurückgeben
 /**
  * \return Anzahl der verfügbaren ASIO-Treiber
  */
-ITASIO_API long ITAsioGetNumDrivers(void);
+ITASIO_API long ITAsioGetNumDrivers( void );
 
 //! Name eines ASIO-Treibers zurückgeben
 /**
@@ -170,20 +169,20 @@ ITASIO_API long ITAsioGetNumDrivers(void);
  * \note Wenn Sie einen ungültigen Index übergeben,
  *       wird eine leere Zeichenkette zurückgegeben
  */
-ITASIO_API const char* ITAsioGetDriverName(long lDriverNr);
+ITASIO_API const char *ITAsioGetDriverName( long lDriverNr );
 
 //! Zeichenkette eines ASIO-Fehlers zurückgeben
 /**
  * Diese Funktion gibt den Namen eines ASIO-Fehlers zurück
  *
- * \param 
+ * \param
  *
  * \return Name des Treiber
  *
  * \note Wenn Sie einen ungültigen Index übergeben,
  *       wird eine leere Zeichenkette zurückgegeben
  */
-ITASIO_API const char* ITAsioGetErrorStr(ASIOError ae);
+ITASIO_API const char *ITAsioGetErrorStr( ASIOError ae );
 
 //! ASIO-Treiber initialisieren
 /**
@@ -193,7 +192,7 @@ ITASIO_API const char* ITAsioGetErrorStr(ASIOError ae);
  *
  * \return ASE_OK wenn kein Fehler auftrat
  */
-ITASIO_API ASIOError ITAsioInitializeDriver(long lDriverNr);
+ITASIO_API ASIOError ITAsioInitializeDriver( long lDriverNr );
 
 //! ASIO-Treiber initialisieren
 /**
@@ -203,10 +202,10 @@ ITASIO_API ASIOError ITAsioInitializeDriver(long lDriverNr);
  *
  * \return ASE_OK wenn kein Fehler auftrat
  */
-ITASIO_API ASIOError ITAsioInitializeDriver( const char* pszDriverName );
-inline ASIOError ITAsioInitializeDriver( const std::string& sDriverName )
+ITASIO_API ASIOError ITAsioInitializeDriver( const char *pszDriverName );
+inline ASIOError ITAsioInitializeDriver( const std::string &sDriverName )
 {
-	return ITAsioInitializeDriver( sDriverName.c_str() );
+	return ITAsioInitializeDriver( sDriverName.c_str( ) );
 };
 
 //! ASIO-Treiber freigeben
@@ -218,7 +217,7 @@ inline ASIOError ITAsioInitializeDriver( const std::string& sDriverName )
  * \note Abhängig vom aktuellen Zustand impliziert der Aufruf der Funktionen
  *       den Aufruf der Funktion(en) ASIOStop und/oder ASIODisposeBuffers.
  */
-ITASIO_API ASIOError ITAsioFinalizeDriver(void);
+ITASIO_API ASIOError ITAsioFinalizeDriver( void );
 
 //! Anzahl der Ein-/Ausgabekanäle bestimmen
 /**
@@ -227,7 +226,7 @@ ITASIO_API ASIOError ITAsioFinalizeDriver(void);
  *
  * \return ASE_OK wenn kein Fehler auftrat
  */
-ITASIO_API ASIOError ITAsioGetChannels(long *numInputChannels, long *numOutputChannels);
+ITASIO_API ASIOError ITAsioGetChannels( long *numInputChannels, long *numOutputChannels );
 
 //! Puffergrößen des ASIO-Treibers bestimmen
 /**
@@ -249,10 +248,7 @@ ITASIO_API ASIOError ITAsioGetChannels(long *numInputChannels, long *numOutputCh
  *       bevorzugte Puffergröße den selben Wert haben. In diesem Falle ist die
  *       Granularität meist 0.
  */
-ITASIO_API ASIOError ITAsioGetBufferSize(long *minSize,
-										 long *maxSize,
-										 long *preferredSize,
-										 long *granularity);
+ITASIO_API ASIOError ITAsioGetBufferSize( long *minSize, long *maxSize, long *preferredSize, long *granularity );
 
 //! Ein- und Ausgabelatenzen bestimmen
 /**
@@ -270,7 +266,7 @@ ITASIO_API ASIOError ITAsioGetBufferSize(long *minSize,
  *
  * \note Die Funktion darf erst nach ITAsioCreateBuffers aufgerufen werden.
  */
-ITASIO_API ASIOError ITAsioGetLatencies(long *inputLatency, long *outputLatency);
+ITASIO_API ASIOError ITAsioGetLatencies( long *inputLatency, long *outputLatency );
 
 //!	Testen ob eine Samplerate unterstützt wird
 /**
@@ -281,7 +277,7 @@ ITASIO_API ASIOError ITAsioGetLatencies(long *inputLatency, long *outputLatency)
  *         ASE_NoClock, falls die Samplerate nicht unterstützt wird
  *
  */
-ITASIO_API ASIOError ITAsioCanSampleRate(ASIOSampleRate sampleRate);
+ITASIO_API ASIOError ITAsioCanSampleRate( ASIOSampleRate sampleRate );
 
 //!	Aktuelle Samplerate zurückgeben
 /**
@@ -293,7 +289,7 @@ ITASIO_API ASIOError ITAsioCanSampleRate(ASIOSampleRate sampleRate);
  * \note Falls die Samplerate unbekannt ist, gibt die Funktion ASE_NoClock und
  *       in currentRate wird der Wert 0 abgelegt.
  */
-ITASIO_API ASIOError ITAsioGetSampleRate(ASIOSampleRate *currentRate);
+ITASIO_API ASIOError ITAsioGetSampleRate( ASIOSampleRate *currentRate );
 
 //! Samplerate setzen
 /**
@@ -304,7 +300,7 @@ ITASIO_API ASIOError ITAsioGetSampleRate(ASIOSampleRate *currentRate);
  *
  * \note Der Parameter sampleRate == 0 schaltet auf externe Synchronisation
  */
-ITASIO_API ASIOError ITAsioSetSampleRate(ASIOSampleRate sampleRate);
+ITASIO_API ASIOError ITAsioSetSampleRate( ASIOSampleRate sampleRate );
 
 //! Ausgabeverstärkung setzen
 /**
@@ -312,7 +308,7 @@ ITASIO_API ASIOError ITAsioSetSampleRate(ASIOSampleRate sampleRate);
  *
  * \param dGain Ausgabeverstärkungsfaktor
  */
-ITASIO_API void ITAsioSetGain(double dGain);
+ITASIO_API void ITAsioSetGain( double dGain );
 
 //! Ausgabedatenquelle festlegen
 /**
@@ -332,7 +328,7 @@ ITASIO_API void ITAsioSetGain(double dGain);
  * \note Diese Funktion kann erst genutzt werden, wenn ITAsioCreateBuffers durchgeführt
  *       wurde, d.h. mindestens der Laufzeitzustand PREPARED vorliegt.
  */
-ITASIO_API ASIOError ITAsioSetPlaybackDatasource(ITADatasource* pidsDatasource);
+ITASIO_API ASIOError ITAsioSetPlaybackDatasource( ITADatasource *pidsDatasource );
 
 //! Eingabedatenquelle zurückgeben
 /**
@@ -343,13 +339,13 @@ ITASIO_API ASIOError ITAsioSetPlaybackDatasource(ITADatasource* pidsDatasource);
  *
  * \note Sind mittels ITAsioCreateBuffers keine Eingabekanäle konfiguriert
  *       wurden, gibt die Funktion den Nullzeiger zurück
- * 
+ *
  * \note Diese Funktion kann erst genutzt werden, wenn ITAsioCreateBuffers durchgeführt
  *       wurde, d.h. mindestens der Laufzeitzustand PREPARED vorliegt.
  */
-ITASIO_API ITADatasource* ITAsioGetRecordDatasource();
+ITASIO_API ITADatasource *ITAsioGetRecordDatasource( );
 
-//!ASIO-Puffer erzeugen
+//! ASIO-Puffer erzeugen
 /**
  * Erzeugt die ASIO-Puffer.
  *
@@ -361,9 +357,7 @@ ITASIO_API ITADatasource* ITAsioGetRecordDatasource();
  * \sa ITAsioGetChannels
  * \sa ITAsioGetBufferSize
  */
-ITASIO_API ASIOError ITAsioCreateBuffers(long lNumberInputChannels,
-										 long lNumberOutputChannels,
-										 long lBufferSize);
+ITASIO_API ASIOError ITAsioCreateBuffers( long lNumberInputChannels, long lNumberOutputChannels, long lBufferSize );
 
 //! ASIO-Puffer freigeben
 /**
@@ -374,7 +368,7 @@ ITASIO_API ASIOError ITAsioCreateBuffers(long lNumberInputChannels,
  * \note Der Aufruf dieser Funktion bei laufenem
  *       ASIO-Streaming impliziert ITAsioStop()
  */
-ITASIO_API ASIOError ITAsioDisposeBuffers(void);
+ITASIO_API ASIOError ITAsioDisposeBuffers( void );
 
 //! ASIO-Streaming starten
 /**
@@ -382,7 +376,7 @@ ITASIO_API ASIOError ITAsioDisposeBuffers(void);
  *
  * \return ASE_OK wenn kein Fehler auftrat
  */
-ITASIO_API ASIOError ITAsioStart(void);
+ITASIO_API ASIOError ITAsioStart( void );
 
 //! ASIO-Streaming stopppen
 /**
@@ -390,12 +384,12 @@ ITASIO_API ASIOError ITAsioStart(void);
  *
  * \return ASE_OK if ok.
  */
-ITASIO_API ASIOError ITAsioStop(void);
+ITASIO_API ASIOError ITAsioStop( void );
 
 //! ASIO-Kontrollfeld anzeigen
 /**
  * Diese Funktion zeigt das ASIO-Kontrollfeld an.
  */
-ITASIO_API ASIOError ITAsioControlPanel(void);
+ITASIO_API ASIOError ITAsioControlPanel( void );
 
 #endif // INCLUDE_WATCHER_ITA_ASIO_INTERFACE

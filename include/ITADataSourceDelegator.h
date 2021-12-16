@@ -29,46 +29,35 @@
  * Autor: Frank Wefers <Frank.Wefers@akustik.rwth-aachen.de>
  */
 
-class ITADatasourceDelegator : public ITADatasource {
+class ITADatasourceDelegator : public ITADatasource
+{
 protected:
 	//! Geschützer Standardkonstruktor
-	ITADatasourceDelegator()
-		: ITADatasource(), m_pDatasourceDelegatorTarget(0) {}
+	ITADatasourceDelegator( ) : ITADatasource( ), m_pDatasourceDelegatorTarget( 0 ) {}
 
 	//! Geschützer Standardkonstruktor
-	ITADatasourceDelegator(ITADatasource* pTarget) : m_pDatasourceDelegatorTarget(pTarget) {}
+	ITADatasourceDelegator( ITADatasource* pTarget ) : m_pDatasourceDelegatorTarget( pTarget ) {}
 
 public:
-	virtual ~ITADatasourceDelegator() { }
+	virtual ~ITADatasourceDelegator( ) {}
 
-	unsigned int GetBlocklength() const {
-		return m_pDatasourceDelegatorTarget->GetBlocklength();
+	unsigned int GetBlocklength( ) const { return m_pDatasourceDelegatorTarget->GetBlocklength( ); }
+
+	unsigned int GetNumberOfChannels( ) const { return m_pDatasourceDelegatorTarget->GetNumberOfChannels( ); }
+
+	double GetSampleRate( ) const { return m_pDatasourceDelegatorTarget->GetSampleRate( ); }
+
+	virtual const float* GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pStreamInfo )
+	{
+		return m_pDatasourceDelegatorTarget->GetBlockPointer( uiChannel, pStreamInfo );
 	}
 
-	unsigned int GetNumberOfChannels() const {
-		return m_pDatasourceDelegatorTarget->GetNumberOfChannels();
-	}
-
-	double GetSampleRate() const {
-		return m_pDatasourceDelegatorTarget->GetSampleRate();
-	}
-
-	virtual const float* GetBlockPointer(unsigned int uiChannel, const ITAStreamInfo* pStreamInfo) {
-		return m_pDatasourceDelegatorTarget->GetBlockPointer(uiChannel, pStreamInfo);
-	}
-
-	virtual void IncrementBlockPointer() {
-		m_pDatasourceDelegatorTarget->IncrementBlockPointer();
-	}
+	virtual void IncrementBlockPointer( ) { m_pDatasourceDelegatorTarget->IncrementBlockPointer( ); }
 
 protected:
-	ITADatasource* GetDatasourceDelegatorTarget() {
-		return m_pDatasourceDelegatorTarget;
-	}
+	ITADatasource* GetDatasourceDelegatorTarget( ) { return m_pDatasourceDelegatorTarget; }
 
-	void SetDatasourceDelegatorTarget(ITADatasource* pTarget) {
-		m_pDatasourceDelegatorTarget = pTarget;
-	}
+	void SetDatasourceDelegatorTarget( ITADatasource* pTarget ) { m_pDatasourceDelegatorTarget = pTarget; }
 
 private:
 	ITADatasource* m_pDatasourceDelegatorTarget;

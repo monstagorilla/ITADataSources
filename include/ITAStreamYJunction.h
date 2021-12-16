@@ -20,7 +20,6 @@
 #define INCLUDE_WATCHER_ITA_STREAM_Y_JUNCTION
 
 #include <ITADataSourcesDefinitions.h>
-
 #include <ITATypes.h>
 
 class ITADatasource;
@@ -36,10 +35,10 @@ class ITA_DATA_SOURCES_API ITAStreamYJunction
 public:
 	ITAStreamYJunction( unsigned int uiOutputs, ITADatasource* pdsInput = NULL );
 
-	virtual ~ITAStreamYJunction();
+	virtual ~ITAStreamYJunction( );
 
 	//! An den Eingang angeschlossene Datenquelle zurückgeben
-	ITADatasource* GetInputDatasource();
+	ITADatasource* GetInputDatasource( );
 
 	//! Eingangsdatenquelle setzen
 	/**
@@ -54,7 +53,7 @@ public:
 	void SetInputDatasource( ITADatasource* pdsInput );
 
 	//! Anzahl der Ausgänge zurückgeben
-	unsigned int GetNumberOfOutputs();
+	unsigned int GetNumberOfOutputs( );
 
 	//! Eine Ausgangsdatenquelle zurückgeben
 	ITADatasource* GetOutputDatasource( unsigned int uiIndex );
