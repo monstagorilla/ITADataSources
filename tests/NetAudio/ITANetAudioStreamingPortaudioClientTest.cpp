@@ -1,18 +1,17 @@
-#include <iostream>
-#include <string>
+#include <ITAException.h>
+#include <ITAFileDataSource.h>
 #include <ITANetAudioStream.h>
 #include <ITAPortaudioInterface.h>
 #include <ITAStreamMultiplier1N.h>
-#include <ITAException.h>
-#include <ITAFileDataSource.h>
-#include <ITAStreamProbe.h>
 #include <ITAStreamPatchBay.h>
+#include <ITAStreamProbe.h>
+#include <iostream>
+#include <string>
 using namespace std;
 
-int main(int argc, char* argv[])
+int main( int argc, char* argv[] )
 {
-	
-	if (argc != 7)
+	if( argc != 7 )
 	{
 		cout << "argc = " << argc << endl;
 		cout << "sServerName = " << argv[1] << endl;
@@ -21,30 +20,30 @@ int main(int argc, char* argv[])
 		cout << "iBlockLength = " << argv[4] << endl;
 		cout << "iChannels = " << argv[5] << endl;
 		cout << "iBufferSize = " << argv[6] << endl;
-		fprintf(stderr, "Fehler: Syntax = ServerName ServerPort SampleRate BufferSize Channel RingBufferSize!\n");
-	}	
+		fprintf( stderr, "Fehler: Syntax = ServerName ServerPort SampleRate BufferSize Channel RingBufferSize!\n" );
+	}
 
-	string sServerName = argv[1];
-	unsigned int iServerPort = atoi(argv[2]);
-	double dSampleRate = strtod(argv[3], NULL);
-	int iBlockLength = atoi(argv[4]);
-	int iChannels = atoi(argv[5]);
-	int iBufferSize = atoi(argv[6]);
-	
-	CITANetAudioStream oNetAudioStream( iChannels, dSampleRate, iBlockLength, iBlockLength*16 );
+	string sServerName       = argv[1];
+	unsigned int iServerPort = atoi( argv[2] );
+	double dSampleRate       = strtod( argv[3], NULL );
+	int iBlockLength         = atoi( argv[4] );
+	int iChannels            = atoi( argv[5] );
+	int iBufferSize          = atoi( argv[6] );
+
+	CITANetAudioStream oNetAudioStream( iChannels, dSampleRate, iBlockLength, iBlockLength * 16 );
 	oNetAudioStream.SetDebuggingEnabled( true );
 	ITAStreamPatchbay oPatchbay( dSampleRate, iBlockLength );
 	oPatchbay.AddInput( &oNetAudioStream );
 	int iOutputID = oPatchbay.AddOutput( 2 );
-	int N = int( oNetAudioStream.GetNumberOfChannels( ) );
-	for ( int i = 0; i < N; i++ )
+	int N         = int( oNetAudioStream.GetNumberOfChannels( ) );
+	for( int i = 0; i < N; i++ )
 		oPatchbay.ConnectChannels( 0, i, 0, i % 2, 1 / double( N ) );
 	ITAStreamProbe oProbe( oPatchbay.GetOutputDatasource( iOutputID ), "ITANetAudioTest.stream.wav" );
 	ITAPortaudioInterface ITAPA( dSampleRate, iBufferSize );
-	ITAPA.Initialize();
+	ITAPA.Initialize( );
 	ITAPA.SetPlaybackDatasource( &oNetAudioStream );
-	ITAPA.Open();
-	ITAPA.Start(); 
+	ITAPA.Open( );
+	ITAPA.Start( );
 	cout << "Waiting 3 seconds (net audio stream not connected and returning zeros)" << endl;
 	ITAPA.Sleep( 2.0f );
 	cout << "Will now connect to '" << sServerName << "' on port " << iServerPort << endl;
@@ -68,9 +67,9 @@ int main(int argc, char* argv[])
 	cout << "Will now disconnect from '" << sServerName << "' and port " << iServerPort << endl;
 	cout << "Closing in 3 seconds (net audio stream not connected and returning zeros)" << endl;
 	ITAPA.Sleep( 1.0f );
-	ITAPA.Stop();
-	ITAPA.Close();
-	ITAPA.Finalize();
-	
+	ITAPA.Stop( );
+	ITAPA.Close( );
+	ITAPA.Finalize( );
+
 	return 0;
 }

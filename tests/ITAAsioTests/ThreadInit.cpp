@@ -1,11 +1,10 @@
 #include <ITAAsioInterface.h>
-
 #include <process.h>
 #include <stdio.h>
 #include <string>
 
-#ifndef  _WIN32_WINNT // @todo: remove
-#define _WIN32_WINNT 0x0501
+#ifndef _WIN32_WINNT // @todo: remove
+#	define _WIN32_WINNT 0x0501
 #endif
 
 #include <windows.h>
@@ -13,10 +12,10 @@
 
 int test( const char* pszDriverName )
 {
-	ITAsioInitializeLibrary();
+	ITAsioInitializeLibrary( );
 
 	// Treiber anzeigen
-	long lDrivers = ITAsioGetNumDrivers();
+	long lDrivers = ITAsioGetNumDrivers( );
 	if( lDrivers > 0 )
 	{
 		printf( "Folgende ASIO-Treiber wurden gefunden:\n\n" );
@@ -37,7 +36,7 @@ int test( const char* pszDriverName )
 	if( ae == ASE_OK )
 	{
 		printf( "Initialisierung erfolgreich!" );
-		ITAsioFinalizeDriver();
+		ITAsioFinalizeDriver( );
 	}
 	else
 	{
@@ -46,7 +45,7 @@ int test( const char* pszDriverName )
 		return -1;
 	}
 
-	ITAsioFinalizeLibrary();
+	ITAsioFinalizeLibrary( );
 
 	return 0;
 }
@@ -56,21 +55,20 @@ void ThreadProc( void* pParam )
 	printf( "Thread ist gestartet!\n" );
 
 	// COM initialisieren (Appartment)
-	//CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+	// CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 
-	if( test( ( const char* ) pParam ) != 0 )
+	if( test( (const char*)pParam ) != 0 )
 	{
-		//CoUninitialize();
+		// CoUninitialize();
 	}
 
-	_endthread();
+	_endthread( );
 }
 
 int main( int argc, char* argv[] )
 {
-
 	// COM initialisieren (Appartment)
-	//CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+	// CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 
 	if( argc != 2 )
 	{
@@ -82,15 +80,15 @@ int main( int argc, char* argv[] )
 
 	if( bThreaded )
 	{
-		HANDLE hThread = ( HANDLE ) _beginthread( ThreadProc, 0, argv[ 1 ] );
+		HANDLE hThread = (HANDLE)_beginthread( ThreadProc, 0, argv[1] );
 		WaitForSingleObject( hThread, INFINITE );
 	}
 	else
 	{
-		test( argv[ 1 ] );
+		test( argv[1] );
 	}
 
-	//CoUninitialize();
+	// CoUninitialize();
 
 	return 0;
 }
