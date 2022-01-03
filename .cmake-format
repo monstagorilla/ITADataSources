@@ -155,6 +155,9 @@ with section("parse"):
         'DISABLE_VERSION_SUFFIX' : 1,
         'DEPENDENCIES' : '+'
       }
+    },
+    'groupsourcesbyfolder': {
+      'spelling': 'GroupSourcesByFolder'
     }
   }
 

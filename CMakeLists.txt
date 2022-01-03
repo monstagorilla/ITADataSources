@@ -160,7 +160,7 @@ if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 endif ()
 
 # Organize sources in folders
-groupsourcesbyfolder (${PROJECT_NAME})
+GroupSourcesByFolder (${PROJECT_NAME})
 
 # Install & export
 packageProject (
