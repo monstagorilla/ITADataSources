@@ -19,14 +19,14 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
 	set_property (GLOBAL PROPERTY USE_FOLDERS ON)
 endif ()
 
-#External libs
+# External libs
 add_subdirectory (external_libs)
 
-#---Options---
-#Activate function cmake_dependent_option
+# ---Options---
+# Activate function cmake_dependent_option
 include (CMakeDependentOption)
 
-#This options are only visible if statement (second string) is true
+# This options are only visible if statement (second string) is true
 cmake_dependent_option (ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO "Build with ASIO support" ON "TARGET asio::asio" OFF)
 cmake_dependent_option (
 	ITA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO "Build with Portaudio support" ON "TARGET portaudio" OFF
@@ -39,9 +39,9 @@ option (ITA_DATA_SOURCES_NET_AUDIO_SHOW_TRAFFIC "Show a lot of traffic informati
 mark_as_advanced (ITA_DATA_SOURCES_NET_AUDIO_SHOW_TRAFFIC)
 option (ITA_DATA_SOURCES_WITH_APPS "Build the applications of the library" OFF)
 option (ITA_DATA_SOURCES_WITH_TESTS "Build the tests for the library" OFF)
-#---END: Options---
+# ---END: Options---
 
-#Library
+# Library
 add_library (
 	${PROJECT_NAME}
 	include/ITABufferDataSink.h
@@ -81,19 +81,20 @@ add_library (
 )
 add_library (${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-#Set include directory for library
+# Set include directory for library
 target_include_directories (
-	${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ITADataSources>
+	${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+						   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ITADataSources>
 )
 
-#Linking
+# Linking
 target_link_libraries (
 	${PROJECT_NAME}
 	PUBLIC ITABase::ITABase
 	PRIVATE vista::vista_inter_proc_comm
 )
 
-#---Additional source files---
+# ---Additional source files---
 # Filter windows-only components
 if (WIN32)
 	target_sources (
@@ -138,30 +139,30 @@ if (ITA_DATA_SOURCES_WITH_NET_AUDIO)
 				src/ITANetAudioStreamingServer.cpp
 	)
 endif ()
-#---END: Additional source files---
+# ---END: Additional source files---
 
-#---Compile definitions---
-#Definitions for Shared/Static
+# ---Compile definitions---
+# Definitions for Shared/Static
 target_compile_definitions (
 	${PROJECT_NAME} PUBLIC $<IF:$<BOOL:${BUILD_SHARED_LIBS}>,ITA_DATA_SOURCES_EXPORT,ITA_DATA_SOURCES_STATIC>
 )
-#Required compiler features
+# Required compiler features
 target_compile_features (${PROJECT_NAME} PUBLIC cxx_std_11)
 
 if (ITA_DATA_SOURCES_NET_AUDIO_SHOW_TRAFFIC)
 	target_compile_definitions (${PROJECT_NAME} PRIVATE NET_AUDIO_SHOW_TRAFFIC)
 endif ()
-#---END: Compile definitions---
+# ---END: Compile definitions---
 
-#If build out of ITACoreLibs project, add parent folder "ITACoreLibs"
+# If build out of ITACoreLibs project, add parent folder "ITACoreLibs"
 if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 	set_property (TARGET ${PROJECT_NAME} PROPERTY FOLDER "ITACoreLibs")
 endif ()
 
 # Organize sources in folders
-GroupSourcesByFolder(${PROJECT_NAME})
+groupsourcesbyfolder (${PROJECT_NAME})
 
-#Install & export
+# Install & export
 packageProject (
 	NAME ${PROJECT_NAME}
 	VERSION ${PROJECT_VERSION}
@@ -174,12 +175,12 @@ packageProject (
 	DISABLE_VERSION_SUFFIX YES
 )
 
-#Apps
+# Apps
 if (ITA_DATA_SOURCES_WITH_APPS)
 	add_subdirectory (apps/ita_whad)
 endif ()
 
-#Tests
+# Tests
 if (ITA_DATA_SOURCES_WITH_TESTS)
 	add_subdirectory (tests)
 endif ()

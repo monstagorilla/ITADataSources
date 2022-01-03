@@ -15,12 +15,12 @@ include (${CPM_DOWNLOAD_LOCATION})
 CPMAddPackage (
 	NAME asio
 	URL https://www.steinberg.net/asiosdk
-	DOWNLOAD_ONLY
-	#OPTIONS ""
+	DOWNLOAD_ONLY ON
 )
 
 if (asio_ADDED)
-	add_library (asio STATIC
+	add_library (
+		asio STATIC
 		${asio_SOURCE_DIR}/common/asio.cpp
 		${asio_SOURCE_DIR}/common/asio.h
 		${asio_SOURCE_DIR}/host/asiodrivers.cpp
@@ -37,16 +37,17 @@ if (asio_ADDED)
 	add_library (asio::asio ALIAS asio)
 
 	target_include_directories (
-		asio PUBLIC $<BUILD_INTERFACE:${asio_SOURCE_DIR}> $<BUILD_INTERFACE:${asio_SOURCE_DIR}/common> $<BUILD_INTERFACE:${asio_SOURCE_DIR}/host> $<INSTALL_INTERFACE:INCLUDE_PATH>
+		asio PUBLIC $<BUILD_INTERFACE:${asio_SOURCE_DIR}> $<BUILD_INTERFACE:${asio_SOURCE_DIR}/common>
+					$<BUILD_INTERFACE:${asio_SOURCE_DIR}/host> $<INSTALL_INTERFACE:INCLUDE_PATH>
 	)
 
 	if (WIN32)
 		target_include_directories (
 			asio PUBLIC $<BUILD_INTERFACE:${asio_SOURCE_DIR}/host/pc> $<INSTALL_INTERFACE:INCLUDE_PATH>
 		)
-		target_sources(asio PRIVATE ${asio_SOURCE_DIR}/host/pc/asiolist.h ${asio_SOURCE_DIR}/host/pc/asiolist.cpp)
-		target_compile_definitions(asio PUBLIC IEEE754_64FLOAT)
-	endif()
+		target_sources (asio PRIVATE ${asio_SOURCE_DIR}/host/pc/asiolist.h ${asio_SOURCE_DIR}/host/pc/asiolist.cpp)
+		target_compile_definitions (asio PUBLIC IEEE754_64FLOAT)
+	endif ()
 
 	set_property (TARGET asio PROPERTY FOLDER "external_libs")
 
@@ -59,7 +60,7 @@ if (asio_ADDED)
 		NAMESPACE asio
 		DISABLE_VERSION_SUFFIX YES
 	)
-endif()
+endif ()
 
 CPMAddPackage (
 	NAME portaudio
@@ -82,4 +83,4 @@ if (portaudio_ADDED)
 		DEPENDENCIES ""
 		DISABLE_VERSION_SUFFIX YES
 	)
-endif()
+endif ()

@@ -18,7 +18,9 @@ add_executable (ITANetAudioStreamingServerTest ITANetAudioStreamingServerTest.cp
 target_link_libraries (ITANetAudioStreamingServerTest PUBLIC ITADataSources::ITADataSources)
 
 set_property (TARGET ITANetAudioStreamingServerTest PROPERTY FOLDER "Tests/ITADataSources/NetAudio")
-set_property (TARGET ITANetAudioStreamingServerTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+set_property (
+	TARGET ITANetAudioStreamingServerTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)
 
 install (TARGETS ITANetAudioStreamingServerTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
@@ -39,7 +41,10 @@ if (ITA_DATA_SOURCES_WITH_INTEGRATED_PORTAUDIO)
 	target_link_libraries (ITANetAudioStreamingPortaudioClientTest PUBLIC ITADataSources::ITADataSources)
 
 	set_property (TARGET ITANetAudioStreamingPortaudioClientTest PROPERTY FOLDER "Tests/ITADataSources/NetAudio")
-	set_property (TARGET ITANetAudioStreamingPortaudioClientTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+	set_property (
+		TARGET ITANetAudioStreamingPortaudioClientTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY
+																${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+	)
 
 	install (TARGETS ITANetAudioStreamingPortaudioClientTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
@@ -53,7 +58,9 @@ if (ITA_DATA_SOURCES_WITH_INTEGRATED_ASIO)
 	target_link_libraries (ITANetAudioStreamingClientTest PUBLIC ITADataSources::ITADataSources)
 
 	set_property (TARGET ITANetAudioStreamingClientTest PROPERTY FOLDER "Tests/ITADataSources/NetAudio")
-	set_property (TARGET ITANetAudioStreamingClientTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+	set_property (
+		TARGET ITANetAudioStreamingClientTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+	)
 
 	install (TARGETS ITANetAudioStreamingClientTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 

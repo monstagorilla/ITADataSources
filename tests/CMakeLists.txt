@@ -48,7 +48,9 @@ add_executable (StreamFunctionGeneratorTest StreamFunctionGeneratorTest.cpp)
 target_link_libraries (StreamFunctionGeneratorTest PUBLIC ITADataSources::ITADataSources)
 
 set_property (TARGET StreamFunctionGeneratorTest PROPERTY FOLDER "Tests/ITADataSources")
-set_property (TARGET StreamFunctionGeneratorTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+set_property (
+	TARGET StreamFunctionGeneratorTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)
 
 install (TARGETS StreamFunctionGeneratorTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
