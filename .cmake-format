@@ -277,7 +277,7 @@ with section("markup"):
 
   # If comment markup is enabled, don't reflow any comment block which matches
   # this (regex) pattern. Default is `None` (disabled).
-  literal_comment_pattern = None
+  literal_comment_pattern = '^\\s*[0-9a-zA-Z_]+\\s*\(.*\)'
 
   # Regular expression to match preformat fences in comments default=
   # ``r'^\s*([`~]{3}[`~]*)(.*)$'``
