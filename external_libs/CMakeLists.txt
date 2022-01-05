@@ -38,12 +38,12 @@ if (asio_ADDED)
 
 	target_include_directories (
 		asio PUBLIC $<BUILD_INTERFACE:${asio_SOURCE_DIR}> $<BUILD_INTERFACE:${asio_SOURCE_DIR}/common>
-					$<BUILD_INTERFACE:${asio_SOURCE_DIR}/host> $<INSTALL_INTERFACE:INCLUDE_PATH>
+					$<BUILD_INTERFACE:${asio_SOURCE_DIR}/host> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/asio>
 	)
 
 	if (WIN32)
 		target_include_directories (
-			asio PUBLIC $<BUILD_INTERFACE:${asio_SOURCE_DIR}/host/pc> $<INSTALL_INTERFACE:INCLUDE_PATH>
+			asio PUBLIC $<BUILD_INTERFACE:${asio_SOURCE_DIR}/host/pc> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/asio>
 		)
 		target_sources (asio PRIVATE ${asio_SOURCE_DIR}/host/pc/asiolist.h ${asio_SOURCE_DIR}/host/pc/asiolist.cpp)
 		target_compile_definitions (asio PUBLIC IEEE754_64FLOAT)
@@ -56,7 +56,7 @@ if (asio_ADDED)
 		VERSION 2.3.3
 		BINARY_DIR ${PROJECT_BINARY_DIR}
 		INCLUDE_DIR ${asio_SOURCE_DIR}/common
-		INCLUDE_DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+		INCLUDE_DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/asio
 		NAMESPACE asio
 		DISABLE_VERSION_SUFFIX YES
 	)
