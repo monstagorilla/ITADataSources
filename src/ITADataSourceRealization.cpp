@@ -1,11 +1,12 @@
 #include "ITADataSourceRealization.h"
+
 #include <ITAFastMath.h>
 #include <cassert>
 
 ITADatasourceRealization::ITADatasourceRealization( unsigned int uiChannels, double dSamplerate, unsigned int uiBlocklength, unsigned int uiCapacity )
 {
 	assert( dSamplerate > 0 );
-	m_dSampleRate = dSamplerate;
+	m_dSampleRate              = dSamplerate;
 	m_oStreamProps.dSamplerate = dSamplerate;
 
 	Init( uiChannels, uiBlocklength, uiCapacity );
@@ -26,11 +27,11 @@ void ITADatasourceRealization::Init( unsigned int uiChannels, unsigned int uiBlo
 	 *           Anzahl Kapazität Blöcke vorausgespeichert werden können.
 	 */
 
-	m_uiChannels = uiChannels;
+	m_uiChannels    = uiChannels;
 	m_uiBlocklength = uiBlocklength;
 
-	m_oStreamProps.dSamplerate = m_dSampleRate;
-	m_oStreamProps.uiChannels = m_uiChannels;
+	m_oStreamProps.dSamplerate   = m_dSampleRate;
+	m_oStreamProps.uiChannels    = m_uiChannels;
 	m_oStreamProps.uiBlocklength = m_uiBlocklength;
 
 	m_uiBufferSize = uiBlocklength * ( uiCapacity + 1 );
@@ -58,36 +59,36 @@ void ITADatasourceRealization::Init( unsigned int uiChannels, unsigned int uiBlo
 
 	m_pfBuffer = fm_falloc( m_uiBufferSize * m_uiChannels + /* >>> */ 1024 /* <<< */, false );
 
-	Reset();
+	Reset( );
 }
 
-ITADatasourceRealization::~ITADatasourceRealization()
+ITADatasourceRealization::~ITADatasourceRealization( )
 {
 	fm_free( m_pfBuffer );
 }
 
-void ITADatasourceRealization::Reset()
+void ITADatasourceRealization::Reset( )
 {
-	m_uiReadCursor = 0;
+	m_uiReadCursor  = 0;
 	m_uiWriteCursor = 0;
 
 	// Fehler-Indikatoren zurücksetzen
 	m_iBufferUnderflows = 0;
-	m_iBufferOverflows = 0;
-	m_iGBPReentrances = 0;
+	m_iBufferOverflows  = 0;
+	m_iGBPReentrances   = 0;
 
 	m_iGBPEntrances = 0;
-	m_bGBPFirst = true;
+	m_bGBPFirst     = true;
 
 	fm_zero( m_pfBuffer, m_uiBufferSize * m_uiChannels + /* >>> */ 1024 /* <<< */ );
 }
 
-bool ITADatasourceRealization::HasStreamErrors() const
+bool ITADatasourceRealization::HasStreamErrors( ) const
 {
 	return ( m_iBufferUnderflows > 0 ) || ( m_iBufferOverflows > 0 ) || ( m_iGBPReentrances > 0 );
 }
 
-ITADatasourceRealizationEventHandler* ITADatasourceRealization::GetStreamEventHandler() const
+ITADatasourceRealizationEventHandler* ITADatasourceRealization::GetStreamEventHandler( ) const
 {
 	return m_pEventHandler;
 }
@@ -115,7 +116,7 @@ const float* ITADatasourceRealization::GetBlockPointer( unsigned int uiChannel, 
 	}
 
 	// Hook/Handler aufrufen
-	PreGetBlockPointer();
+	PreGetBlockPointer( );
 	if( m_pEventHandler )
 		m_pEventHandler->HandlePreGetBlockPointer( this, uiChannel );
 
@@ -151,7 +152,7 @@ const float* ITADatasourceRealization::GetBlockPointer( unsigned int uiChannel, 
 	return m_pfBuffer + ( uiChannel * m_uiBufferSize ) + uiLocalReadCursor;
 }
 
-void ITADatasourceRealization::IncrementBlockPointer()
+void ITADatasourceRealization::IncrementBlockPointer( )
 {
 	unsigned int uiLocalReadCursor = m_uiReadCursor;
 
@@ -164,7 +165,7 @@ void ITADatasourceRealization::IncrementBlockPointer()
 
 	m_bGBPFirst = true;
 
-	PostIncrementBlockPointer();
+	PostIncrementBlockPointer( );
 
 	if( m_pEventHandler )
 		m_pEventHandler->HandlePostIncrementBlockPointer( this );
@@ -176,11 +177,11 @@ float* ITADatasourceRealization::GetWritePointer( unsigned int uiChannel )
 	return m_pfBuffer + ( uiChannel * m_uiBufferSize ) + m_uiWriteCursor;
 }
 
-void ITADatasourceRealization::IncrementWritePointer()
+void ITADatasourceRealization::IncrementWritePointer( )
 {
 	// Lokaler Schreibcursor
 	unsigned int uiLocalWriteCursor = m_uiWriteCursor;
-	unsigned int uiNewWriteCursor = ( uiLocalWriteCursor + m_uiBlocklength ) % m_uiBufferSize;
+	unsigned int uiNewWriteCursor   = ( uiLocalWriteCursor + m_uiBlocklength ) % m_uiBufferSize;
 
 	// Pufferüberlauf
 	if( uiNewWriteCursor == m_uiReadCursor )

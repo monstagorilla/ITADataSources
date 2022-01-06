@@ -1,48 +1,33 @@
-cmake_minimum_required( VERSION 2.9 )
+cmake_minimum_required (VERSION 3.20 FATAL_ERROR)
 
-project( ITADataSourcesTest )
-list( APPEND CMAKE_MODULE_PATH "$ENV{VISTA_CMAKE_COMMON}" )
-include( VistaCommon )
+project (ITADataSourcesTest)
 
-vista_use_package( VistaCoreLibs REQUIRED COMPONENTS VistaInterProcComm FIND_DEPENDENCIES )
-vista_use_package( ITABase REQUIRED FIND_DEPENDENCIES )
+# ######################################################################################################################
 
-if( ITA_VISTA_BUILD_STATIC AND WIN32 )
-	list( APPEND VISTA_USE_PACKAGE_LIBRARIES Ws2_32 Winmm )
-endif( )
+add_executable (ITAVistaNetTest VistaNetTest.cpp)
+target_link_libraries (ITAVistaNetTest PUBLIC ITADataSources::ITADataSources)
 
-if( ITA_CORE_LIBS_BUILD_STATIC )
-	add_definitions( -DITA_BASE_STATIC )
-endif( )
+set_property (TARGET ITAVistaNetTest PROPERTY FOLDER "Tests/ITADataSources/VistaNet")
+set_property (TARGET ITAVistaNetTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-add_executable( ITAVistaNetTest VistaNetTest.cpp )
-target_link_libraries( ITAVistaNetTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+install (TARGETS ITAVistaNetTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-vista_configure_app( ITAVistaNetTest )
-vista_install( ITAVistaNetTest )
-vista_create_default_info_file( ITAVistaNetTest )
+# ######################################################################################################################
 
-set_property( TARGET ITAVistaNetTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/VistaNet" )
+add_executable (ITAVistaNetClient VistaNetClient.cpp)
+target_link_libraries (ITAVistaNetClient PUBLIC ITADataSources::ITADataSources)
 
-add_executable( ITAVistaNetClient VistaNetClient.cpp )
-target_link_libraries( ITAVistaNetClient ${VISTA_USE_PACKAGE_LIBRARIES} )
+set_property (TARGET ITAVistaNetClient PROPERTY FOLDER "Tests/ITADataSources/VistaNet")
+set_property (TARGET ITAVistaNetClient PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-vista_set_target_msvc_arguments( ITAVistaNetClient "localhost 12343" )
+install (TARGETS ITAVistaNetClient RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-vista_configure_app( ITAVistaNetClient )
-vista_install( ITAVistaNetClient )
-vista_create_default_info_file( ITAVistaNetClient )
+# ######################################################################################################################
 
-set_property( TARGET ITAVistaNetClient PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/VistaNet" )
+add_executable (ITAVistaNetServer VistaNetServer.cpp)
+target_link_libraries (ITAVistaNetServer PUBLIC ITADataSources::ITADataSources)
 
+set_property (TARGET ITAVistaNetServer PROPERTY FOLDER "Tests/ITADataSources/VistaNet")
+set_property (TARGET ITAVistaNetServer PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-add_executable( ITAVistaNetServer VistaNetServer.cpp )
-target_link_libraries( ITAVistaNetServer ${VISTA_USE_PACKAGE_LIBRARIES} )
-
-vista_set_target_msvc_arguments( ITAVistaNetServer "localhost 12343" )
-
-vista_configure_app( ITAVistaNetServer )
-vista_install( ITAVistaNetServer )
-vista_create_default_info_file( ITAVistaNetServer )
-
-set_property( TARGET ITAVistaNetServer PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/VistaNet" )
+install (TARGETS ITAVistaNetServer RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

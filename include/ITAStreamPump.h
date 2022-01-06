@@ -20,19 +20,19 @@
 #define INCLUDE_WATCHER_ITA_STREAM_PUMP
 
 #include <ITADataSourcesDefinitions.h>
-
 #include <ITAStreamInfo.h>
 #include <ITATimer.h>
 
 class ITADatasource;
 
-//! Eine künstliche Pumpe für Audiostreams 
+//! Eine künstliche Pumpe für Audiostreams
 /**
  * Mit dieser Klasse kann man synchron einen Stream abgreifen lassen
  * und somit echtes asynchrones Laufzeitverhalten wie mit einer echten
  * Soundkarte nachbilden - zum Beispiel zum Debuggen.
  */
-class ITA_DATA_SOURCES_API ITAStreamPump : public ITATimerEventHandler {
+class ITA_DATA_SOURCES_API ITAStreamPump : public ITATimerEventHandler
+{
 public:
 	//! Konstruktor
 	/**
@@ -40,25 +40,25 @@ public:
 	 *
 	 * \note Es darf kein Nullzeiger übergeben werden.
 	 */
-	ITAStreamPump(ITADatasource* pDatasource);	
+	ITAStreamPump( ITADatasource* pDatasource );
 
 	//! Destruktor
-	virtual ~ITAStreamPump();
+	virtual ~ITAStreamPump( );
 
 	//! Streaming beginnen
-	void StartStreaming();
+	void StartStreaming( );
 
 	//! Streaming beenden
-	void StopStreaming();
+	void StopStreaming( );
 
 	// Timer event handler
-	void handleTimerEvent(const ITATimer& tSource);
+	void handleTimerEvent( const ITATimer& tSource );
 
 protected:
-	ITADatasource* m_pDatasource;	// Angeschlossene Datenquelle
+	ITADatasource* m_pDatasource; // Angeschlossene Datenquelle
 	ITATimer* m_pTimer;
 	unsigned int m_uiChannels;
-	ITAStreamInfo m_siState;		// Streamzustand
+	ITAStreamInfo m_siState; // Streamzustand
 };
 
 #endif // INCLUDE_WATCHER_ITA_STREAM_PUMP

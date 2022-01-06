@@ -20,14 +20,11 @@
 #define INCLUDE_WATCHER_ITA_NET_AUDIO_STREAMING_CLIENT
 
 #include <ITADataSourcesDefinitions.h>
-
 #include <ITASampleFrame.h>
-#include <ITAStreamProbe.h>
 #include <ITAStopWatch.h>
-
+#include <ITAStreamProbe.h>
 #include <VistaInterProcComm/Concurrency/VistaThreadEvent.h>
 #include <VistaInterProcComm/Concurrency/VistaThreadLoop.h>
-
 #include <string>
 #include <vector>
 
@@ -51,22 +48,22 @@ class ITA_DATA_SOURCES_API CITANetAudioStreamingClient : public VistaThreadLoop
 {
 public:
 	CITANetAudioStreamingClient( CITANetAudioStream* pParent );
-	virtual ~CITANetAudioStreamingClient();
+	virtual ~CITANetAudioStreamingClient( );
 
 	bool Connect( const std::string& sAddress, const int iPort, const bool bUseUDP );
-	bool GetIsConnected() const;
-	void Disconnect();
+	bool GetIsConnected( ) const;
+	void Disconnect( );
 
-	bool LoopBody();
+	bool LoopBody( );
 
-	std::string GetClientLoggerBaseName() const;
+	std::string GetClientLoggerBaseName( ) const;
 	void SetClientLoggerBaseName( const std::string& );
 
 	void SetDebuggingEnabled( const bool bEnabled );
-	bool GetIsDebuggingEnabled() const;
+	bool GetIsDebuggingEnabled( ) const;
 
 protected:
-	void TriggerBlockIncrement();
+	void TriggerBlockIncrement( );
 
 private:
 	CITANetAudioClient* m_pClient;
@@ -75,9 +72,9 @@ private:
 	CITANetAudioProtocol* m_pProtocol;
 	CITANetAudioMessage* m_pMessage;
 	VistaConnectionIP* m_pConnection;
-	
+
 	ITASampleFrame m_sfReceivingBuffer; //!< Buffer incoming data
-	
+
 	bool m_bStopIndicated;
 	bool m_bStopped;
 

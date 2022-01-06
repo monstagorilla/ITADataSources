@@ -19,9 +19,8 @@
 #ifndef INCLUDE_WATCHER_ITA_DATA_SOURCES_REALIZATION
 #define INCLUDE_WATCHER_ITA_DATA_SOURCES_REALIZATION
 
-#include <ITADataSourcesDefinitions.h>
-
 #include <ITADataSource.h>
+#include <ITADataSourcesDefinitions.h>
 #include <ITAStreamProperties.h>
 
 // Vorwärtsdeklarationen
@@ -36,7 +35,7 @@ class ITADatasourceRealizationEventHandler;
  * der Oberklasse ITADatasource und bietet darüber hinaus konkrete Methoden
  * für das Bereitstellen von Daten seitens der Datenquelle.
  *
- * Intern enthält ein ITADatasourceRealization einen Puffer in dem die 
+ * Intern enthält ein ITADatasourceRealization einen Puffer in dem die
  * freizusetzenden Daten zwischengespeichert werden. Dieser Puffer
  * kann nach beliebig dimensioniert werden (für die Thread-Sicherheit muß er
  * aber mindestens die Größe 2 haben). Die Klasse stellt Methoden bereit
@@ -62,8 +61,8 @@ public:
 	 */
 	/*
 	ITADatasourceRealization(unsigned int uiChannels,
-		                     unsigned int uiBlocklength,
-				             unsigned int uiCapacity=2);
+	                         unsigned int uiBlocklength,
+	                         unsigned int uiCapacity=2);
 	*/
 
 	//! Konstruktor
@@ -76,43 +75,40 @@ public:
 	 *
 	 * \note Bei Fehlern werden ITAExceptions aufgelöst.
 	 */
-	ITADatasourceRealization(unsigned int uiChannels,
-							 double dSamplerate,
-		                     unsigned int uiBlocklength,
-				             unsigned int uiCapacity=2);
+	ITADatasourceRealization( unsigned int uiChannels, double dSamplerate, unsigned int uiBlocklength, unsigned int uiCapacity = 2 );
 
-	virtual ~ITADatasourceRealization();
+	virtual ~ITADatasourceRealization( );
 
 	//! -= Zurücksetzen =-
 	/**
 	 * \important Darf nur aufgerufen werden, wenn das Streaming nicht läuft!
 	 */
-	virtual void Reset();
+	virtual void Reset( );
 
 	//! Gibt zurück, ob Fehler während der Stream-Verarbeitung auftraten
-	bool HasStreamErrors() const;
+	bool HasStreamErrors( ) const;
 
 	//! Handler für Stream-Event setzen
 	/**
 	 * \important Darf nur aufgerufen werden, wenn das Streaming nicht läuft!
 	 */
-	ITADatasourceRealizationEventHandler* GetStreamEventHandler() const;
+	ITADatasourceRealizationEventHandler* GetStreamEventHandler( ) const;
 
 	//! Handler für Stream-Event setzen
 	/**
 	 * \important Darf nur aufgerufen werden, wenn das Streaming nicht läuft!
 	 */
-	void SetStreamEventHandler(ITADatasourceRealizationEventHandler* pHandler);
+	void SetStreamEventHandler( ITADatasourceRealizationEventHandler* pHandler );
 
 	// -= Realisierung der abstrakten Methoden von "ITADatasource" =-
 
-	inline const ITAStreamProperties* GetStreamProperties() const { return &m_oStreamProps; }
-	inline unsigned int GetBlocklength() const { return m_uiBlocklength; }
-	inline unsigned int GetNumberOfChannels() const { return m_uiChannels; }
-	inline double GetSampleRate() const { return m_dSampleRate; }
+	inline const ITAStreamProperties* GetStreamProperties( ) const { return &m_oStreamProps; }
+	inline unsigned int GetBlocklength( ) const { return m_uiBlocklength; }
+	inline unsigned int GetNumberOfChannels( ) const { return m_uiChannels; }
+	inline double GetSampleRate( ) const { return m_dSampleRate; }
 
-    virtual const float* GetBlockPointer(unsigned int uiChannel, const ITAStreamInfo* pStreamInfo);
-	virtual void IncrementBlockPointer();
+	virtual const float* GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pStreamInfo );
+	virtual void IncrementBlockPointer( );
 
 	//! Schreibzeiger abrufen
 	/**
@@ -122,8 +118,8 @@ public:
 	 * \param uiChannel Index des Kanals (Wertebereich: [0, Kanäle-1])
 	 * \return Zeiger auf die aktuelle Position des internen Puffers
 	 */
-	virtual float* GetWritePointer(unsigned int uiChannel);
-	
+	virtual float* GetWritePointer( unsigned int uiChannel );
+
 	//! Schreibzeiger inkrementieren
 	/**
 	 * Der Aufruf dieser Methode inkrementiert den internen Schreibzeiger.
@@ -131,72 +127,69 @@ public:
 	 * Schreiboperationen auf den Ausgabeblöcken der Datenquelle abgeschlossen
 	 * haben, <b>müssen</b> Sie diese Methode aufrufen, um diese Daten durch die
 	 * Datenquelle bereitzustellen.
-	 */ 
-	virtual void IncrementWritePointer();
+	 */
+	virtual void IncrementWritePointer( );
 
 	//! Nachrichten-Methode
 	/*
 	 * Wird aufgerufen, wenn GetBlockPointer vom Stream aufgerufen wird,
 	 * noch bevor intern Daten verarbeitert werden (also noch vor ProcessStream)
 	 */
-	inline virtual void PreGetBlockPointer() {};
+	inline virtual void PreGetBlockPointer( ) { };
 
 	//! Nachrichten-Methode
 	/*
 	 * Wird aufgerufen, nachdem IncrementBlockPointer vom Stream aufgerufen wurde.
 	 */
-	inline virtual void PostIncrementBlockPointer() {};
+	inline virtual void PostIncrementBlockPointer( ) { };
 
 	//! Verarbeitungsmethode
 	/**
 	 * Diese Hook-Methode wird von der Klasse aufgerufen, wenn neue Stream-Daten
-	 * produziert werden sollen. Unterklassen sollten diese Methode redefinieren, 
+	 * produziert werden sollen. Unterklassen sollten diese Methode redefinieren,
 	 * um die Verarbeitung von Samples zu realisieren.
 	 */
-	inline virtual void ProcessStream(const ITAStreamInfo* ) {};
+	inline virtual void ProcessStream( const ITAStreamInfo* ) { };
 
 protected:
-	
 	/*
 	 *  [fwe] Der Einfachheit halber werden diese Variablen hier
 	 *        protected zugänglich gemacht. Dies erspart häufige
 	 *        Tipparbeit in Unterklassen. Bitte diese Werte aber
 	 *        nur lesend [read-only] benutzen!!
 	 */
-	double m_dSampleRate;				// Abtastrate [Hz]
-	unsigned int m_uiChannels;			// Anzahl Kanäle
-	unsigned int m_uiBlocklength;		// Streaming Puffergröße [Samples]
-	
+	double m_dSampleRate;         // Abtastrate [Hz]
+	unsigned int m_uiChannels;    // Anzahl Kanäle
+	unsigned int m_uiBlocklength; // Streaming Puffergröße [Samples]
+
 private:
-	ITAStreamProperties m_oStreamProps;	// Audiostream-Parameter
+	ITAStreamProperties m_oStreamProps; // Audiostream-Parameter
 
-	unsigned int m_uiBufferSize;		// Puffergröße
-	unsigned int m_uiReadCursor;		// Leseposition
-	unsigned int m_uiWriteCursor;		// Schreibposition
+	unsigned int m_uiBufferSize;  // Puffergröße
+	unsigned int m_uiReadCursor;  // Leseposition
+	unsigned int m_uiWriteCursor; // Schreibposition
 
-	float* m_pfBuffer;					// Puffer (Kanäle interleaved!)
-	std::atomic< int > m_iGBPEntrances;		// Anzahl paralleler Eintritte in GBP
-	std::atomic< bool > m_bGBPFirst;			// Erster Eintritt in GBP seit letztem IBP (=> Daten produzieren)
-	int m_iBufferUnderflows;			// DEBUG: Zähler für Buffer-Leerläufe
-	int m_iBufferOverflows;				// DEBUG: Zähler für Buffer-Überläufe
-	int m_iGBPReentrances;				// DEBUG: Zähler parallele Wiedereintritte in GBP
-	int m_iIBPReentrances;				// DEBUG: Zähler parallele Wiedereintritte in IBP
-	ITADatasourceRealizationEventHandler* m_pEventHandler;	// Handler für Stream-Events
+	float* m_pfBuffer;                                     // Puffer (Kanäle interleaved!)
+	std::atomic<int> m_iGBPEntrances;                      // Anzahl paralleler Eintritte in GBP
+	std::atomic<bool> m_bGBPFirst;                         // Erster Eintritt in GBP seit letztem IBP (=> Daten produzieren)
+	int m_iBufferUnderflows;                               // DEBUG: Zähler für Buffer-Leerläufe
+	int m_iBufferOverflows;                                // DEBUG: Zähler für Buffer-Überläufe
+	int m_iGBPReentrances;                                 // DEBUG: Zähler parallele Wiedereintritte in GBP
+	int m_iIBPReentrances;                                 // DEBUG: Zähler parallele Wiedereintritte in IBP
+	ITADatasourceRealizationEventHandler* m_pEventHandler; // Handler für Stream-Events
 
-	void Init(unsigned int uiChannels,
-			  unsigned int uiBlocklength,
-			  unsigned int uiCapacity);
+	void Init( unsigned int uiChannels, unsigned int uiBlocklength, unsigned int uiCapacity );
 };
 
 //! Schnittstelle für Nachrichten-Verarbeitung der Klasse ITADatasourceRealization
 class ITA_DATA_SOURCES_API ITADatasourceRealizationEventHandler
 {
 public:
-	inline virtual ~ITADatasourceRealizationEventHandler() {};
+	inline virtual ~ITADatasourceRealizationEventHandler( ) { };
 
-	virtual void HandlePreGetBlockPointer(ITADatasourceRealization* pSender, unsigned int uiChannel);
-	virtual void HandlePostIncrementBlockPointer(ITADatasourceRealization* pSender);
-	virtual void HandleProcessStream(ITADatasourceRealization* pSender, const ITAStreamInfo* pStreamInfo);
+	virtual void HandlePreGetBlockPointer( ITADatasourceRealization* pSender, unsigned int uiChannel );
+	virtual void HandlePostIncrementBlockPointer( ITADatasourceRealization* pSender );
+	virtual void HandleProcessStream( ITADatasourceRealization* pSender, const ITAStreamInfo* pStreamInfo );
 };
 
 #endif // INCLUDE_WATCHER_ITA_DATA_SOURCES_REALIZATION

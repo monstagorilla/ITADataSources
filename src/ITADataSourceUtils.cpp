@@ -2,26 +2,25 @@
 
 // Wichtig: Folgendes Makro definiert Windows-NT als Umgebung und
 //          bewirkt somit die Nutzbarkeit der WaitableTimer.
-#ifndef  _WIN32_WINNT // @todo: remove
-#define _WIN32_WINNT 0x0501
+#ifndef _WIN32_WINNT // @todo: remove
+#	define _WIN32_WINNT 0x0501
 #endif
 
-#include <ITADataSource.h>
-#include <ITAStreamInfo.h>
 #include <ITAAudiofileWriter.h>
-#include <ITAException.h>
 #include <ITAClock.h>
-
+#include <ITADataSource.h>
+#include <ITAException.h>
+#include <ITAStreamInfo.h>
+#include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <string>
 #include <vector>
-#include <cstring>
-#include <algorithm>
 
 #ifdef WIN32
-#include <windows.h>
+#	include <windows.h>
 #else
-#include <unistd.h>
+#	include <unistd.h>
 #endif
 
 void WriteFromDatasourceToBuffer( ITADatasource* pSource, float** ppfDest, unsigned int uiNumberOfSamples, double dGain, bool bOnline, bool bDisplayProgress )
@@ -31,12 +30,12 @@ void WriteFromDatasourceToBuffer( ITADatasource* pSource, float** ppfDest, unsig
 	if( !pSource )
 		return;
 
-	unsigned int uiChannels = pSource->GetNumberOfChannels();
-	double dSamplerate = pSource->GetSampleRate();
-	unsigned int uiBlocklength = pSource->GetBlocklength();
+	unsigned int uiChannels    = pSource->GetNumberOfChannels( );
+	double dSamplerate         = pSource->GetSampleRate( );
+	unsigned int uiBlocklength = pSource->GetBlocklength( );
 	ITAStreamInfo siState;
 
-	long periodMs = ( long ) ceil( uiBlocklength / dSamplerate * 1000 );
+	long periodMs = (long)ceil( uiBlocklength / dSamplerate * 1000 );
 
 #ifdef _WIN32
 	HANDLE hTimer = 0;
@@ -53,9 +52,9 @@ void WriteFromDatasourceToBuffer( ITADatasource* pSource, float** ppfDest, unsig
 #endif
 
 
-
-	try {
-		unsigned int n = 0;
+	try
+	{
+		unsigned int n  = 0;
 		float fProgress = 0.0f;
 		while( n < uiNumberOfSamples )
 		{
@@ -81,28 +80,28 @@ void WriteFromDatasourceToBuffer( ITADatasource* pSource, float** ppfDest, unsig
 				{
 					// Stille einfügen
 					for( unsigned int j = 0; j < uiBlocklength; j++ )
-						ppfDest[ i ][ n + j ] = 0;
+						ppfDest[i][n + j] = 0;
 				}
 				else
 				{
 					if( dGain == 1.0f )
-						memcpy( ppfDest[ i ] + n, pfData, k * sizeof( float ) );
+						memcpy( ppfDest[i] + n, pfData, k * sizeof( float ) );
 					else
 						for( unsigned int j = 0; j < k; j++ )
-							ppfDest[ i ][ n + j ] = ( float ) ( ( double ) pfData[ j ] * dGain );
+							ppfDest[i][n + j] = (float)( (double)pfData[j] * dGain );
 				}
 			}
 
-			pSource->IncrementBlockPointer();
+			pSource->IncrementBlockPointer( );
 			n += uiBlocklength;
 
 			siState.nSamples += uiBlocklength;
-			siState.dStreamTimeCode = ( double ) ( siState.nSamples ) / dSamplerate;
-			siState.dSysTimeCode = ITAClock::getDefaultClock()->getTime();
+			siState.dStreamTimeCode = (double)( siState.nSamples ) / dSamplerate;
+			siState.dSysTimeCode    = ITAClock::getDefaultClock( )->getTime( );
 
 			if( bDisplayProgress )
 			{
-				float p = 100 * ( float ) n / uiNumberOfSamples;
+				float p = 100 * (float)n / uiNumberOfSamples;
 				if( p > fProgress + 5.0f )
 				{
 					fProgress = p;
@@ -136,24 +135,24 @@ void WriteFromDatasourceToFile( ITADatasource* pSource, std::string sFilename, u
 	if( !pSource )
 		return;
 
-	unsigned int uiChannels = pSource->GetNumberOfChannels();
-	unsigned int uiBlocklength = pSource->GetBlocklength();
-	double dSamplerate = pSource->GetSampleRate();
+	unsigned int uiChannels    = pSource->GetNumberOfChannels( );
+	unsigned int uiBlocklength = pSource->GetBlocklength( );
+	double dSamplerate         = pSource->GetSampleRate( );
 
 	std::vector<float*> vpfData;
 	for( unsigned int i = 0; i < uiChannels; i++ )
-		vpfData.push_back( new float[ uiBlocklength ] );
+		vpfData.push_back( new float[uiBlocklength] );
 
 	ITAAudiofileProperties props;
-	props.iChannels = uiChannels;
-	props.dSampleRate = dSamplerate;
-	props.eQuantization = ITAQuantization::ITA_FLOAT;
-	props.eDomain = ITADomain::ITA_TIME_DOMAIN;
-	props.iLength = uiNumberOfSamples;
+	props.iChannels            = uiChannels;
+	props.dSampleRate          = dSamplerate;
+	props.eQuantization        = ITAQuantization::ITA_FLOAT;
+	props.eDomain              = ITADomain::ITA_TIME_DOMAIN;
+	props.iLength              = uiNumberOfSamples;
 	ITAAudiofileWriter* writer = ITAAudiofileWriter::create( sFilename, props );
 	ITAStreamInfo siState;
 
-	long periodMs = ( long ) ceil( uiBlocklength / dSamplerate * 1000 );
+	long periodMs = (long)ceil( uiBlocklength / dSamplerate * 1000 );
 
 #ifdef _WIN32
 	HANDLE hTimer = 0;
@@ -174,8 +173,9 @@ void WriteFromDatasourceToFile( ITADatasource* pSource, std::string sFilename, u
 	}
 #endif
 
-	try {
-		unsigned int n = 0;
+	try
+	{
+		unsigned int n  = 0;
 		float fProgress = 0.0;
 		while( n < uiNumberOfSamples )
 		{
@@ -192,27 +192,27 @@ void WriteFromDatasourceToFile( ITADatasource* pSource, std::string sFilename, u
 			for( unsigned int i = 0; i < uiChannels; i++ )
 			{
 				const float* pfSource = pSource->GetBlockPointer( i, &siState );
-				float* pfDest = vpfData[ i ];
+				float* pfDest         = vpfData[i];
 				if( !pfSource )
 				{
 					// Stille einfügen
 					for( unsigned int j = 0; j < uiBlocklength; j++ )
-						pfDest[ j ] = 0;
+						pfDest[j] = 0;
 				}
 				else
 				{
 					if( dGain == 1 )
-						memcpy( pfDest, pfSource, uiBlocklength*sizeof( float ) );
+						memcpy( pfDest, pfSource, uiBlocklength * sizeof( float ) );
 					else
 						for( unsigned int j = 0; j < uiBlocklength; j++ )
-							pfDest[ j ] = pfSource[ j ] * ( float ) dGain;
+							pfDest[j] = pfSource[j] * (float)dGain;
 				}
 			}
-			pSource->IncrementBlockPointer();
+			pSource->IncrementBlockPointer( );
 
 			siState.nSamples += uiBlocklength;
-			siState.dStreamTimeCode = ( double ) ( siState.nSamples ) / dSamplerate;
-			siState.dSysTimeCode = ITAClock::getDefaultClock()->getTime();
+			siState.dStreamTimeCode = (double)( siState.nSamples ) / dSamplerate;
+			siState.dSysTimeCode    = ITAClock::getDefaultClock( )->getTime( );
 
 			// Daten schreiben
 			writer->write( ( std::min )( uiBlocklength, ( uiNumberOfSamples - n ) ), vpfData );
@@ -221,7 +221,7 @@ void WriteFromDatasourceToFile( ITADatasource* pSource, std::string sFilename, u
 
 			if( bDisplayProgress )
 			{
-				float p = 100 * ( float ) n / uiNumberOfSamples;
+				float p = 100 * (float)n / uiNumberOfSamples;
 				if( p > fProgress + 5.0f )
 				{
 					fProgress = p;

@@ -20,9 +20,7 @@
 #define INCLUDE_WATCHER_ITA_NET_AUDIO_SERVER
 
 #include <ITADataSourcesDefinitions.h>
-
 #include <ITASampleFrame.h>
-
 #include <string>
 #include <vector>
 
@@ -34,25 +32,25 @@ class VistaUDPSocket;
 
 //! Realizes server functionality for network audio streaming
 /**
-  * Can be connected to an ITADataSource as a streaming source
-  * or to a user-implemented sample producer, i.e. an audio sythesizer.
-  *
-  * @todo: move to src folder
-  */
+ * Can be connected to an ITADataSource as a streaming source
+ * or to a user-implemented sample producer, i.e. an audio sythesizer.
+ *
+ * @todo: move to src folder
+ */
 class ITA_DATA_SOURCES_API CITANetAudioServer
 {
 public:
-	CITANetAudioServer();
-	virtual ~CITANetAudioServer();
+	CITANetAudioServer( );
+	virtual ~CITANetAudioServer( );
 
-	std::string GetServerAddress() const;
-	int GetNetworkPort() const;
+	std::string GetServerAddress( ) const;
+	int GetNetworkPort( ) const;
 
 	bool Start( const std::string& sAddress, const int iPort, const bool bUseUDP );
-	void Stop();
+	void Stop( );
 
-	VistaConnectionIP* GetConnection() const;
-	bool IsConnected() const; 
+	VistaConnectionIP* GetConnection( ) const;
+	bool IsConnected( ) const;
 
 
 private:
@@ -63,7 +61,6 @@ private:
 
 	int m_iServerPort;
 	std::string m_sServerAddress;
-
 };
 
 #endif // INCLUDE_WATCHER_ITA_NET_AUDIO_SERVER

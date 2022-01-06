@@ -1,50 +1,51 @@
-cmake_minimum_required( VERSION 2.8 )
+cmake_minimum_required (VERSION 3.20 FATAL_ERROR)
 
-project( ITADataSourcesTest )
-list( APPEND CMAKE_MODULE_PATH "$ENV{VISTA_CMAKE_COMMON}" )
-include( VistaCommon )
+project (ITADataSourcesTest)
 
-vista_use_package( ITADataSources REQUIRED FIND_DEPENDENCIES )
+# ######################################################################################################################
 
+add_executable (ITAPortaudioInterfaceRecorder ITAPortaudioInterfaceRecorder.cpp)
+target_link_libraries (ITAPortaudioInterfaceRecorder PUBLIC ITADataSources::ITADataSources)
 
-add_executable( ITAPortaudioInterfaceRecorder ITAPortaudioInterfaceRecorder.cpp )
-target_link_libraries( ITAPortaudioInterfaceRecorder ${VISTA_USE_PACKAGE_LIBRARIES} )
+set_property (TARGET ITAPortaudioInterfaceRecorder PROPERTY FOLDER "Tests/ITADataSources/Portaudio")
+set_property (
+	TARGET ITAPortaudioInterfaceRecorder PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)
 
-vista_configure_app( ITAPortaudioInterfaceRecorder )
-vista_install( ITAPortaudioInterfaceRecorder )
-vista_create_default_info_file( ITAPortaudioInterfaceRecorder )
+install (TARGETS ITAPortaudioInterfaceRecorder RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-set_property( TARGET ITAPortaudioInterfaceRecorder PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/Portaudio" )
+# ######################################################################################################################
 
+add_executable (ITAPortaudioInterfaceTest ITAPortaudioInterfaceTest.cpp)
+target_link_libraries (ITAPortaudioInterfaceTest PUBLIC ITADataSources::ITADataSources)
 
-add_executable( ITAPortaudioInterfaceTest ITAPortaudioInterfaceTest.cpp )
-target_link_libraries( ITAPortaudioInterfaceTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+set_property (TARGET ITAPortaudioInterfaceTest PROPERTY FOLDER "Tests/ITADataSources/Portaudio")
+set_property (TARGET ITAPortaudioInterfaceTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-vista_configure_app( ITAPortaudioInterfaceTest )
-vista_install( ITAPortaudioInterfaceTest )
-vista_create_default_info_file( ITAPortaudioInterfaceTest )
+install (TARGETS ITAPortaudioInterfaceTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-set_property( TARGET ITAPortaudioInterfaceTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/Portaudio" )
+# ######################################################################################################################
 
+add_executable (ITAPortaudioMeasurementTest ITAPortaudioMeasurementTest.cpp)
+target_link_libraries (ITAPortaudioMeasurementTest PUBLIC ITADataSources::ITADataSources)
 
-add_executable( ITAPortaudioMeasurementTest ITAPortaudioMeasurementTest.cpp )
-target_link_libraries( ITAPortaudioMeasurementTest ${VISTA_USE_PACKAGE_LIBRARIES} )
+set_property (TARGET ITAPortaudioMeasurementTest PROPERTY FOLDER "Tests/ITADataSources/Portaudio")
+set_property (
+	TARGET ITAPortaudioMeasurementTest PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)
 
-vista_set_target_msvc_arguments( ITAPortaudioMeasurementTest "${CMAKE_CURRENT_SOURCE_DIR}/ITAPortaudioMeasurement_ExcitationSignal.wav ${CMAKE_CURRENT_SOURCE_DIR}/ITAPortaudioMeasurement_Record.wav 44100 512" )
+install (TARGETS ITAPortaudioMeasurementTest RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-vista_configure_app( ITAPortaudioMeasurementTest )
-vista_install( ITAPortaudioMeasurementTest )
-vista_create_default_info_file( ITAPortaudioMeasurementTest )
+# ######################################################################################################################
 
-set_property( TARGET ITAPortaudioMeasurementTest PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/Portaudio" )
+add_executable (ReciprocalDAADLatencyMeasurement ReciprocalDAADLatencyMeasurement.cpp)
+target_link_libraries (ReciprocalDAADLatencyMeasurement PUBLIC ITADataSources::ITADataSources)
 
-add_executable( ReciprocalDAADLatencyMeasurement ReciprocalDAADLatencyMeasurement.cpp )
-target_link_libraries( ReciprocalDAADLatencyMeasurement ${VISTA_USE_PACKAGE_LIBRARIES} )
+set_property (TARGET ReciprocalDAADLatencyMeasurement PROPERTY FOLDER "Tests/ITADataSources/Portaudio")
+set_property (
+	TARGET ReciprocalDAADLatencyMeasurement PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)
 
-vista_set_target_msvc_arguments( ReciprocalDAADLatencyMeasurement "1 1 ${CMAKE_CURRENT_SOURCE_DIR}/sweep.wav ${CMAKE_CURRENT_SOURCE_DIR}/recordA.wav ${CMAKE_CURRENT_SOURCE_DIR}/recordB.wav 44100 2048" )
+install (TARGETS ReciprocalDAADLatencyMeasurement RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-vista_configure_app( ReciprocalDAADLatencyMeasurement )
-vista_install( ReciprocalDAADLatencyMeasurement )
-vista_create_default_info_file( ReciprocalDAADLatencyMeasurement )
-
-set_property( TARGET ReciprocalDAADLatencyMeasurement PROPERTY FOLDER "ITACoreLibs/Tests/ITADataSources/Portaudio" )
+# ######################################################################################################################

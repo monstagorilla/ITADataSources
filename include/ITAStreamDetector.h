@@ -19,12 +19,10 @@
 #ifndef INCLUDE_WATCHER_ITA_PEAK_DETECTOR
 #define INCLUDE_WATCHER_ITA_PEAK_DETECTOR
 
-#include <ITADataSourcesDefinitions.h>
-
 #include <ITACriticalSection.h>
 #include <ITADataSource.h>
+#include <ITADataSourcesDefinitions.h>
 #include <ITAStopWatch.h>
-
 #include <atomic>
 #include <string>
 #include <vector>
@@ -51,7 +49,6 @@
 class ITA_DATA_SOURCES_API ITAStreamDetector : public ITADatasource
 {
 public:
-
 	//! Mode of detection
 	enum Mode
 	{
@@ -68,20 +65,17 @@ public:
 	ITAStreamDetector( ITADatasource* pDatasource, int iMode = PEAK_AND_RMS );
 
 	//! Destruktor
-	virtual inline ~ITAStreamDetector() {};
+	virtual inline ~ITAStreamDetector( ) { };
 
 	//! Datenquelle zurückgeben
-	inline ITADatasource* GetDatasource() const
-	{
-		return m_pDataSource;
-	};
+	inline ITADatasource* GetDatasource( ) const { return m_pDataSource; };
 
 	//! Messung zurücksetzen
-	void Reset();
+	void Reset( );
 
 	void SetMode( const int iMode );
 
-	int GetMode() const;
+	int GetMode( ) const;
 
 	//! Spitzenwert über alle Kanäle abrufen
 	/**
@@ -127,8 +121,8 @@ public:
 	 * \note Falls der Vektor weniger Felder als Kanäle hat,
 	 *       so wird er automatisch vergrößert.
 	 */
-	void GetPeaks( std::vector< float >& vfDest, const bool bReset = true );
-	
+	void GetPeaks( std::vector<float>& vfDest, const bool bReset = true );
+
 	//! Spitzenwerte aller Kanäle in Dezibel abrufen
 	/**
 	 * Diese Methode speichert die Spitzenwerte aller Kanäle
@@ -137,50 +131,41 @@ public:
 	 * \note Falls der Vektor weniger Felder als Kanäle hat,
 	 *       so wird er automatisch vergrößert.
 	 */
-	void GetPeaksDecibel( std::vector< double >& vdDestDecibel, const bool bReset = true );
+	void GetPeaksDecibel( std::vector<double>& vdDestDecibel, const bool bReset = true );
 
 	float GetOverallRMS( const bool bReset = true );
 	double GetOverallRMSDecibel( const bool bReset = true );
 	float GetRMS( const int iChannel, const bool bReset = true );
 	double GetRMSDecibel( const int iChannel, const bool bReset = true );
-	void GetRMSs( std::vector< float >& vfDest, const bool bReset = true );
-	void GetRMSsDecibel( std::vector< float >& vfDestDecibel, const bool bReset = true );
+	void GetRMSs( std::vector<float>& vfDest, const bool bReset = true );
+	void GetRMSsDecibel( std::vector<float>& vfDestDecibel, const bool bReset = true );
 
-	inline unsigned int GetBlocklength() const
-	{
-		return m_iBlocklength;
-	};
+	inline unsigned int GetBlocklength( ) const { return m_iBlocklength; };
 
-	inline unsigned int GetNumberOfChannels() const
-	{
-		return m_iChannels;
-	};
+	inline unsigned int GetNumberOfChannels( ) const { return m_iChannels; };
 
-	inline double GetSampleRate() const
-	{
-		return m_dSamplerate;
-	};
+	inline double GetSampleRate( ) const { return m_dSamplerate; };
 
 	virtual const float* GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pStreamInfo );
-	virtual void IncrementBlockPointer();
+	virtual void IncrementBlockPointer( );
 
 	void SetProfilerEnabled( bool bEnabled );
-	bool GetProfilerEnabled() const;
+	bool GetProfilerEnabled( ) const;
 
 	double GetProfilerMeanCalculationTime( bool bReset = true );
 	std::string GetProfilerResult( bool bReset = true );
 
 protected:
-	ITADatasource* m_pDataSource;			//!< Angeschlossene Datenquelle
-	double m_dSamplerate;					//!< Abtastrate [Hz]
-	int m_iChannels;				//!< Anzahl Kanäle
-	int m_iBlocklength;			//!< Streaming Puffergröße [Samples]
-	std::atomic< int > m_iMode;
-	ITACriticalSection m_cs;				//!< Sichert exklusiven Zugriff auf die Daten (s.u.)
-	std::vector< float > m_vfPeaks;			//!< Spitzenwerte der einzelnen Kanäle
-	float m_fOverallPeak;					//!< Spitzenwert über alle Kanäle
-	int m_iOverallPeakChannel;	//!< Kanal in dem der Spitzenwert auftrat
-	std::vector< double > m_vdRMSSquaredSums;
+	ITADatasource* m_pDataSource; //!< Angeschlossene Datenquelle
+	double m_dSamplerate;         //!< Abtastrate [Hz]
+	int m_iChannels;              //!< Anzahl Kanäle
+	int m_iBlocklength;           //!< Streaming Puffergröße [Samples]
+	std::atomic<int> m_iMode;
+	ITACriticalSection m_cs;      //!< Sichert exklusiven Zugriff auf die Daten (s.u.)
+	std::vector<float> m_vfPeaks; //!< Spitzenwerte der einzelnen Kanäle
+	float m_fOverallPeak;         //!< Spitzenwert über alle Kanäle
+	int m_iOverallPeakChannel;    //!< Kanal in dem der Spitzenwert auftrat
+	std::vector<double> m_vdRMSSquaredSums;
 	int m_iRMSBlocks;
 	bool m_bProfilerEnabled;
 	ITAStopWatch m_sw;

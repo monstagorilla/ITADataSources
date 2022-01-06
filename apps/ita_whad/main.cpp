@@ -3,11 +3,11 @@
 #include <string>
 
 #ifdef ITA_WHAD_WITH_ASIO
-#include <ITAAsioInterface.h>
+#	include <ITAAsioInterface.h>
 #endif
 
 #ifdef ITA_WHAD_WITH_PORTAUDIO
-#include <ITAPortaudioInterface.h>
+#	include <ITAPortaudioInterface.h>
 #endif
 
 using namespace std;
@@ -32,11 +32,11 @@ int main( int, char** )
 #ifdef ITA_WHAD_WITH_ASIO
 
 	string sASIOFileName = "ita_whad_asio.txt";
-	FILE* pASIOFile = fopen( sASIOFileName.c_str(), "w" );
+	FILE* pASIOFile      = fopen( sASIOFileName.c_str( ), "w" );
 
-	ITAsioInitializeLibrary();
+	ITAsioInitializeLibrary( );
 
-	long lASIODrivers = ITAsioGetNumDrivers();
+	long lASIODrivers = ITAsioGetNumDrivers( );
 
 	if( lASIODrivers == 0 )
 		cerr << "Warning: no ASIO drivers found." << endl;
@@ -45,20 +45,20 @@ int main( int, char** )
 	for( long i = 0; i < lASIODrivers; i++ )
 	{
 		std::string sDriverName = ITAsioGetDriverName( i );
-		ASIOError ae = ITAsioInitializeDriver( i );
+		ASIOError ae            = ITAsioInitializeDriver( i );
 		long iIn = -1, iOut = -1;
-		
+
 		if( ae == ASE_OK )
 		{
 			ITAsioGetChannels( &iIn, &iOut );
-			ITAsioFinalizeDriver();
+			ITAsioFinalizeDriver( );
 		}
 
-		cout << "[" << i + 1 << "] \"" << sDriverName << "\" (" << iIn << " in, " << iOut << " out)"  << endl;
+		cout << "[" << i + 1 << "] \"" << sDriverName << "\" (" << iIn << " in, " << iOut << " out)" << endl;
 	}
 	cout << endl;
 
-	ITAsioFinalizeLibrary();
+	ITAsioFinalizeLibrary( );
 
 	fclose( pASIOFile );
 
@@ -66,13 +66,13 @@ int main( int, char** )
 #ifdef ITA_WHAD_WITH_PORTAUDIO
 
 	string sPAFileName = "ita_whad_portaudio.txt";
-	FILE* pPAFile = fopen( sPAFileName.c_str(), "w" );
+	FILE* pPAFile      = fopen( sPAFileName.c_str( ), "w" );
 
 	ITAPortaudioInterface oITAPA( 44.1e3, 1024 );
-	oITAPA.Initialize();
-	int iPANumDevices = oITAPA.GetNumDevices();
-	int iPADefaultIn = oITAPA.GetDefaultInputDevice();
-	int iPADefaultOut = oITAPA.GetDefaultOutputDevice();
+	oITAPA.Initialize( );
+	int iPANumDevices = oITAPA.GetNumDevices( );
+	int iPADefaultIn  = oITAPA.GetDefaultInputDevice( );
+	int iPADefaultOut = oITAPA.GetDefaultOutputDevice( );
 
 	cout << " ### Portaudio ### " << endl;
 	for( int i = 0; i < iPANumDevices; i++ )
@@ -85,7 +85,7 @@ int main( int, char** )
 	}
 	cout << endl;
 
-	oITAPA.Finalize();
+	oITAPA.Finalize( );
 
 	fclose( pPAFile );
 

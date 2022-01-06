@@ -19,10 +19,8 @@
 #ifndef INCLUDE_WATCHER_ITA_BUFFER_DATA_SOURCE
 #define INCLUDE_WATCHER_ITA_BUFFER_DATA_SOURCE
 
-#include <ITADataSourcesDefinitions.h>
-
 #include <ITADataSource.h>
-
+#include <ITADataSourcesDefinitions.h>
 #include <vector>
 
 //! Puffer-basierte Datenquelle
@@ -70,7 +68,8 @@ public:
 	 *
 	 * \note Bei ungültigen Parametern wird eine Ausnahme vom Typ ITAException ausgelöst
 	 */
-	ITABufferDatasource( const float** ppfBuffer, unsigned int uiChannels, unsigned int uiBuffersize, double dSamplerate, unsigned int uiBlocklength, bool bLoopMode = false );
+	ITABufferDatasource( const float** ppfBuffer, unsigned int uiChannels, unsigned int uiBuffersize, double dSamplerate, unsigned int uiBlocklength,
+	                     bool bLoopMode = false );
 
 	//! Konstruktor (Vektor von Arrays)
 	/**
@@ -83,7 +82,7 @@ public:
 	 * \note Die Kanalanzahl wird aus der Anzahl der Elemente im Vektor bestimmt
 	 * \note Bei ungültigen Parametern wird eine Ausnahme vom Typ CIAException ausgelöst
 	 */
-	ITABufferDatasource( const std::vector< float* >& vpfBuffer, unsigned int uiBuffersize, double dSamplerate, unsigned int uiBlocklength, bool bLoopMode = false );
+	ITABufferDatasource( const std::vector<float*>& vpfBuffer, unsigned int uiBuffersize, double dSamplerate, unsigned int uiBlocklength, bool bLoopMode = false );
 
 	//! Spezieller Konstruktor (Einkanal-Betrieb)
 	/**
@@ -97,11 +96,7 @@ public:
 	 *
 	 * \note Bei ungültigen Parametern wird eine Ausnahme vom Typ CITAException ausgelöst
 	 */
-	ITABufferDatasource( const float* pfBuffer,
-		unsigned int uiBuffersize,
-		double dSamplerate,
-		unsigned int uiBlocklength,
-		bool bLoopMode = false );
+	ITABufferDatasource( const float* pfBuffer, unsigned int uiBuffersize, double dSamplerate, unsigned int uiBlocklength, bool bLoopMode = false );
 
 	//! Kapazität der Datenquelle zurückgeben
 	/**
@@ -112,7 +107,7 @@ public:
 	 * Wahl des Start- und Endcursors und kann als Obergrenze für
 	 * den Endcursor verwendet werden.
 	 */
-	unsigned int GetCapacity();
+	unsigned int GetCapacity( );
 
 	//! Aktuelle Wiedergabeposition bezogen auf die gesamten Quellendaten zurückgeben
 	/**
@@ -122,37 +117,37 @@ public:
 	 *       Dies hängt davon ab, ob der Startgrenze der ROI ein Vielfaches
 	 *       der Blocklänge ist.
 	 */
-	unsigned int GetAbsoluteCursor();
+	unsigned int GetAbsoluteCursor( );
 
 	//! Relative Wiedergabeposition bezogen auf den Arbeitsbereich zurückgeben
-	unsigned int GetCursor();
+	unsigned int GetCursor( );
 
 	//! Wiedergabeposition setzen bezogen auf den Arbeitsbereich
 	void SetCursor( unsigned int uiNewCursor );
 
 	//! Wiedergabe pausiert?
-	bool IsPaused() const;
+	bool IsPaused( ) const;
 
 	//! Pausierung für Wiedergabe ein-/ausschalten
 	void SetPaused( bool bPaused );
 
 	//! Zurückgeben ob die Wiederholung eingeschaltet ist
-	bool GetLoopMode();
+	bool GetLoopMode( );
 
 	//! Wiederholung Ein-/Ausschalten
 	void SetLoopMode( bool bLoopMode );
 
 	//! Sets the looping mode
 	/**
-	  * @param[in] bLoopingEnabled True means looping, false will play until EOF
-	  */
+	 * @param[in] bLoopingEnabled True means looping, false will play until EOF
+	 */
 	void SetIsLooping( bool bLoopingEnabled );
 
 	//! Looping mode getter
 	/**
-	  * @return True means looping, false will play until EOF
-	  */
-	bool GetIsLooping();
+	 * @return True means looping, false will play until EOF
+	 */
+	bool GetIsLooping( );
 
 	//! Arbeitsbereich (region of interest) festlegen
 	/**
@@ -170,10 +165,10 @@ public:
 	void SetROI( unsigned int uiStartOffset, unsigned int uiEndOffset );
 
 	//! Startposition des Arbeitsbereiches (region of interest) zurückgeben
-	unsigned int GetROIStart();
+	unsigned int GetROIStart( );
 
 	//! Endposition des Arbeitsbereiches (region of interest) zurückgeben
-	unsigned int GetROIEnd();
+	unsigned int GetROIEnd( );
 
 	//! Länge der Arbeitsbereiches (region of interest) zurückgeben
 	/**
@@ -181,7 +176,7 @@ public:
 	 * Dies ist die Differenz von End- und Startcursor. Der Wert ist
 	 * immer ein Vielfaches der Blocklänge.
 	 */
-	unsigned int GetROILength();
+	unsigned int GetROILength( );
 
 	//! Zurückspulen
 	/**
@@ -189,16 +184,16 @@ public:
 	 * Der als nächstes freigesetzten Daten sind wieder die Daten
 	 * vom Anfang der Puffer.
 	 */
-	void Rewind();
+	void Rewind( );
 
 	// -= Realisierte Methoden von ITADatasource =-
 
-	unsigned int GetBlocklength() const;
-	unsigned int GetNumberOfChannels() const;
-	double GetSampleRate() const;
+	unsigned int GetBlocklength( ) const;
+	unsigned int GetNumberOfChannels( ) const;
+	double GetSampleRate( ) const;
 
 	const float* GetBlockPointer( unsigned int uiChannel, const ITAStreamInfo* pStreamInfo );
-	void IncrementBlockPointer();
+	void IncrementBlockPointer( );
 
 protected:
 	//! Geschützer Konstruktor
@@ -211,44 +206,40 @@ protected:
 	 * \important Auf jedenfall muss die Instanz später mit der Methode Init
 	 *            initialisiert werden.
 	 */
-	ITABufferDatasource();
+	ITABufferDatasource( );
 
 	//! Initialisieren
 	/**
 	 * Zu benutzen im Verbund mit dem geschützen Konstruktor.
 	 */
-	void Init( const std::vector<float*>& vpfBuffer,
-		unsigned int uiBuffersize,
-		double dSamplerate,
-		unsigned int uiBlocklength,
-		bool bLoopMode );
+	void Init( const std::vector<float*>& vpfBuffer, unsigned int uiBuffersize, double dSamplerate, unsigned int uiBlocklength, bool bLoopMode );
 
 private:
-	unsigned int m_uiBuffersize;		// Größe der einzelnen Kanalpuffer
-	std::vector<const float*> m_vpfBuffer;	// Vektor der Kanalpuffer
+	unsigned int m_uiBuffersize;           // Größe der einzelnen Kanalpuffer
+	std::vector<const float*> m_vpfBuffer; // Vektor der Kanalpuffer
 
-	double m_dSamplerate;				// Abtastrate [Hz]
-	unsigned int m_uiChannels;			// Anzahl Kanäle
-	unsigned int m_uiBlocklength;		// Streaming Puffergröße [Samples]
+	double m_dSamplerate;         // Abtastrate [Hz]
+	unsigned int m_uiChannels;    // Anzahl Kanäle
+	unsigned int m_uiBlocklength; // Streaming Puffergröße [Samples]
 
-	unsigned int m_uiCapacity;			// Kapazität der Quelle
-	std::atomic< int > m_iCursor;				// Leseposition
+	unsigned int m_uiCapacity;  // Kapazität der Quelle
+	std::atomic<int> m_iCursor; // Leseposition
 
-	std::atomic< bool> m_bPaused;			// Wiedergabezustand
-	std::atomic< bool > m_bPausedInternal;	// Wiedergabezustand (interne Variable)
-	bool m_bLoopMode, m_bNewLoopMode;	// Wiederholungsmodusm, neuer Wiederholungsmodus
-	bool m_bChangeLoopMode;				// true = Wiederholungsmodus soll geändert werden
-	bool m_bRewind;						// Als nächstes Zurückspulen?
-	bool m_bChangeROI;					// true = Start-/Endcursor soll geändert werden
-	bool m_bInit;						// Instanz initialisiert?
-	bool m_bGetBlockPointerTouched;		// Seit letztem IncrementBlockPointer bereits ein GetBlockPointer aufgerufen?
+	std::atomic<bool> m_bPaused;         // Wiedergabezustand
+	std::atomic<bool> m_bPausedInternal; // Wiedergabezustand (interne Variable)
+	bool m_bLoopMode, m_bNewLoopMode;    // Wiederholungsmodusm, neuer Wiederholungsmodus
+	bool m_bChangeLoopMode;              // true = Wiederholungsmodus soll geändert werden
+	bool m_bRewind;                      // Als nächstes Zurückspulen?
+	bool m_bChangeROI;                   // true = Start-/Endcursor soll geändert werden
+	bool m_bInit;                        // Instanz initialisiert?
+	bool m_bGetBlockPointerTouched;      // Seit letztem IncrementBlockPointer bereits ein GetBlockPointer aufgerufen?
 	unsigned int m_uiROIStart, m_uiROIEnd;
 	unsigned int m_uiNewROIStart, m_uiNewROIEnd;
 
 	// Zustandsänderungen verarbeiten ggf. Cursor anpassen
 	// (Rückgabewert: false falls neuer Cursorstand bereits gesetzt und
 	//                keine weitere Bearbeitung des Cursors mehr notwendig)
-	bool Update();
+	bool Update( );
 };
 
 #endif // INCLUDE_WATCHER_ITA_BUFFER_DATA_SOURCE

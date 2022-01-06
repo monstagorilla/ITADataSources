@@ -19,11 +19,10 @@
 #ifndef INCLUDE_WATCHER_ITA_FILE_DATA_SOURCE
 #define INCLUDE_WATCHER_ITA_FILE_DATA_SOURCE
 
-#include <ITADataSourcesDefinitions.h>
-          
 #include "ITABufferDataSource.h"
-              
-#include <string>		// Strings der Standard Template Library (STL)
+
+#include <ITADataSourcesDefinitions.h>
+#include <string> // Strings der Standard Template Library (STL)
 #include <vector>
 
 //! Audiodatei-Datenquelle
@@ -37,7 +36,7 @@
  * So ergibt sich eine Kapazität der Datenquelle, d.h. die Anzahl an Samples
  * die die Datenquelle freisetzt. Diese kann durch das ggf. Anhängen der
  * Nullsamples ein anderer Wert sein als die Kapazität der Eingabedatei.
- * 
+ *
  * Ist das Ende der Audiodaten erreicht, gibt die Datenquelle keine Daten
  * mehr zurück (Nullzeiger). Im Wiederholungsmodus springt die
  * Datenquelle nach der Freisetzung des letzten Blocks Audiodaten
@@ -59,26 +58,24 @@ public:
 	 *
 	 * \note Bei Fehlern werden ISPL::Exceptions aufgelöst.
 	 */
-	ITAFileDatasource(std::string sFilename,
-		              unsigned int uiBlocklength,
-				      bool bLoopMode=false);	
+	ITAFileDatasource( std::string sFilename, unsigned int uiBlocklength, bool bLoopMode = false );
 
 	//! Destruktor
-	virtual ~ITAFileDatasource();
+	virtual ~ITAFileDatasource( );
 
 	//! Dateinamen der Audiodatei zurückgeben
-	std::string GetFileName() const;
+	std::string GetFileName( ) const;
 
 	//! Kapazität der Eingabedatei zurückgeben
-	/** 
+	/**
 	 * Gibt die Anzahl der Samples in der Eingabedatei zurück.
 	 */
-	unsigned int GetFileCapacity() const;
+	unsigned int GetFileCapacity( ) const;
 
-private:	
-	std::string m_sFilename;			// Dateiname der Audiodatei
-	unsigned int m_uiFileCapacity;		// Kapazität des Eingabedatei
-	std::vector<float*> vpfData;		// Datenpuffer (Kanalweise)
+private:
+	std::string m_sFilename;       // Dateiname der Audiodatei
+	unsigned int m_uiFileCapacity; // Kapazität des Eingabedatei
+	std::vector<float*> vpfData;   // Datenpuffer (Kanalweise)
 };
 
 #endif // INCLUDE_WATCHER_ITA_FILE_DATA_SOURCE
