@@ -147,7 +147,7 @@ target_compile_definitions (
 	${PROJECT_NAME} PUBLIC $<IF:$<BOOL:${BUILD_SHARED_LIBS}>,ITA_DATA_SOURCES_EXPORT,ITA_DATA_SOURCES_STATIC>
 )
 # Required compiler features
-target_compile_features (${PROJECT_NAME} PUBLIC cxx_std_11)
+target_compile_features (${PROJECT_NAME} PUBLIC cxx_std_17)
 
 if (ITA_DATA_SOURCES_NET_AUDIO_SHOW_TRAFFIC)
 	target_compile_definitions (${PROJECT_NAME} PRIVATE NET_AUDIO_SHOW_TRAFFIC)
