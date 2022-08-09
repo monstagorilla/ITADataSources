@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.20 FATAL_ERROR)
 
 project (
 	ITADataSources
-	VERSION 2021.0
+	VERSION 2022.0
 	LANGUAGES CXX C
 )
 
