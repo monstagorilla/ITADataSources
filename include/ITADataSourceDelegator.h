@@ -7,7 +7,7 @@
    |  Autoren:  Frank Wefers                                 |
    |                                                         |
    |  (c) Copyright Institut für technische Akustik (ITA)    |
-   |      Aachen university of technology (RWTH), 2005-2008  |
+   |      Aachen university of technology (RWTH), 2005-2022  |
    |                                                         |
    +---------------------------------------------------------+
                                                                */
