@@ -26,3 +26,4 @@ svnaccess
 *.lib
 *.exp
 *.log
+\.vs
