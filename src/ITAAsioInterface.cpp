@@ -447,7 +447,7 @@ ASIOTime *bufferSwitchTimeInfo( ASIOTime *timeInfo, long index, ASIOBool process
 	if( dOutputProcessingTime > dAvailabelProcessingTime )
 		std::cerr << "[ ITAAsioInterface ] Dropout detected, block processing time exceeded ( took " << timeToString( dOutputProcessingTime ) << " but got only "
 		          << timeToString( dAvailabelProcessingTime ) << " )" << std::endl;
-
+	std::cerr << "Processing Time:" << timeToString( dOutputProcessingTime ) << std::endl;
 	ulOutputBlockCounter++;
 
 	if( ulInputPresentCounter <= 1 )
